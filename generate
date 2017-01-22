@@ -1,0 +1,2 @@
+#!/bin/bash
+perl schedule.pl schedule.cfg > schedule.html 

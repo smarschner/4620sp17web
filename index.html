@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>CS4620: Introduction to Computer Graphics</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/cs4620.css" rel="stylesheet">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body data-spy="scroll" data-target="#navbar">
+
+    <nav id="navbar" class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">CS4620</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#head1">Home</a></li>
+            <li><a href="#staff">Staff</a></li>
+            <li><a href="#schedule">Schedule</a></li>
+            <li><a href="#asgn">Assignments</a></li>
+            <li><a href="#exams">Exams</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#books">Books</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="https://piazza.com/class#fall2014/cs4620">Piazza</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container" id="main">
+
+      <h1 id="head1">CS4620 <span class=subtitle>Introduction to Computer Graphics</span></h1>
+      <h1 id="head2">CS4621 <span class=subtitle>Computer Graphics Practicum</span></h1>
+      <p class="courseinfo">Cornell University</p>
+      <p class="courseinfo">MWF 2:30pm, Hollister B14</p>
+      <p class="courseinfo">F 3:35pm, Kimball B11 [4621 only]</p>
+      <p class="courseinfo">Instructor: <a href="/~srm">Steve Marschner</a></p>
+
+      <!--p class="coursedesc">
+      </p-->
+
+
+      <h2 id="staff">Staff</h2>
+      <h3>Graduate TAs</h3>
+      <p class="staff">
+         Eston Schweickart (CS4620 head TA, ers@cs.cornell.edu) <br>
+         Pramook Khungurn (CS4621 head TA, pramook@cs.cornell.edu) <br>
+         Albert Liu (ajul@cs.cornell.edu) <br>
+         Zechen Zhang (zz335@cornell.edu) <br>
+         Eric Lin (esl89@cornell.edu) <br>
+      </p>
+
+      <h3>Ugrad TAs</h3>
+      <p class="staff">
+        James Noeckel (jwn48@cornell.edu) <br>
+        Kristen Crasto (kmc376@cornell.edu) <br>
+        Henry Chen (hjc77@cornell.edu) <br>
+        Olivia Dawd (ord5@cornell.edu) <br>
+        Linda Liu (ll538@cornell.edu) <br>
+        Nicolas Kuhn de Chizelle (nk436@cornell.edu) <br>
+      </p>
+
+      <p class="staff">Staff office hours TBA</p>
+      <!--<a style="font-weight: bold;" href="http://www.cs.cornell.edu/courses/cs4620/2015fa/OHcalendar.html">Office Hours</a></p>-->
+
+      <h2 id="schedule">Schedule</h2>
+      <div id="schedule_content"></div>
+
+
+      <h2 id="asgn">Projects</h2>
+
+      <p>There will be 7 projects during the semester, due approximately every two weeks.</p>
+
+      <div id="projects_content"></div>
+
+
+      <h2 id="exams">Exams</h2>
+
+      <p>There will be an evening midterm and a final exam:</p>
+      <ul>
+        <li> Midterm: 21 March 2017, 7:30pm (Olin Hall 155)
+        <li> Final: (not yet scheduled)
+      </ul>
+
+      <p> The exams are closed book, but you're allowed to bring
+      one letter-sized piece of paper with writing on both sides,
+      to avoid the need to memorize things.</p> 
+
+
+ <h3 id="oldexams">Old Exams</h3>
+
+      <p> Here are links to exams from previous versions of this class. 
+They can be useful for studying, because they give an indication of the 
+style and scope of problems that may be expected. Note that they are not 
+a useful reference for topics to expect, because the content of the course 
+has changed from year to year. 
+
+
+<ul>
+  <li>CS 4620 Fall 2010</li>
+  <ul>
+    <li><a href="oldexams/cs4620-10fa-midterm1.pdf">Midterm 1</a> | 
+<a href="oldexams/cs4620-10fa-midterm1_soln.pdf">solution</a> <br>
+    </li>
+    <li><a href="oldexams/cs4620-10fa-final.pdf">Final exam</a> | 
+<a href="oldexams/cs4620-10fa-final_soln.pdf">solution </a><br>
+    </li>
+  </ul>
+  <li>CS 4620 Fall 2009<br>
+  </li>
+  <ul>
+    <li><a href="oldexams/cs4620-09fa-final.pdf">Final exam</a> | 
+<a href="oldexams/cs4620-09fa-final_soln.pdf">solution</a><br>
+    </li>
+  </ul>
+  <li>CS 4620 Fall 2008</li>
+  <ul>
+    <li><a href="oldexams/cs4620-08fa-midterm1.pdf">Midterm 1</a> | 
+<a href="oldexams/cs4620-08fa-midterm1_soln.txt">solution</a> </li>
+    <li><a href="oldexams/cs4620-08fa-midterm2.pdf">Midterm 2</a> | 
+<a href="oldexams/cs4620-08fa-midterm2_soln.txt">solution</a> </li>
+    <li><a href="oldexams/cs4620-08fa-final.pdf">Final exam</a> | 
+<a href="oldexams/cs4620-08fa-final_soln.txt">solution</a> </li>
+  </ul>
+  <li>CS 465 Fall 2005
+    <ul>
+      <li><a href="oldexams/prelim1.pdf">Prelim
+1</a> | 
+<a href="oldexams/prelim1_soln.pdf">solution</a>
+      </li>
+      <li><a href="oldexams/prelim2.pdf">Prelim
+2</a> | 
+<a href="oldexams/prelim2_soln.txt">solution</a>
+      </li>
+      <li><a href="oldexams/cs465-05fa-final.pdf">Final exam</a> </li>
+    </ul>
+  </li>
+  <li>CS 465 Fall 2004
+    <ul>
+      <li><a href="oldexams/cs465-04fa-prelim1.pdf">Prelim 1</a> </li>
+      <li><a href="oldexams/cs465-04fa-prelim2.pdf">Prelim 2</a> </li>
+      <li><a href="oldexams/cs465-04fa-final.pdf">Final exam</a> | 
+<a href="oldexams/cs465-04fa-final_soln.txt">solution</a> </li>
+    </ul>
+  </li>
+  <li>CS 465 Fall 2003
+    <ul>
+      <li><a href="oldexams/prelim1-2003.pdf">Prelim 1</a>
+| <a href="oldexams/prelim1_soln.txt">solution</a>
+      </li>
+      <li><a href="oldexams/prelim2-2003.pdf">Prelim 2</a>
+| <a href="oldexams/prelim2_soln-2003.txt">solution</a>
+      </li>
+      <li><a href="oldexams/cs465-03fa-final.pdf">Final exam</a> | 
+<a href="oldexams/cs465-03fa-final_soln.txt">solution</a> </li>
+    </ul>
+  </li>
+</ul>
+
+      <h2 id="about">About CS4620</h2>
+
+      <p><strong>Questions, help, discussion:</strong> The
+      instructors are available to answer questions, advise on
+      projects, or just to discuss interesting topics related to
+      the class at office hours and by
+      appointment as needed.  For electronic
+      communication we are using Piazza (handy link at the
+      top of this page).  <!--CS 4621 and CS 5621 students: sign up
+      for the Piazza page, and add yourself to the cs4621 group
+      in the "Groups" tab of the course page. Please post 
+      practicum discussions to the group to help keep the page
+      organized. -->
+
+      <p><strong>Practicum:</strong> In the optional practicum 
+      course, CS4621/5621, you will get a more in-depth exposure 
+      to the course material and complete an additional project.
+      Students taking the practicum will also be required to 
+      attend lectures most weeks during the Friday meeting time for 
+      CS4621/5621.
+
+      <p><strong>Academic integrity:</strong> We assume the work
+      you hand in is your own, and the results you hand in are
+      generated by your program.  You are welcome to read whatever
+      you want to learn what you need to do the work, but we do
+      expect you to build your own implementations of the methods
+      we are studying.  If you are ever in doubt, just include a
+      citation in your code or report indicating clearly and
+      specifically where some particular idea or implementation
+      came from, whether it be a classmate, a web site, another
+      piece of software, or anything&mdash;this always maintains
+      your honesty, whether the source was used in a good way or
+      not.
+      <p>The principle is that an assignment is an academic document,
+      like a journal article. When you turn it in, you are claiming
+      that everything in it is your original idea (or is original to 
+      you and your partner, if you are handing in as a pair) unless you
+      cite a source for it.
+      <p>School can be stressful, and your coursework and other 
+      factors can put you under a lot of pressure, but that is 
+      never a reason for dishonesty. If you feel you can't complete
+      the work on your own, come talk to the professor or the TAs, 
+      or your advisor, and we can help you figure out what to do. 
+      Think before you hand in!
+      <p>Clear-cut cases of dishonesty will result in failing the course.
+      <p>For more information see Cornell's Code of Academic Integrity.
+
+      <p><strong>Collaboration:</strong> You are welcome (encouraged,
+      even) to discuss projects among yourselves in general terms. 
+      But when it comes to writing up the homeworks or implementing 
+      the projects, you need to be working alone (or only with your
+      partner if you are doing a project as a pair). In particular, 
+      it is never OK for you to see another student's homework writeup 
+      or another team's program code, and certainly never OK to copy 
+      parts of one person's or team's writeup, code, or results into 
+      another's, even if the general solution was worked out together.
+      <strong>The paper and pencil parts of the projects can be 
+      discussed in general terms, but must be worked on alone.</strong>
+
+      <h2 id="books">Books</h2>
+
+      <p class="coursedesc"><strong>Textbook:<br></strong></p>
+
+      <table style="text-align: left; width: 600px;" border="0" cellpadding="2" cellspacing="2">
+        <tbody>
+          <tr>
+            <td style="vertical-align: top; width: 125px"><img style="width: 125px" alt="" src="images/fcg4.jpg"><br>
+            </td>
+            <td style="vertical-align: top; width: 400px">
+            <div style="text-align: left;">Marschner &amp; Shirley, <br>
+            </div>
+            <a href="https://www.amazon.com/Fundamentals-Computer-Graphics-Fourth-Marschner/dp/1482229390">
+            <em style="font-weight: bold; width: 300px">Fundamentals of Computer Graphics</em><br> 
+            fourth edition<br></a>
+            <a href="https://newcatalog.library.cornell.edu/catalog/6178011">(2nd ed. online in library)</a>
+            <ul>
+            </ul>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+
+      <p><span style="font-weight: bold;">Supplemental Books and Materials:<br>
+      </span></p>
+      <table style="text-align: left; width: 600px;" border="0" cellpadding="2" cellspacing="2">
+        <tbody>
+          <tr>
+           <td style="vertical-align: top; width: 125px"><img style="width: 125px; height: 158px;" alt="" src="images/fo3dg.jpg"><br>
+            </td>
+            <td style="vertical-align: top; width: 400px">
+            <div style="text-align: left;">Gortler, <br>
+            </div>
+            <em style="font-weight: bold; width: 300px"><a href="https://newcatalog.library.cornell.edu/catalog/7944020"</a> Foundations of 3D Computer Graphics</em><br> first edition
+            <ul>
+            </ul>
+      	    </td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+      <ul>
+        <li><a style="font-weight: bold;" href="http://www.opengl.org/documentation/red_book/">OpenGL
+      "Red Book"</a> --- *the* reference for OpenGL programming<a href="http://www.opengl.org/documentation/red_book/"><br>
+          </a></li>
+        <li><a href="http://books.google.com/books?id=LBm1khtUX0cC&amp;dq=sam+buss+mathematical+introduction+graphics&amp;printsec=frontcover&amp;source=bn&amp;hl=en&amp;ei=1gulSpWLFOSw8QbB7NjfDw&amp;sa=X&amp;oi=book_result&amp;ct=result&amp;resnum=4#v=onepage&amp;q=&amp;f=false"><span style="font-weight: bold;">3-D computer graphics: a mathematical
+      introduction with OpenGL</span></a>, Volume 385,&nbsp; By Samuel R. Buss</li>
+        <li>Andrew S. Glassner, <a href="http://books.google.com/books?id=YPblYyLqBM4C&amp;printsec=frontcover&amp;dq=sam+buss+mathematical+introduction+graphics&amp;source=gbs_similarbooks_s&amp;cad=1#v=onepage&amp;q=&amp;f=false"><span style="font-weight: bold;">An Introduction to ray tracing</span></a>,
+      1989<br>
+        </li>
+      </ul>
+
+    </div> <!-- /container -->
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript">
+    console.log('foo');
+    window.onload = function () {
+      $('#schedule_content').load('schedule.html');
+      projects = [
+        { tag: 'mesh', name: 'Mesh', text: 'Not yet released&hellip;', src: '' },
+        { tag: 'ray1', name: 'Ray 1', text: 'Not yet released&hellip;', src: '' },
+        { tag: 'scene', name: 'Scene', text: 'Not yet released&hellip;', src: '' },
+        { tag: 'shaders', name: 'Shaders', text: 'Not yet released&hellip;', src: '' },
+        { tag: 'splines', name: 'Splines', text: 'Not yet released&hellip;', src: '' },
+        { tag: 'animation', name: 'Animation', text: 'Not yet released&hellip;', src: '' },
+        { tag: 'ray2', name: 'Ray 2', text: 'Not yet released&hellip;', src: '' },
+      ]
+      projects.map(function (proj) {
+        $('#projects_content').append($(' \
+          <div class="homework accordion-group" id="' + proj.tag + '"> \
+            <div class="accordion-heading"> \
+              <a class="accordion-toggle" data-toggle="collapse" data-parent="#' + proj.tag + '" href="#' + proj.tag + '-collapse"> \
+                <h3>' + proj.name + '</a></h3> \
+              </a> \
+            </div> \
+            <div class="accordion-body collapse" id="' + proj.tag + '-collapse"> \
+              <div id="' + proj.tag + '_content" class="accordion-inner">  \
+              </div> \
+            </div> \
+          </div> \
+        '));
+        if (proj.src) $('#' + proj.tag + '_content').load(proj.src)
+        else $('#' + proj.tag + '_content').append(proj.text)
+      });
+    };
+    </script>
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script type="text/javascript" async="true"
+	    src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
+
+  </body>
+</html>
