@@ -1,0 +1,351 @@
+<h1><strong>PA 1: Meshes</strong></h1>
+<h3><strong>Due: Wednesday February 8th 2017 (11:59pm)</strong></h3>
+
+<p><strong>Do this project alone or in groups of two, as you prefer. </strong>You can use <a href="https://piazza.com/class/iy7ekv7ao0r1aj">Piazza</a> to help pair yourselves up.
+
+<h4>Introduction</h4>
+
+<p>In this assignment you will learn about the most widely used way to
+represent surfaces for graphics: triangle meshes.  A triangle mesh is basically
+just a collection of triangles in 3D, but the key thing that makes it a mesh
+rather than just a bag of triangles is that the triangles are connected to one
+another to form a seamless surface.  The textbook and lecture slides discuss
+the data structures used for storing and manipulating triangle meshes, and in
+this assignment we will work with the simplest kind of structure: an indexed
+triangle mesh.
+
+<p>Your job in this assignment is to write a simple mesh generation and
+processing utility that is capable of building triangle meshes to approximate
+some simple curved surfaces, and also can add some information to existing
+meshes.  It reads and writes meshes stored in the popular <a
+href="http://en.wikipedia.org/wiki/Wavefront_.obj_file">OBJ file format</a>, a
+text format with one line for each vertex and face in the mesh.
+
+<h4>Building a pyramid</h4>
+
+<p> The written part of this assignment is a warmup for generating more complex
+meshes. Suppose we wish to generate a mesh (with just vertex positions, no
+normals or texture coordinates) for a square pyramid (like the one at Giza).
+The base is a square in the x-z plane, going from -1 to 1 on each
+axis and the apex is at (0,1,0). Let us now add a triangular flag to our pyramid.
+We would like the base of the flag to be at the apex of the pyramid and the top to 
+reach a height of 1.5 vertically above. Orient the flag in the positive x-z
+ direction and make it stretch out, 0.5 units away from the center, terminating 
+at the same height as the base.   Write out:
+
+
+
+<ul>
+  <li> The coordinates of the 7 vertices;
+  <li> The indices of the 7 triangles (you will need two for the base).
+</ul>
+
+<p>The answer consists of 21 floating point numbers (3D coordinates of the
+vertices) and 21 integers (indices into the list of vertices, 3 for each
+triangle).
+
+
+<p>To test out your solution, type it into a text file with the vertices, one per
+line, and then the triangles, also one per line. Precede each vertex with "v"
+and each triangle with "f". Note that the indices for the vertices, making up a
+particular triangle face, should be listed in a counter-clockwise order as
+viewed from the outside of the given mesh.  And one more thing: add one to all
+the vertex indices, so that the count starting from 1. (Caution! this is not
+the same as what we do in the data structures inside the program!)  For
+example, a single triangle in the x-z plane, facing towards +y is:
+
+<pre class="dark">
+v 0 0 0
+v 0 0 1
+v 1 0 0
+f 1 2 3
+</pre>
+
+<p>This text file is now an OBJ file! 
+
+<p>Once you are done making the necessary modifications the final mesh should be the same as the one in the following figure.
+
+<ul class="thumbnails" style="margin-top: 10px; margin-bottom:20px">
+  <div class="thumbnail span4 offset4 ">
+    <img src="images/a1pyramidwithflagwireframe.png" width="400px"/>
+    <div class="caption">
+      Pyramid with a triangular flag
+    </div>
+  </div>
+</ul> 
+
+<p>Read the completed file into one of the mesh viewers described below, take a couple of screen shots to show that it works, and include them with your writeup.
+
+<p>The OBJ files written by the framework are a little more complicated because they can contain additional data at the vertices: normals and texture coordinates.
+
+<h4>Specification</h4>
+
+<p>For this assignment, you will create a command line utility called <tt>MeshGen</tt>. Its usage is:
+
+<pre class="dark">
+  (1) java MeshGen -g &lt;sphere|cylinder|torus&gt; [-n &lt;divisionsLatitude&gt;] [-m &lt;divisionsLongitude&gt;] [-r &lt;innerRadius&gt;] -o &lt;outfile.obj&gt;
+  (2) java MeshGen -i &lt;infile.obj&gt; -o &lt;outfile.obj&gt;
+</pre>
+
+<p>For usage (1), the first required argument is the geometry specifier, and the second is the output filename.  If the geometry specifier is one of the fixed strings <tt>sphere</tt>, <tt>cylinder</tt>, or <tt>torus</tt>, a triangle mesh is generated that approximates that shape, where the number of triangles generated is controlled by the optional <tt>-n</tt> and <tt>-m</tt> options (details below), and written to the output file.
+
+<p>A triangle mesh that is an approximation of a smooth surface should have
+normal vectors stored at the vertices that indicate the direction normal to the
+exact surface at that point.  When generating the predefined shapes, you
+generate points that are on the surface, and for each you should also calculate
+the normal vector that is perpendicular to the surface at that point.
+
+<p>In addition, we would like to map images onto the suface of our generated mesh.
+You may do so by specifying a texture coordinate at each vertex of the mesh. This
+texture coordinate consists of two numbers between 0 and 1, and correspond to a
+particular location on some source image. Given these coordinates, we can map
+a portion of the image onto each triangle by interpolating the coordinates across
+the face of the triangle.
+
+<p>For usage (2), the user provides an input OBJ mesh file, which the program reads in.
+The mesh is assumed to have no normals (if normals are included in the input file, they
+are ignored). The program then generates approximate normals at each vertex as described
+below, and writes the resulting mesh to the user-provided output file.
+
+<h4>Details of predefined geometries</h4>
+   
+   <h5><strong> Cylinder</strong></h5>
+
+<p>The cylinder has radius <tt>1</tt> and height <tt>2</tt> and is centered at
+the origin; its longitudinal axis is aligned with the <tt>y</tt>-axis. It is tesselated with
+<tt>n</tt> divisions arranged radially around the outer surface. The two ends of the cylinder are
+closed by disc-shaped caps parallel to the <tt>xz</tt>-plane. The vertices around the rims of the cylinder are
+duplicated to allow discontinuities in the normals and texture coordinates.
+Each cap consists of one set of the duplicated vertices around the appropriate
+rim as well as a single point where the cap intersects the <tt>y</tt>-axis. This point is
+incorporated into each triangle that makes up the cap.</p>
+
+
+<p>Along the cylinder's shell (i.e., excluding its caps), texture coordinates in the <tt>u</tt> dimension run from
+<tt>0</tt> to <tt>1</tt> in a counterclockwise direction as viewed from the <tt>+y</tt>
+direction. Coordinates run from <tt>0</tt> to <tt>0.5</tt> in the <tt>v</tt> dimension, increasing in the <tt>+y</tt>
+direction. The texture coordinates for the two caps are circles inscribed in
+the upper-left (for the <tt>-y</tt> cap) and upper-right (for the <tt>+y</tt> cap) quadrants of
+the unit square in the <tt>uv</tt>-plane, with the <tt>+u</tt> direction corresponding to the <tt>+x</tt> direction in 3D
+space, and the <tt>+v</tt> direction corresponding to the <tt>-z</tt> direction.
+
+   <h5><strong> Sphere</strong></h5>
+
+<p>The sphere has radius <tt>1</tt> and is centered at the origin in 3D
+coordinates. It is tesselated in latitude-longitude fashion, with <tt>n</tt> divisions
+around the equator and <tt>m</tt> divisions from pole to pole along each line of
+longitude. The North pole is at <tt>(0,1,0)</tt>, the South pole at <tt>(0,-1,0)</tt>, and
+points on the Greenwich meridian have coordinates <tt>(0,y,z)</tt> with <tt>z &gt; 0</tt>. The
+mesh is generated with vertex normals that are normal to the exact sphere, and
+with texture coordinates <tt>(u,v)</tt> where <tt>u</tt> depends only on longitude, with <tt>u=0</tt> at
+longitude 180 degree West and <tt>u=1</tt> at 180 degrees East, and where <tt>v</tt> depends only on
+latitude, with <tt>v=0</tt> at the South Pole and <tt>v=1</tt> at the North pole. Each
+quadrilateral formed by two adjacent longitude lines and two adjacent latitude
+lines is divided on the diagonal to form two triangles. The vertices along the
+180th meridian are duplicated: one vertex has texture coordinate <tt>u=0</tt> and
+the other has texture coordinate <tt>u=1</tt>, to enable correct wrapping of a
+tileable texture image across the seam. The vertices at the poles are
+duplicated <tt>n+1</tt> times, to enable nearly-appropriate texture in the row of
+triangles adjacent to the pole.
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a1cylinder-characteristics.png" width="512px" style="margin-right: 10px">
+    <img src="images/a1sphere.png"  width="512px" style="margin-left: 10px">
+      <div class="caption">
+        <strong>Specs illustration for the cylinder and sphere (for the case of n = 32 and m = 16)</strong>
+      </div>
+</div> 
+
+   <h5><strong> Torus</strong></h5>
+
+<p>A <a href="https://en.wikipedia.org/wiki/Torus">torus</a> is a doughnut-shaped
+surface defined by a major radius, affecting the size of the hole, and a minor radius,
+affecting the thickness of the ring. Your code should create a torus with major radius <tt>1</tt> 
+and minor radius <tt>r</tt> (controlled by the
+<tt>-r</tt> flag with a default of <tt>0.25</tt>).  Its <tt>u</tt> coordinates are
+like the sphere, and the <tt>v</tt> coordinate runs from <tt>0</tt> to <tt>1</tt>
+with a seam on the inside of the torus, with the direction arranged so that the
+texture is right-reading from the outside (i.e., the texture is not flipped when mapped to the surface).
+Like the sphere, it has a seam on the <tt>-z</tt> half of the <tt>yz</tt>-plane, and it has a similar seam around the
+inner surface of the doughnut hole; vertices along each seam are duplicated twofold and a
+single vertex, at the position <tt>(0, 0, r-1)</tt> where the seams meet, is duplicated fourfold.
+
+<ul class="thumbnails" style="margin-top: 5px; margin-bottom:10px">
+  <div class="thumbnail span4">
+    <img src="images/a1allshapeswireframe.png"  width="1024px"/>
+    <div class="caption">
+      Wireframe view of the shapes (Notice that the default up direction in Blender, as seen here, is the +z axis whereas the convention used in our description and Meshlab specifies the +y axis as upwards. You should be aware of this fact and not be perplexed by such a discrepancy).
+    </div>
+  </div>
+</ul>
+
+<h4>Computing vertex normals</h4>
+
+<p>For a mesh that has vertex positions and triangles, but no vertex normals, one often wants to compute vertex normals so that the mesh can appear smooth. But since the original surface which the mesh approximates is forgotten (if there even was one), we need some way to make up plausible normals. There are a number of ways to do this, and we'll use a simple one for this assignment: the normal at a vertex is the average of the geometric normals of the triangles that share this vertex.
+
+<p>Your first thought might be to do this as a loop over vertices, with an inner loop over the triangles that share that vertex:
+
+<pre class="prettyprint">
+   for each vertex v
+      normal[v] = (0,0,0)
+      for each triangle t around v
+         normal[v] += normal of triangle t
+      normal[v].normalize()
+</pre>
+
+<p>With the appropriate data structures, this is possible, but in our case there's no efficient way to do the inner loop: our data structure tells us what vertices belong to a triangle, but the only way to find triangles that belong to a vertex is to search through the whole list of triangles.  This is possible but would be quadratic in the mesh size, which is bad news for large meshes.
+
+<p>However, it's simple to do it with the loops interchanged:
+
+<pre class="prettyprint">
+   for each vertex v
+      normal[v] = (0,0,0)
+   for each triangle t
+      for each vertex v around t
+         normal[v] += normal of triangle t
+   for each vertex v
+      normal[v].normalize()
+</pre>
+
+<p>This way the inner loop can efficiently visit just the necessary vertices.  Nifty!
+
+<h4>Framework</h4>
+
+<p>The framework is available on a public Git repository: <strong>https://github.com/CornellCS4620/Framework.git</strong>
+<p>If you have not used Git before, you can follow the tutorial <a href=https://www.atlassian.com/git/tutorial>
+here</a>, or ask a TA for assistance. We encourage you to use version control though <strong>we request that you refrain from publicly sharing your class repository.</strong>
+
+<p>For this first assignment, we provide a small amount of code to help you get started.
+It contains data structures for dealing with vectors and meshes stored in the OBJ format.
+
+<p>The <tt>math</tt> package contains two classes, <tt>Vector2</tt> and <tt>Vector3</tt>, for
+dealing with 2D and 3D vectors respectively. They also contain many methods such as vector
+addition and subtraction, dot and cross products, and component-wise operators. If you need
+to modify a vector in some way, chances are there is already a method that will do what you
+want--there is rarely a need to extract the individual components of a vector.
+
+<p><strong>Please be aware that these classes contain in-place methods, even if they return a vector!</strong>
+This means that it is easy to make a mistake like the following:
+<pre class="prettyprint">
+  Vector3 a = new Vector3(...), b = new Vector3(...);
+  Vector3 c = a.add(b); // Don't do this!
+</pre>
+In the snippet above, the <tt>add()</tt> method modifies <tt>a</tt> and assigns it to <tt>c</tt>. This
+is almost certainly not what you want. Instead, consider the following code:
+<pre class="prettyprint">
+  Vector3 c = a.clone().add(b);
+</pre>
+This creates a copy of <tt>a</tt> and modifies it instead, leaving the original <tt>a</tt> unchanged.
+This may seem awkward, but it allows for very concise code when performing many successive operations on vectors:
+<pre>
+  x.add(y).cross(z).normalize();
+</pre>
+When in doubt, please consult the Javadocs. They're there for your benefit!
+
+<p>The <tt>meshgen</tt> package contains data structures for operating on OBJ-style meshes.
+They are very similar in structure to the OBJ file itself; vertex positions are stored as <tt>Vector3</tt>s
+in an <tt>ArrayList</tt>, and similarly for vertex texture coordinates and vertex normals. Faces of
+the mesh are represented via the <tt>OBJFace</tt> class, which defines a polygon on the mesh
+by listing integers for each vertex which index into the position, texture coordinate, and normal arrays.
+This structure allows you to reuse repeated positions, texture coordinates, and normals, which
+may come in handy when generating meshes with seams (i.e., meshes with vertices that share positions and
+normals, but not texture coordinates.) However, you are not required to take advantage of such
+optimizations; creating a mesh where each vertex has a unique triad of position, texture coordinate, and normal
+is a valid solution.
+
+<p>The <tt>OBJMesh</tt> class provides methods for reading and writing OBJ files; thus, to create a mesh, you simply
+create a new instance of the <tt>OBJMesh</tt> class, fill in the appropriate class members, and call <tt>writeOBJ()</tt>.
+The class supports both <tt>0</tt>- and <tt>1</tt>-based indexing, allowing you to either conform to the Java
+standard or OBJ standard as you set the mesh data. You can switch between indexing schemes via the <tt>indexBase</tt>
+static variable, which by default is <tt>0</tt>. Either way, meshes are automatically converted to <tt>1</tt>-based indexing before
+being written to file.
+
+<p>Some useful methods include the <tt>setVertex()</tt> method in <tt>OBJFace</tt>, which allows you to set the
+indices for the position, texture coordinate, and normal for a particular vertex simultaneously. Also of note
+are <tt>OBJMesh</tt>'s <tt>getPosition()</tt>, <tt>getUV()</tt>, and <tt>getNormal()</tt> methods, which
+retrieve the appropriate vectors from the mesh data, taking the indexing issues mentioned above into account.
+
+
+<h4>Testing your program</h4>
+
+<p>Since your program just writes a file full of inscrutable numbers, you need some way to look at the results.  For this you can use <a href=http://meshlab.sourceforge.net/>MeshLab</a>. This program allows you to view the output OBJ files, and test that the texture coordinates and vertex normals are set correctly.
+(Here are a few more programs that might be worth checking out: <a href=http://www.blender.org/download/>Blender</a>, <a href=http://masc.cs.gmu.edu/wiki/ObjViewer>ObjViewer</a>, <a href=http://p3d.in/>p3d.in</a> ).  
+<strong>Warning: Blender discards the normals stored in the OBJ file and as such is not a good tool to check whether your normals are correct.</strong>
+<strong>Caution: Blender by default will rotate your mesh by 90 degrees around the x axis so that it displays right way up in Blender's z-is-up world.</strong>
+
+
+<p>In addition, the <tt>OBJMesh</tt> class contains the <tt>isValid()</tt> method to check that your
+mesh conforms to the OBJ standard, and the <tt>compare()</tt> method to check if two different meshes
+are equivalent (ignoring the order in which faces are defined or differences in index optimization). Thus,
+another way to verify your code is correct is to compare your output to reference meshes, which are
+provided below. To receive full credit, your output must be equivalent to ours, and generate no warnings
+when used with the <tt>verbose</tt> option. (We will have other
+reference meshes to test your code against in addition to the ones provided below.)
+
+<p><strong>Download and unpack the following archive: <a href=MeshesTestData.zip>MeshesTestData.zip</a></strong>
+
+<ul class="thumbnails" style="margin-top: 5px; margin-bottom:10px">
+  <div class="thumbnail span4">
+    <img src="images/texture-example.png" width="1024px" />
+    <div class="caption">
+		A final version of a textured torus, sphere, and cylinder
+    </div>
+  </div>
+</ul>
+
+<h4>Extensions</h4>
+
+<p>There are many opportunities to expand your implementation and receive extra credit. Some ideas are listed below.
+
+<ul>
+<li>You may have noticed that for the sphere, the triangles get compressed near the poles. Provide an
+alternative tessellation approach to create a more even mesh; see
+<a href="http://en.wikipedia.org/wiki/Icosphere">icosphere</a> as an example.
+(Note that this feature should be provided in addition to the sphere specification described above.)</li>
+<li>The <tt>compare()</tt> method provided in the <tt>OBJMesh</tt> class compares each face in one mesh with
+each face in the other until it finds a match. This naive, brute force algorithm
+is very slow when given large meshes as input. Provide an alternative method with better performance.
+(Can you reduce the complexity from <tt>O(n^2)</tt> to <tt>O(n log n)</tt>?)</li>
+<li>Per the OBJ specification, the <tt>OBJFace</tt> class supports faces that are arbitrary polygons, not
+just triangles. However, in many cases, triangles are much nicer to work with. Extend your <tt>MeshGen</tt>
+utility to generate a triangle mesh from an input mesh with polygonal faces. That is, take all faces that have
+4 or more vertices and split them into triangles.</li>
+<li>As mentioned above, the OBJ data format allows the reuse of positions, vertex coordinates, and normals
+through indexing. However, this reuse is not enforced. Extend your <tt>MeshGen</tt> utility to take in an
+uncompressed OBJ file and remove duplicate positions, texture coordinates, and normals, adjusting vertex
+indices as necessary.</li>
+<li>Many algorithms that operate on triangle meshes assume that the mesh is well-behaved; that is, it has some
+structure that is more predictable than just a soup of arbitrary triangles. One class of well-behaved mesh
+is known as a <em>manifold</em> mesh. Manifold meshes satisfy the following properties:
+<ul>
+  <li>Every edge in the mesh borders either 1 or 2 triangles.</li>
+  <li>Every vertex in the mesh belongs to a connected set of triangles; that is, if you consider all triangles
+  that share one particular vertex, you can draw a curve from any triangle to any other triangle
+  without leaving the surface of the mesh, and without crossing over the vertex. "Bowtie" configurations are
+  not allowed.</li>
+</ul>
+Extend your <tt>MeshGen</tt> utility to check if an input triangle mesh is manifold or not. As a hint, it may be useful
+to create a new data structure which, given the index of a triangle, allows you to quickly find that triangle's
+neighboring faces.
+</li>
+</ul>
+
+If you implement any of the above options, please provide sample input and/or output with your submission
+that demonstrates that your code is functioning correctly.
+
+<h4>Handing in</h4>
+
+<p><strong>Submit a zip file containing your solution using <a href=https://cms.csuglab.cornell.edu>CMS</a></strong>
+
+<p>You should include a readme in your zip that contains:
+<ul>
+  <li>You and your partner's names and NetIDs.
+  <li>Explanations of any extensions you implemented and incantations to run them via the command line.
+  <li>Anything else you want us to know.
+</ul>
+
+<p><strong>Separately submit a zip file containing your paper and pencil on 
+<a href=https://cms.csuglab.cornell.edu>CMS</a></strong>. The solution for the
+paper and pencil parts of the homework will be done <b>alone</b>, and not in
+pairs. Please turn that in separately at the appropriate place in CMS.
+
