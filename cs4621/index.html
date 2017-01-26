@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>CS 4621: Computer Graphics Practicum (Spring 2017)</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/cs4620.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body data-target="#navbar">
+
+<nav id="navbar" class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">CS4621</a>
+        </div>
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#head1">Home</a></li>
+                <li><a href="#staff">Staff</a></li>
+                <li><a href="#schedule">Schedule</a></li>
+                <li><a href="#asgn">Assignments</a></li>
+                <li><a href="#about">About</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="https://piazza.com/class#fall2017/cs4620">Piazza</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>
+
+<div class="container" id="main">
+    <h1>CS4621 <span class="subtitle">Computer Graphics Practicum</span></h1>
+    <p class="courseinfo">Cornell University</p>
+    <p class="courseinfo">F 3:35pm - 4:50pm, Uris Hall G01</p>
+    <p class="courseinfo">Instructor: <a href="/~srm">Steve Marschner</a></p>
+
+    <section id="staff">
+        <h2>Staff</h2>
+        <h3>Graduate TAs</h3>
+        <p class="staff">
+            <a href="http://www.cs.cornell.edu/~pramook/">Pramook Khungurn</a> (CS4621 head TA, pramook@cs.cornell.edu)
+        </p>
+    </section>
+
+    <section id="schedule">
+        <h2>Schedule</h2>
+        <p><b>Disclaimer:</b> This schedule is tentative.  It might be changed in the future.</p>
+        <table class="sched" cellpadding="0" cellspacing="0">
+            <tr>
+                <th class=month colspan=2>date</td>
+                <th>topic</td>
+                <th>reading</td>
+                <th class=projdue>assignments</td>
+            </tr>
+            <tr class="odd">
+                <td class=day>27</td>
+                <td class=month>Jan</td>
+                <td>Introduction</td>
+                <td>&nbsp;</td>
+                <td class=projdue>&nbsp;</td>
+            </tr>
+            <tr class="evn">
+                <td class=day>3</td>
+                <td class=month>Feb</td>
+                <td>Vertex Attributes, Uniforms, and Varying Variables</td>
+                <td>&nbsp;</td>
+                <td class=projdue>&nbsp;</td>
+            </tr>
+            <tr class="odd">
+                <td class=day>10</td>
+                <td class=month>Feb</td>
+                <td>Interaction</td>
+                <td>&nbsp;</td>
+                <td class=projdue>&nbsp;</td>
+            </tr>
+            <tr class="evn">
+                <td class=day>17</td>
+                <td class=month>Feb</td>
+                <td>2D Transformations</td>
+                <td>&nbsp;</td>
+                <td class=projdue>&nbsp;</td>
+            </tr>
+            <tr class="odd">
+                <td class=day>24</td>
+                <td class=month>Feb</td>
+                <td>3D Transformations</td>
+                <td>&nbsp;</td>
+                <td class=projdue>&nbsp;</td>
+            </tr>
+            <tr class="evn">
+                <td class=day>3</td>
+                <td class=month>Mar</td>
+                <td>Depth Test and Blending</td>
+                <td>&nbsp;</td>
+                <td class=projdue>&nbsp;</td>
+            </tr>
+            <tr class="odd">
+                <td class=day>10</td>
+                <td class=month>Mar</td>
+                <td>Textures</td>
+                <td>&nbsp;</td>
+                <td class=projdue>&nbsp;</td>
+            </tr>
+            <tr class="evn">
+                <td class=day>17</td>
+                <td class=month>Mar</td>
+                <td>Frame Buffer Objects and Multi-Pass Image Processing</td>
+                <td>&nbsp;</td>
+                <td class=projdue>&nbsp;</td>
+            </tr>
+            <tr class="odd">
+                <td class=day>24</td>
+                <td class=month>Mar</td>
+                <td>Particle Systems and About the Final Project</td>
+                <td>&nbsp;</td>
+                <td class=projdue>&nbsp;</td>
+            </tr>
+            <tr class="evn">
+                <td class=day>31</td>
+                <td class=month>Mar</td>
+                <td>Final Project Proposal Presentation</td>
+                <td>&nbsp;</td>
+                <td class=projdue>&nbsp;</td>
+            </tr>
+            <tr class="dis odd">
+                <td class=day>7</td>
+                <td class=month>Apr</td>
+                <td colspan="3" style="text-align: center;">Spring Break</td>
+            </tr>
+            <tr class="evn">
+                <td class=day>14</td>
+                <td class=month>Apr</td>
+                <td>Picking</td>
+                <td>&nbsp;</td>
+                <td class=projdue>&nbsp;</td>
+            </tr>
+            <tr class="odd">
+                <td class=day>21</td>
+                <td class=month>Apr</td>
+                <td>No Class</td>
+                <td>&nbsp;</td>
+                <td class=projdue>&nbsp;</td>
+            </tr>
+            <tr class="evn">
+                <td class=day>28</td>
+                <td class=month>Apr</td>
+                <td>Milestone Presentation</td>
+                <td>&nbsp;</td>
+                <td class=projdue>&nbsp;</td>
+            </tr>
+            <tr class="odd">
+                <td class=day>5</td>
+                <td class=month>May</td>
+                <td>No Class</td>
+                <td>&nbsp;</td>
+                <td class=projdue>&nbsp;</td>
+            </tr>
+            <tr class="evn">
+                <td class=day>XX</td>
+                <td class=month>May</td>
+                <td>Final Project Presentation</td>
+                <td>&nbsp;</td>
+                <td class=projdue>&nbsp;</td>
+            </tr>
+        </table>
+    </section>
+
+    <section id="asgn">
+        <h2>Assignments</h2>
+
+        <div class="homework accordion-group" id="webgl-ray">
+            <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#webgl-ray" href="#webgl-ray-collapse">
+                    <h3>WebGL Ray</h3>
+                </a>
+            </div>
+            <div class="accordion-body collapse" id="webgl-ray-collapse">
+                <div id="webgl-ray-content" class="accordion-inner">
+                    No yet released.
+                </div>
+            </div>
+        </div>
+        <div class="homework accordion-group" id="viz">
+            <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#viz" href="#viz-collapse">
+                    <h3>Data Visualization</h3>
+                </a>
+            </div>
+            <div class="accordion-body collapse" id="viz-collapse">
+                <div id="viz-content" class="accordion-inner">
+                    No yet released.
+                </div>
+            </div>
+        </div>
+        <div class="homework accordion-group" id="shaders">
+            <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#shaders" href="#shaders-collapse">
+                    <h3>Shaders and Particle Systems</h3>
+                </a>
+            </div>
+            <div class="accordion-body collapse" id="shaders-collapse">
+                <div id="shaders-content" class="accordion-inner">
+                    No yet released.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about">
+        <h2>About CS 4621</h2>
+
+        <p>
+            According to the <a href="https://classes.cornell.edu/browse/roster/SP17/class/CS/4621">Cornell Class
+            Roster</a>,
+            the course description of CS 4621 reads:
+        </p>
+        <blockquote>
+            Provides CS 4620 students with hands-on experience in computer graphics programming
+            on modern graphics hardware. A semester-long project involves building a substantial
+            interactive 3D system. The course uses Java and OpenGL for code development.
+        </blockquote>
+        <p>
+            The description is mostly accurate. However, the course staff would like to try something more ambitious,
+            so CS 4621 is really about:
+        </p>
+        <blockquote>
+            Provides CS 4620 students with hands-on experience in computer graphics programming
+            on modern graphics hardware. A <strike>semester-long</strike> <em>half-semester-long</em> project involves
+            building a substantial interactive <strike>3D</strike> <em>computer graphics</em> system.
+            The course uses <strike>Java and OpenGL</strike>
+            <em>Javascript and WebGL</em> for code development.
+        </blockquote>
+        <p>
+            The reasons for the above changes are as follows:
+        </p>
+        <ol>
+            <li>
+                In order to build a substantial interactive computer graphics system, students need to learn
+                at least the first half of CS 4620. Requiring them to start at the beginning of the semester, when they
+                actually cannot really start yet, does not make sense.
+            </li>
+            <li>
+                While Java is still a practical language for graphics programming (the head TA has done most of
+                his graphics research in Java), the staff believes that creating graphics systems for the web with
+                Javascript and WebGL is a skill with a much wider audience because the ease of deployment and
+                the spread of mobile devices.
+            </li>
+        </ol>
+        <p>
+            Accordingly, the practicum is divided into two halves.  In the first halves (the first 7 weeks or so),
+            we will give lectures on how to use WebGL to create interactive graphics applications.  There will be
+            individual programming assignments to get you familiarized with the API.   In the second halves,
+            you and your teammates will plan and execute your final project, which is a substantive computer graphics
+            systems written using Javascript and WebGL.  The system can be 3D, but it does not have to be.
+        </p>
+        <p>
+            One aim of the course is to give you an experience on software engineering.  You should come out
+            of the course having designed and implemented computer graphics systems by yourself with minimal help
+            from framework code implemented by other people.  You may discover that this can be a tedious and
+            error-prone process.  <b>A competent software engineer, though, must be able to create abstractions that
+            reduce tedium and error.</b>  In order to provide you with opportunities to grow as a software engineer,
+            we will organize the assigments and the final project as follows:
+        </p>
+        <ol>
+            <li>For all assigments, we will not give you any framework or starter code.  You have to code your
+            submission from scratch.  However, you may learn from example code that we provide in lectures.</li>
+            <li>For your final project, you are not allowed to use any libraries or frameworks that implements
+            computer-graphics-related aspects of your project.  This means that you cannot use any 2D or 3D
+            graphics/game engines as a component of your project.  Generic Javascript libraries are generally OK,
+            but please consult with the course staff on what libraries you want to use.</li>
+        </ol>
+        <p>
+            With all that said, we have hope you have fun with the course!
+        </p>
+    </section>
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="js/jquery-3.1.1.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="js/bootstrap.min.js"></script>
+</body>
+</html>
