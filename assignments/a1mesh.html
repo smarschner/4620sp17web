@@ -109,7 +109,7 @@ For full credit, your solution should appear exactly as shown above.
 <p>For this assignment, you will create a command line utility called <tt>MeshGen</tt>. Its usage is:
 
 <pre class="dark">
-  (1) java MeshGen -g &lt;sphere|cylinder|torus&gt; [-n &lt;divisionsLatitude&gt;] [-m &lt;divisionsLongitude&gt;] -o &lt;outfile.obj&gt;
+  (1) java MeshGen -g &lt;sphere|cylinder|torus&gt; [-n &lt;divisionsLatitude&gt;] [-m &lt;divisionsLongitude&gt;] [-r &lt;minorRadius&gt;] -o &lt;outfile.obj&gt;
   (2) java MeshGen -i &lt;infile.obj&gt; -o &lt;outfile.obj&gt;
 </pre>
 
@@ -281,10 +281,28 @@ retrieve the appropriate vectors from the mesh data, taking the indexing issues 
 
 <h4>Testing your program</h4>
 
-<p>Since your program just writes a file full of inscrutable numbers, you need some way to look at the results.  For this you can use <a href=http://meshlab.sourceforge.net/>MeshLab</a>. This program allows you to view the output OBJ files, and test that the texture coordinates and vertex normals are set correctly.
-(Here are a few more programs that might be worth checking out: <a href=http://www.blender.org/download/>Blender</a>, <a href=http://masc.cs.gmu.edu/wiki/ObjViewer>ObjViewer</a>, <a href=http://p3d.in/>p3d.in</a> ).  
-<strong>Warning: Blender discards the normals stored in the OBJ file and as such is not a good tool to check whether your normals are correct.</strong>
-<strong>Caution: Blender by default will rotate your mesh by 90 degrees around the x axis so that it displays right way up in Blender's z-is-up world.</strong>
+<p>Since your program just writes a file full of inscrutable numbers, you need some way to look at the results.
+There are a number of programs to visualize meshes, for example <a href=http://www.blender.org/download/>Blender</a>,
+<a href=http://masc.cs.gmu.edu/wiki/ObjViewer>ObjViewer</a>, or <a href=http://p3d.in/>p3d.in</a>. We recommend
+<a href=http://meshlab.sourceforge.net/>MeshLab</a>, since it provides operations to better visualize your output.
+Here are some useful tools once you've imported your mesh:
+<ul>
+  <li>A number of mesh visualization modes are available on the top menu bar, such as Wireframe (which
+  displays the edges of the mesh without the faces), Flat Lines (which displays faces and edges), and Smooth
+  (which uses the provided normals, if any, to shade the surface smoothly).
+  <li>You can apply a texture to your mesh. Select <tt>Filters &gt; Texture &gt; Set Texture</tt>.
+  This will bring up a dialog in which you can enter the filename of the image texture. The texture must
+  be in the same directory as the mesh, and must be in PNG format.
+  <li>You can visualize how the mesh is embedded in <tt>uv</tt>-space via <tt>Render &gt; Show UV Tex Param</tt>.
+  <li>Show the <tt>x</tt>-, <tt>y</tt>-, and <tt>z</tt>-axes via <tt>Render &gt; Show Axis</tt>.
+  <li>View the vertex normals via <tt>Render &gt; Show Normal/Curvature</tt>. Note that if the input mesh
+  does not have vertex normals, MeshLab will add them. Note also that this option displays normals both
+  for each vertex and each face.
+  <li>Show the texture seams via <tt>Render &gt; Show Texture Seams</tt>.
+  <li>You can display information associated with a particular face via <tt>Get Info</tt> (the <em>i</em>
+  symbol in the toolbar), and then selecting a face.
+
+</ul>
 
 
 <p>In addition, the <tt>OBJMesh</tt> class contains the <tt>isValid()</tt> method to check that your
