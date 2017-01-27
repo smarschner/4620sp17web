@@ -310,11 +310,10 @@ has changed from year to year.
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script type="text/javascript">
-    console.log('foo');
     window.onload = function () {
       $('#schedule_content').load('schedule.html');
       projects = [
-        { tag: 'mesh', name: 'Mesh', text: 'Not yet released&hellip;', src: '' },
+        { tag: 'mesh', name: 'Mesh', text: '', src: 'a1mesh.html' },
         { tag: 'ray1', name: 'Ray 1', text: 'Not yet released&hellip;', src: '' },
         { tag: 'scene', name: 'Scene', text: 'Not yet released&hellip;', src: '' },
         { tag: 'shaders', name: 'Shaders', text: 'Not yet released&hellip;', src: '' },
@@ -336,8 +335,13 @@ has changed from year to year.
             </div> \
           </div> \
         '));
-        if (proj.src) $('#' + proj.tag + '_content').load(proj.src)
-        else $('#' + proj.tag + '_content').append(proj.text)
+        if (proj.src) {
+          $('#' + proj.tag + '_content').load(proj.src, function () {
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub, proj.tag + '_content']);
+          });
+        } else {
+          $('#' + proj.tag + '_content').append(proj.text)
+        }
       });
     };
     </script>

@@ -1,4 +1,4 @@
-<h1><strong>PA 1: Meshes</strong></h1>
+<!-- <h1><strong>PA 1: Meshes</strong></h1> -->
 <h3><strong>Due: Wednesday February 8th 2017 (11:59pm)</strong></h3>
 
 <p><strong>Do this project alone or in groups of two, as you prefer. </strong>You can use <a href="https://piazza.com/class/iy7ekv7ao0r1aj">Piazza</a> to help pair yourselves up.
@@ -27,7 +27,7 @@ text format with one line for each vertex and face in the mesh.
 meshes. Suppose we wish to generate a mesh for a loaded die as shown below:
 
 <div class="thumbnails" style="text-align: center">
-    <img src="images/die.png" width="1200px" style="margin-right: 10px">
+    <img src="images/a1/die.png" width="100%" style="margin-right: 10px">
       <div class="caption">
         <strong>4 different views of our loaded die, represented as a triangle mesh.</strong>
       </div>
@@ -37,7 +37,7 @@ meshes. Suppose we wish to generate a mesh for a loaded die as shown below:
 <tt>z</tt> directions. Each face has the following texture applied:
 
 <div class="thumbnails" style="text-align: center">
-    <img src="images/1.png" width="256px" border="1px" style="margin-right: 10px">
+    <img src="images/a1/1.png" width="256px" border="1px" style="margin-right: 10px">
       <div class="caption">
         <strong>The texture to apply to each face of the cube. In <tt>UV</tt>-space, the lower
         left corner of the image is the origin, and the top right corner of the image is the
@@ -131,48 +131,48 @@ below, and writes the resulting mesh to the user-provided output file.
    
    <h5><strong> Cylinder</strong></h5>
 
-<p>The cylinder has radius <tt>1</tt> and height <tt>2</tt> and is centered at
-the origin; its longitudinal axis is aligned with the <tt>y</tt>-axis. It is tessellated with
-<tt>n</tt> divisions arranged radially around the outer surface. The two ends of the cylinder are
-closed by disc-shaped caps parallel to the <tt>xz</tt>-plane. The vertices around the rims of the cylinder are
+<p>The cylinder has radius \(1\) and height \(2\) and is centered at
+the origin; its longitudinal axis is aligned with the \(y\)-axis. It is tessellated with
+\(n\) divisions arranged radially around the outer surface. The two ends of the cylinder are
+closed by disc-shaped caps parallel to the \(xz\)-plane. The vertices around the rims of the cylinder are
 duplicated to allow discontinuities in the normals and texture coordinates.
 Each cap consists of one set of the duplicated vertices around the appropriate
-rim as well as a single point where the cap intersects the <tt>y</tt>-axis. This point is
+rim as well as a single point where the cap intersects the \(y\)-axis. This point is
 incorporated into each triangle that makes up the cap.</p>
 
 
-<p>Along the cylinder's shell (i.e., excluding its caps), texture coordinates in the <tt>u</tt> dimension run from
-<tt>0</tt> to <tt>1</tt> in a counterclockwise direction as viewed from the <tt>+y</tt>
-direction. There is a seam (where <tt>u=0</tt> meets <tt>u=1</tt>) along vertices that have a <tt>z</tt>-coordinate of -1.
-Multiple vertices occur at the same position in space to allow this discontinuity.
-Coordinates run from <tt>0</tt> to <tt>0.5</tt> in the <tt>v</tt> dimension, increasing in the <tt>+y</tt>
+<p>Along the cylinder's shell (i.e., excluding its caps), texture coordinates in the \(u\) dimension run from
+\(0\) to \(1\) in a counterclockwise direction as viewed from the \(+y\)
+direction. There is a seam (where \(u=0\) meets \(u=1\)) along vertices that have a \(z\)-coordinate of \(-1\).
+Multiple texture coordinates occur at the same position in space to allow this discontinuity.
+Coordinates run from \(0\) to \(0.5\) in the \(v\) dimension, increasing in the \(+y\)
 direction. The texture coordinates for the two caps are circles inscribed in
-the upper-left (for the <tt>-y</tt> cap) and upper-right (for the <tt>+y</tt> cap) quadrants of
-the unit square in the <tt>uv</tt>-plane, with the <tt>+u</tt> direction corresponding to the <tt>+x</tt> direction in 3D
-space, and the <tt>+v</tt> direction corresponding to the <tt>-z</tt> direction.
+the upper-left (for the \(-y\) cap) and upper-right (for the \(+y\) cap) quadrants of
+the unit square in the \(uv\)-plane, with the \(+u\) direction corresponding to the \(+x\) direction in 3D
+space, and the \(+v\) direction corresponding to the \(-z\) direction.
 
    <h5><strong> Sphere</strong></h5>
 
-<p>The sphere has radius <tt>1</tt> and is centered at the origin in 3D
-coordinates. It is tessellated in latitude-longitude fashion, with <tt>n</tt> divisions
-around the equator and <tt>m</tt> divisions from pole to pole along each line of
-longitude. The North pole is at <tt>(0,1,0)</tt>, the South pole at <tt>(0,-1,0)</tt>, and
-points on the Greenwich meridian have coordinates <tt>(0,y,z)</tt> with <tt>z &gt; 0</tt>. The
+<p>The sphere has radius \(1\) and is centered at the origin in 3D
+coordinates. It is tessellated in latitude-longitude fashion, with \(n\) divisions
+around the equator and \(m\) divisions from pole to pole along each line of
+longitude. The North pole is at \((0,1,0)\), the South pole at \((0,-1,0)\), and
+points on the Greenwich meridian have coordinates \((0,y,z)\) with \(z &gt; 0\). The
 mesh is generated with vertex normals that are normal to the exact sphere, and
-with texture coordinates <tt>(u,v)</tt> where <tt>u</tt> depends only on longitude, with <tt>u=0</tt> at
-longitude 180 degree West and <tt>u=1</tt> at 180 degrees East, and where <tt>v</tt> depends only on
-latitude, with <tt>v=0</tt> at the South Pole and <tt>v=1</tt> at the North pole. Each
+with texture coordinates \((u,v)\) where \(u\) depends only on longitude, with \(u=0\) at
+longitude 180 degrees West and \(u=1\) at 180 degrees East, and where \(v\) depends only on
+latitude, with \(v=0\) at the South Pole and \(v=1\) at the North pole. Each
 quadrilateral formed by two adjacent longitude lines and two adjacent latitude
-lines is divided on the diagonal to form two triangles. The vertices along the
-180th meridian are duplicated: one vertex has texture coordinate <tt>u=0</tt> and
-the other has texture coordinate <tt>u=1</tt>, to enable correct wrapping of a
-tileable texture image across the seam. The vertices at the poles are
-duplicated <tt>n+1</tt> times, to enable nearly-appropriate texture in the row of
+lines is divided on the diagonal to form two triangles. The texture coordinates along the
+180th meridian are duplicated: one texture coordinate has \(u=0\) and
+the other has \(u=1\), to enable the discontinuity required for correct wrapping of a
+tileable texture image across the seam. The pole has \(n\) different texture
+coordinates, to enable nearly-appropriate texture in the row of
 triangles adjacent to the pole.
 
 <div class="thumbnails" style="text-align: center">
-    <img src="images/a1cylinder-characteristics.png" width="512px" style="margin-right: 10px">
-    <img src="images/a1sphere.png"  width="512px" style="margin-left: 10px">
+    <img src="images/a1/a1cylinder-characteristics.png" height="485px" style="margin-right: 10px">
+    <img src="images/a1/a1sphere-characteristics.png"  height="485px" style="margin-left: 10px">
       <div class="caption">
         <strong>Specs illustration for the cylinder and sphere (for the case of n = 32 and m = 16)</strong>
       </div>
@@ -182,15 +182,15 @@ triangles adjacent to the pole.
 
 <p>A <a href="https://en.wikipedia.org/wiki/Torus">torus</a> is a doughnut-shaped
 surface defined by a major radius, affecting the size of the hole, and a minor radius,
-affecting the thickness of the ring. Your code should create a torus with major radius <tt>1</tt> 
-and minor radius <tt>r</tt> (controlled by the
-<tt>-r</tt> flag with a default of <tt>0.25</tt>).  Its <tt>u</tt> coordinates are
-like the sphere, and the <tt>v</tt> coordinate runs from <tt>0</tt> to <tt>1</tt>
+affecting the thickness of the ring. Your code should create a torus with major radius \(1\) 
+and minor radius \(r\) (controlled by the
+\(-r\) flag with a default of \(0.25\)).  Its \(u\) coordinates are
+like the sphere, and the \(v\) coordinate runs from \(0\) to \(1\)
 with a seam on the inside of the torus, with the direction arranged so that the
 texture is right-reading from the outside (i.e., the texture is not flipped when mapped to the surface).
-Like the sphere, it has a seam on the <tt>-z</tt> half of the <tt>yz</tt>-plane, and it has a similar seam around the
-inner surface of the doughnut hole; vertices along each seam are duplicated twofold and a
-single vertex, at the position <tt>(0, 0, r-1)</tt> where the seams meet, is duplicated fourfold.
+Like the sphere, it has a seam on the \(-z\) half of the \(yz\)-plane, and it has a similar seam around the
+inner surface of the doughnut hole; texture coordinates along each seam are duplicated twofold and a
+single texture coordinate, at the position \((0, 0, r-1)\) where the seams meet, is duplicated fourfold.
 
 <h4>Computing vertex normals</h4>
 
@@ -235,7 +235,7 @@ It contains data structures for dealing with vectors and meshes stored in the OB
 dealing with 2D and 3D vectors respectively. They also contain many methods such as vector
 addition and subtraction, dot and cross products, and component-wise operators. If you need
 to modify a vector in some way, chances are there is already a method that will do what you
-want--there is rarely a need to extract the individual components of a vector.
+want&mdash;there is rarely a need to extract the individual components of a vector.
 
 <p><strong>Please be aware that these classes contain in-place methods, even if they return a vector!</strong>
 This means that it is easy to make a mistake like the following:
@@ -254,6 +254,7 @@ This may seem awkward, but it allows for very concise code when performing many 
   x.add(y).cross(z).normalize();
 </pre>
 When in doubt, please consult the Javadocs. They're there for your benefit!
+</p>
 
 <p>The <tt>meshgen</tt> package contains data structures for operating on OBJ-style meshes.
 They are very similar in structure to the OBJ file itself; vertex positions are stored as <tt>Vector3</tt>s
@@ -265,6 +266,7 @@ may come in handy when generating meshes with seams (i.e., meshes with vertices 
 normals, but not texture coordinates.) However, you are not required to take advantage of such
 optimizations; creating a mesh where each vertex has a unique triad of position, texture coordinate, and normal
 is a valid solution.
+</p>
 
 <p>The <tt>OBJMesh</tt> class provides methods for reading and writing OBJ files; thus, to create a mesh, you simply
 create a new instance of the <tt>OBJMesh</tt> class, fill in the appropriate class members, and call <tt>writeOBJ()</tt>.
@@ -303,6 +305,7 @@ Here are some useful tools once you've imported your mesh:
   symbol in the toolbar), and then selecting a face.
 
 </ul>
+</p>
 
 
 <p>In addition, the <tt>OBJMesh</tt> class contains the <tt>isValid()</tt> method to check that your
@@ -312,17 +315,19 @@ another way to verify your code is correct is to compare your output to referenc
 provided below. To receive full credit, your output must be equivalent to ours, and generate no warnings
 when used with the <tt>verbose</tt> option. (We will have other
 reference meshes to test your code against in addition to the ones provided below.)
+</p>
 
 <p><strong>Download and unpack the following archive: <a href=MeshesTestData.zip>MeshesTestData.zip</a></strong>
 
 <ul class="thumbnails" style="margin-top: 5px; margin-bottom:10px">
   <div class="thumbnail span4">
-    <img src="images/texture-example.png" width="1024px" />
+    <img src="images/a1/texture-example.png" width="1024px" />
     <div class="caption">
 		A final version of a textured torus, sphere, and cylinder
     </div>
   </div>
 </ul>
+</p>
 
 <h4>Extensions</h4>
 
@@ -360,9 +365,12 @@ to create a new data structure which, given the index of a triangle, allows you 
 neighboring faces.
 </li>
 </ul>
+</p>
 
+<p>
 If you implement any of the above options, please provide sample input and/or output with your submission
 that demonstrates that your code is functioning correctly.
+</p>
 
 <h4>Handing in</h4>
 

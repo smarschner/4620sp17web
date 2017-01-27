@@ -27,6 +27,10 @@ h3 {
   margin-top: 2ex;
   margin-bottom: 1ex;
 }
+h4 {
+  margin-top: 4ex;
+  margin-bottom: 2ex;
+}
 a.accordion-toggle h3 {
   color: black;
 }
@@ -42,6 +46,11 @@ p.staff {
 p.coursedesc {
   font-size: 14px;
   margin-top: 5ex;
+}
+
+div.caption {
+  margin-top: 2ex;
+  margin-bottom: 4ex;
 }
 
 table.sched {
