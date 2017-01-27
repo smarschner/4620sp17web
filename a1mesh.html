@@ -341,7 +341,7 @@ alternative tessellation approach to create a more even mesh; see
 <li>The <tt>compare()</tt> method provided in the <tt>OBJMesh</tt> class compares each face in one mesh with
 each face in the other until it finds a match. This naive, brute force algorithm
 is very slow when given large meshes as input. Provide an alternative method with better performance.
-(Can you reduce the complexity from <tt>O(n^2)</tt> to <tt>O(n log n)</tt>?)</li>
+(Can you reduce the complexity from \(O(n^2)\) to \(O(n \log n)\)?)</li>
 <li>Per the OBJ specification, the <tt>OBJFace</tt> class supports faces that are arbitrary polygons, not
 just triangles. However, in many cases, triangles are much nicer to work with. Extend your <tt>MeshGen</tt>
 utility to generate a triangle mesh from an input mesh with polygonal faces. That is, take all faces that have
