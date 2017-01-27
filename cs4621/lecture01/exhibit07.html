@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>CS 4621: Lecture 1 -- Exhibit #7: Drawing Point Primitives</title>
+
+    <!-- Bootstrap -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" href="../css/jquery-ui.min.css">
+
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+    });
+
+    </script>
+    <!-- MathJax -->
+    <script type="text/javascript" async
+            src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+</head>
+<body>
+<div class="container">
+    <h1>Exhibit #7: Drawing Point Primitives</h1>
+
+    <div class="row">
+        <canvas id="webglCanvas" style="border: none; background-color: black;" width="512" height="512"></canvas>
+    </div>
+
+    <h2>What We Did</h2>
+    <ul>
+        <li>We drew something: the simplest primitives, points.</li>
+        <li>Let's look at the vertex shader.
+            <pre class="prettyprint">attribute vec3 vert_position;
+
+void main() {
+    gl_PointSize = 10.0;
+    gl_Position = vec4(vert_position, 1.0);
+}</pre>
+            <ul>
+                <li>The code looks pretty much like the C language.</li>
+                <li>The line <code>attribute vec3 vert_position;</code> declares that the
+                    vertex to be processed has an attribute called <code>vert_position</code>.
+                    It is a <code>vec3</code>, a vector with 3 components (xyz).
+                </li>
+                <li>The vertex shader must declare the <code>main()</code> function that returns nothing.</li>
+                <li>It's main job is to set the <code>gl_Position</code> variable, which is of type <code>vec4</code>,
+                    i.e. a vector with 4 components (xyzw).
+                </li>
+                <li>To create a <code>vec4</code>, you use a constructor:
+                    <ul>
+                        <li>Typically, you give it four numbers; e.g. <code>vec4(1.0, 2.0, 3.0, 4.0)</code>.</li>
+                        <li>In the code, <code>vec4(vert_position, 1.0)</code> where <code>vert_position</code>
+                            is a <code>vec3</code>. So, a <code>vec3</code> can replace 3 numbers in the constructor.
+                        </li>
+                        <li><code>vec4(1.0, vert_position)</code> is okay syntactically as well.</li>
+                    </ul>
+                </li>
+                <li>
+                    <code>gl_Position</code> is a point in <b>clip space</b>, which has 4 dimensions.
+                    <ul>
+                        <li>We'll learn in CS 4620 why it's 4-dimensional instead of 3.</li>
+                        <li>The point in clip space will be turned into a point in <b>normalized device coordinate
+                            (NDC)</b>,
+                            which is used by the rasterizer to chop the primitives into fragments.
+                        </li>
+                        <li>The relationship between <code>gl_Position</code> and the NDC is as follows:
+                            $$ NDC.x = \frac{gl\_Position.x}{gl\_Position.w},
+                            NDC.y = \frac{gl\_Position.y}{gl\_Position.w},
+                            NDC.z = \frac{gl\_Position.z}{gl\_Position.w}$$
+                            That is, the xyz-components of the NDC is obtained by dividing the same components
+                            of <code>gl_Position</code> by the $w$-component of <code>gl_Position</code>.
+                            This is called the <b>perspective divide</b>, which we will learn when we talk about
+                            projective transformations in CS 4620.
+                        </li>
+                        <li>This means that, if the $w$-component of <code>gl_Position</code> is 1, then
+                            the NDC is just the xyz-components of <code>gl_Position</code> unchanged.
+                            This is basically what happens in the vertex shader.
+                            <b>It sets the NDC to <code>vert_position</code></b>.
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    The NDC determines what is visible and what is not visible.
+                    <ul>
+                        <li>For something (mainly a fragment) to be visible, its NDC must be in the volume
+                            $[-1,1] \times [-1,1] \times [-1,1]$
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    The area of the screen that is drawn to is called the <b>viewport</b>.
+                    <ul>
+                        <li>By default, the viewport is the whole canvas.</li>
+                        <li>In NDC:
+                            <ul>
+                                <li>The left edge of the viewport has $x$-coordinate of $-1$.</li>
+                                <li>The right edge of the viewport has $x$-coordinate of $1$.</li>
+                                <li>The bottom edge of the viewport has $y$-coordinate of $-1$.</li>
+                                <li>The top edge of the viewport has $y$-coordinate of $1$.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li>The $z$-coordinate of the NDC indicates the depth.
+                    <ul>
+                        <li>The value of $-1$ is the nearest that can be seen.</li>
+                        <li>The value of $1$ is the farthest that can be seen.</li>
+                    </ul>
+                </li>
+                <li>When rendering points, you can also set <code>gl_PointSize</code>, which is a <code>float</code>.
+                </li>
+                <li>Floating point numbers in GLSL does not require the suffix <code>f</code> like in C or in Java.
+                    <ul>
+                        <li>That is, you write <code>1.0</code> instead of <code>1.0f</code>.</li>
+                        <li>However, unlike the two languages, these floating point literals are single precision (4
+                            bytes),
+                            not double (8 bytes).
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li>
+            Let's look at the fragment shader.
+            <pre class="prettyprint">precision highp float;
+
+void main() {
+    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+}</pre>
+            <ul>
+                <li>The first line, <code>precision highp float;</code>, indicates that we want to
+                use high precision mathematics when dealing with floating-point numbers.
+                    <ul>
+                        <li>Other options include <code>mediump</code> and <code>lowp</code>.</li>
+                        <li>Options lower than <code>highp</code> are suitable for less powerful devices
+                        such as cellphones.</li>
+                    </ul>
+                </li>
+                <li>
+                    The fragment shader also has a <code>main</code> function, just like the vertex shader.
+                </li>
+                <li>
+                    Its main job is to set the <code>gl_FragColor</code> variable, which is the color of the
+                    fragment being processed.
+                    <ul>
+                        <li>This is a <code>vec4</code> (rgba).</li>
+                        <li>So, this code basically says, "whatever fragment gets here, make it white."</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li>
+            To draw primitives:
+            <ul>
+                <li>We need to create <b>vertex buffer</b> to hold vertex attributes.</li>
+                <li>Then, we need to associate the buffer with the attribute in the program.</li>
+                <li>Then, we call <code>gl.drawArrays</code> to actually draw the primitives.</li>
+            </ul>
+            This process has way too many steps, so it calls for some sort of abstraction.
+            We hope you come up with something to make your life easier.
+        </li>
+        <li>We list here links to documents to some commands that are essential to the above process:
+            <ul>
+                <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer"><code>gl.vertexAttribPointer</code></a></li>
+                <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawArrays"><code>gl.drawArrays</code></a></li>
+            </ul>
+        </li>
+        <li>Here are the primitives that WebGL can draw. (Image source: <a href="http://http.developer.nvidia.com/CgTutorial/cg_tutorial_chapter01.html">CG Tutorial</a>)<br>
+            <img src="fig1_4.jpg" alt="Primitives that WebGL can draw"><br>
+        </li>
+    </ul>
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="../js/jquery-3.1.1.min.js"></script>
+<script src="../js/jquery-ui.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="../js/bootstrap.min.js"></script>
+<!-- Google Code Prettifier -->
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+<script id="vertexShader" type="x-shader/x-vertex">
+    attribute vec3 vert_position;
+
+    void main() {
+        gl_PointSize = 10.0;
+        gl_Position = vec4(vert_position, 1.0);
+    }
+
+</script>
+
+<script id="fragmentShader" type="x-shader/x-fragment">
+    precision highp float;
+
+    void main() {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    }
+</script>
+
+<script>
+    function initializeWebGL(canvasName) {
+        var canvas = $("#" + canvasName);
+        // Getting WebGL context the right way
+        var gl = null;
+        try {
+            gl = canvas[0].getContext("experimental-webgl");
+            if (!gl) {
+                gl = canvas[0].getContext("webgl");
+            }
+        } catch (error) {
+            // NO-OP
+        }
+        if (!gl) {
+            alert("Could not get WebGL context!");
+            throw new Error("Could not get WebGL context!");
+        }
+        return gl;
+    }
+
+    function createShader(gl, shaderScriptId) {
+        var shaderScript = $("#" + shaderScriptId);
+        var shaderSource = shaderScript[0].text;
+        var shaderType = null;
+        if (shaderScript[0].type == "x-shader/x-vertex") {
+            shaderType = gl.VERTEX_SHADER;
+        } else if (shaderScript[0].type == "x-shader/x-fragment") {
+            shaderType = gl.FRAGMENT_SHADER;
+        } else {
+            throw new Error("Invalid shader type: " + shaderScript[0].type)
+        }
+        var shader = gl.createShader(shaderType);
+        gl.shaderSource(shader, shaderSource);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            var infoLog = gl.getShaderInfoLog(shader);
+            gl.deleteShader(shader);
+            throw new Error("An error occurred compiling the shader: " + infoLog);
+        } else {
+            return shader;
+        }
+    }
+
+    function createGlslProgram(gl, vertexShaderId, fragmentShaderId) {
+        var program = gl.createProgram();
+        gl.attachShader(program, createShader(gl, vertexShaderId));
+        gl.attachShader(program, createShader(gl, fragmentShaderId));
+        gl.linkProgram(program);
+        gl.validateProgram(program);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            var infoLog = gl.getProgramInfoLog(program);
+            gl.deleteProgram(program);
+            throw new Error("An error occurred linking the program: " + infoLog);
+        } else {
+            return program;
+        }
+    }
+
+    var gl = initializeWebGL("webglCanvas");
+    var program = createGlslProgram(gl, "vertexShader", "fragmentShader");
+
+    // ****************************
+    // * Creating a vertex buffer *
+    // ****************************
+    //
+    // Step 1: Create an array containing the data.
+    var vertexData = [
+        -0.5, -0.5, 0.0,
+        0.5, -0.5, 0.0,
+        0.5, 0.5, 0.0
+    ];
+    // Step 2: Create a Float32Array from the data.
+    var vertexArray = new Float32Array(vertexData);
+    // Step 3: Create a buffer object.
+    var vertexBuffer = gl.createBuffer();
+    // Step 4: Bind the buffer to the ARRAY_BUFFER target.
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    // Step 5: Transfer the buffer data.
+    gl.bufferData(gl.ARRAY_BUFFER, vertexArray, gl.STATIC_DRAW);
+    // Step 6: Unbind the buffer.
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    function updateWebGL() {
+        gl.clearColor(0.0, 0.0, 0.0, 0.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        // ****************************
+        // * Drawing point primitives *
+        // ****************************
+        //
+        // Step 1: Use the program.
+        gl.useProgram(program);
+        // Step 2: Get location of the attribute we want to assign with the data from the vertex buffer.
+        var vertPositionLocation = gl.getAttribLocation(program, "vert_position");
+        // Step 3: Enable the attribute.
+        gl.enableVertexAttribArray(vertPositionLocation);
+        // Step 4: Bind the buffer we want to use.
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        // Step 5: Assign the attribute to the bound buffer.
+        gl.vertexAttribPointer(vertPositionLocation, 3, gl.FLOAT, false, 3 * 4, 0);
+        // Step 6: Unbind the buffer.
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        // Step 7: Draw.
+        gl.drawArrays(gl.POINTS, 0, 3);
+        // Step 8: Unuse the program.
+        gl.useProgram(null);
+
+        window.requestAnimationFrame(updateWebGL);
+    }
+
+    window.requestAnimationFrame(updateWebGL);
+</script>
+
+</body>
+</html>
