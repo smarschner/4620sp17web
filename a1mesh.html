@@ -239,7 +239,7 @@ single vertex, at the position \((0, 0, r-1)\) where the seams meet, shares 4 te
 
 <p>We have provided a framework to help you get stared.
 The framework is available on a public <a href="https://github.com/smarschner/cs4620-17fa-frameworks">Git repository</a>.
-If you have not used Git before, you can follow the tutorial <a href=https://www.atlassian.com/git/tutorial>
+If you have not used Git before, you can follow the tutorial <a href=https://git-scm.com/docs/gittutorial>
 here</a>, or ask a TA for assistance. We encourage you to use version control though
 <strong>we request that you refrain from publicly sharing your class repository.</strong>
 Future assignments will be distributed by pushing new commits to the repository linked above,
@@ -300,8 +300,16 @@ retrieve the appropriate vectors from the mesh data, taking the indexing issues 
 <h4>Testing your program</h4>
 
 <p>Since your program just writes a file full of inscrutable numbers, you need some way to look at the results.
-There are a number of programs to visualize meshes, for example <a href="http://www.blender.org/download/">Blender</a>,
-<a href="http://masc.cs.gmu.edu/wiki/ObjViewer">ObjViewer</a>, or <a href="http://p3d.in/">p3d.in</a>. We recommend
+We have provided a mesh visualization tool that works in your browser, available
+<a href="http://www.cs.cornell.edu/courses/cs4620/2017sp/demos/obj_viewer/viewer.html">here</a>.
+To view a mesh, click "Select OBJ File" (or just drag an OBJ file onto the window). If the mesh has texture
+coordinates, you can upload an image texture by clicking "Select Texture File" (or, again, just drag the image
+file onto the window). The viewer optionally shows the wireframe structure and vertex normals of the mesh.
+Coordinate axes may also be displayed; \(+x\) is red, \(+y\) is green, and \(+z\) is blue. If triangle faces are wound
+in the wrong direction, they appear yellow and will not be textured.
+
+<p>There are a number of additional programs to visualize meshes, for example <a href="http://www.blender.org/download/">Blender</a>,
+<a href="http://masc.cs.gmu.edu/wiki/ObjViewer">ObjViewer</a>, or <a href="http://p3d.in/">p3d.in</a>. Of these, we recommend
 <a href="http://meshlab.sourceforge.net/">MeshLab</a>, since it provides operations to better visualize your output.
 Here are some useful tools once you've imported your mesh:
 <ul>
