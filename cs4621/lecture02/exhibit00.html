@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>CS 4621: Lecture 1 -- Exhibit #10: Using Array Index Buffer</title>
+    <title>CS 4621: Lecture 2 -- Exhibit #0: Get Info about Vertex Attributes</title>
 
     <!-- Bootstrap -->
     <link href="../css/bootstrap.min.css" rel="stylesheet">
@@ -23,7 +23,6 @@
     MathJax.Hub.Config({
       tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
     });
-
     </script>
     <!-- MathJax -->
     <script type="text/javascript" async
@@ -32,27 +31,35 @@
 </head>
 <body>
 <div class="container">
-    <h1>Exhibit #11: Setting the Viewport</h1>
+    <h1>Exhibit #0: Getting Info about Vertex Attributes</h1>
 
-    <div class="row">
-        <canvas id="webglCanvas" style="border: none; background-color: black;" width="512" height="512"></canvas>
-    </div>
+    <canvas id="webglCanvas" style="border: none; background-color: black;" width="512" height="512"></canvas>
+
+    <h2>Vertex Attributes</h2>
+
+    <div id="vertexAttribDiv"></div>
 
     <h2>What We Did</h2>
+
     <ul>
-        <li>Again, the <b>viewport</b> is the area on the screen that is drawn upon.</li>
-        <li>We can set the viewport with the <code>gl.viewport(left, bottom, width, height)</code> command.
+        <li>You can get the number of vertex attributes that are <i>used</i> with
+            <code>gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES)</code>.
             <ul>
-                <li>The units of the arguments are pixels.</li>
-                <li>The values <code>left</code> and <code>bottom</code> are the following coordinate system:
-                    <ul>
-                        <li>$(0,0)$ is the bottom-left corner.</li>
-                        <li>$(canvas.width,canvas.height)$ is the top-right corner.</li>
-                    </ul>
-                </li>
+                <li>The GLSL compiler will not include attributes that are declared but not used in your program.</li>
             </ul>
         </li>
-        <li>This only affects the primitives drawn.  This does not affect the clearing of the screen.</li>
+        <li>You can get info about an attribute with <code>gl.getActiveAttrib(program, &lt;index-of-the-attribute&gt;)</code>
+            <ul>
+                <li>Index goes from 0 to <code>gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES)-1</code></li>
+                <li>You get an object that contains the name, size (always 1), and type of the attribute.</li>
+            </ul>
+        </li>
+        <li>You can get the index of an attribute with the given name with
+            <code>gl.getAttribLocation(program, &lt;attribute-name&gt;)</code>
+        </li>
+        <li><b>Important:</b> You need to check whether an attribute exist before enabling or binding
+            something to it.</li>
+        <li><b>Hint:</b> Use these commands to build better abstractions around vertex attributes.</li>
     </ul>
 </div>
 
@@ -61,14 +68,21 @@
 <script src="../js/jquery-ui.min.js"></script>
 <!-- Include all compiled plugins (below), or include individual files as needed -->
 <script src="../js/bootstrap.min.js"></script>
+<!-- Google Code Prettifier -->
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
 
 <script id="vertexShader" type="x-shader/x-vertex">
-    attribute vec3 vert_position;
+    attribute vec3  vert_position;
+    attribute vec2  vert_texCoord;
+    attribute vec3  vert_normal;
+    attribute vec4  vert_tangent;
+    attribute float vert_size;
 
     void main() {
-        gl_Position = vec4(vert_position, 1.0);
+        vec3 value = vert_position + vert_texCoord.xyx + vert_normal + vert_tangent.xyz;
+        value *= vert_size;
+        gl_Position = vec4(value, 1.0);
     }
-
 </script>
 
 <script id="fragmentShader" type="x-shader/x-fragment">
@@ -140,49 +154,42 @@
     var gl = initializeWebGL("webglCanvas");
     var program = createGlslProgram(gl, "vertexShader", "fragmentShader");
 
-    var vertexData = [
-        -0.5, -0.5, 0.0,
-        0.5, -0.5, 0.0,
-        0.5, 0.5, 0.0,
-        -0.5, 0.5, 0.0
-    ];
-    var vertexArray = new Float32Array(vertexData);
-    var vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, vertexArray, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    var typeNames = {
+        "35664": "FLOAT_VEC2",
+        "35665": "FLOAT_VEC3",
+        "35666": "FLOAT_VEC4",
+        "5126": "FLOAT"
+    };
 
-    var indexData = [
-        0, 1, 2, 0, 2, 3
-    ]
-    var indexArray = new Uint16Array(indexData);
-    var indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexArray, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-
-    function updateWebGL() {
-        gl.clearColor(0.0, 0.0, 0.0, 0.0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-
-        // Setting the viewport.
-        gl.viewport(256,256,256,256);
-
-        gl.useProgram(program);
-        var vertPositionLocation = gl.getAttribLocation(program, "vert_position");
-        gl.enableVertexAttribArray(vertPositionLocation);
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-        gl.vertexAttribPointer(vertPositionLocation, 3, gl.FLOAT, false, 3*4, 0);
-        gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-        gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-        gl.useProgram(null);
-
-        window.requestAnimationFrame(updateWebGL);
+    var attribCount = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+    var attribs = [];
+    for (var i = 0; i < attribCount; i++) {
+        var attrib = gl.getActiveAttrib(program, i);
+        attrib.location = gl.getAttribLocation(program, attrib.name);
+        attribs.push(attrib);
     }
 
-    window.requestAnimationFrame(updateWebGL);
+    $("#vertexAttribDiv").html(
+        "<p>There are " + attribCount + " active vertex attributes.</p>" +
+        "<table class='table table-striped'>" +
+        "<thead>" +
+        "<th><b>Location</b></th>" +
+        "<th><b>Name</b></th>" +
+        "<th><b>Size</b></th>" +
+        "<th><b>Type</b></th>" +
+        "<th><b>Type Name</b></th>" +
+        "</thead>" +
+        attribs.map(function (attrib) {
+            return "<tr>"
+                + "<td>" + attrib.location + "</td>"
+                + "<td>" + attrib.name + "</td>"
+                + "<td>" + attrib.size + "</td>"
+                + "<td>" + attrib.type + "</td>"
+                + "<td>" + typeNames[String(attrib.type)] + "</td>"
+                + "</tr>"
+        }).join("") +
+        "</table>"
+    )
 </script>
 
 </body>

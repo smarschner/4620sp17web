@@ -114,7 +114,7 @@
                 "<thead><th>Name</th><th>Value</th></thead>" +
                 tableRows.join("") +
                 "</table>";
-        $("#paramsTable").html(paramsTableHtml);
+        $("#paramsTable")[0].html(paramsTableHtml);
 
         // Fetch and list supported extensions.
         var extensions = gl.getSupportedExtensions();

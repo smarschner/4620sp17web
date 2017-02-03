@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>CS 4621: Lecture 2 -- Exhibit #1: Fun with Vertex Shader</title>
+
+    <!-- Bootstrap -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" href="../css/jquery-ui.min.css">
+</head>
+<body>
+<div class="container">
+    <h1>Exhibit #1: Fun with Vertex Shaders</h1>
+
+    <h2>Sine Curve</h2>
+    <canvas id="webglCanvas00" style="border: none; background-color: black;" width="512" height="128"></canvas>
+
+    <h2>Cardioid</h2>
+    <canvas id="webglCanvas01" style="border: none; background-color: black;" width="512" height="512"></canvas>
+
+    <h2>Morton Code</h2>
+    <canvas id="webglCanvas02" style="border: none; background-color: black;" width="512" height="512"></canvas>
+
+    <h2>What We Did</h2>
+
+    <ul>
+        <li>The main purpose of a vertex shader is to transform vertex position.</li>
+        <li>This means you can use the vertex shader to draw graphs and complex shapes.</li>
+        <li>In these examples, we use a new primitive <code>gl.LINE_STRIP</code>.</li>
+        <li>In all the examples, the vertex attributes are just linearly spaced numbers in some intervals.</li>
+        <li>I encountered a lot of limitations when programming the Morton Code renderer.
+            <ul>
+                <li>There's no "mod" operator (<code>%</code>), but there is <code>mod</code> function,
+                    which only applies to <code>float</code>s.</li>
+                <li>In the vertex shader, you cannot write a for loop whose number of iteration is not known
+                    at compile time.</li>
+            </ul>
+        </li>
+        <li>This exhibit also shows how to run multiple WebGL instances inside the same page.
+            <ul>
+                <li><b>Important:</b> Each canvas must have its own WebGL context and rendering loop.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="../js/jquery-3.1.1.min.js"></script>
+<script src="../js/jquery-ui.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="../js/bootstrap.min.js"></script>
+<!-- Google Code Prettifier -->
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+<script id="fragmentShader" type="x-shader/x-fragment">
+    precision highp float;
+
+    void main() {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    }
+</script>
+
+<script id="vertexShader00" type="x-shader/x-vertex">
+    attribute float t;
+
+    const float PI = 3.14159265359;
+
+    void main() {
+        gl_Position = vec4(t, 0.8*sin(2.0*5.0*PI*t), 0.0, 1.0);
+    }
+</script>
+
+<script id="vertexShader01" type="x-shader/x-vertex">
+    attribute float t;
+
+    void main() {
+        float x = 0.25 * (2.0*cos(t) - cos(2.0*t));
+        float y = 0.25 * (2.0*sin(t) - sin(2.0*t));
+        gl_Position = vec4(x, y, 0.0, 1.0);
+    }
+</script>
+
+<script id="vertexShader02" type="x-shader/x-vertex">
+    attribute float t;
+
+    int andPower2(int x, int power2) {
+        float val = float(x / power2);
+        return int(mod(val,2.0)) * power2;
+    }
+
+    void main() {
+        int it = int(t);
+        int ix = andPower2(it,1) + andPower2(it,4)/2 + andPower2(it,16)/4 + andPower2(it,64)/8;
+        int iy = andPower2(it,2)/2 + andPower2(it,8)/4 + andPower2(it,32)/8 + andPower2(it,128)/16;
+        float x = -1.0 + 2.0 * ((float(ix)+0.5)/16.0);
+        float y = -1.0 + 2.0 * ((float(iy)+0.5)/16.0);
+        gl_Position = vec4(x, y, 0.0, 1.0);
+    }
+</script>
+
+
+<script>
+    function initializeWebGL(canvasName) {
+        var canvas = $("#" + canvasName);
+        // Getting WebGL context the right way
+        var gl = null;
+        try {
+            gl = canvas[0].getContext("experimental-webgl");
+            if (!gl) {
+                gl = canvas[0].getContext("webgl");
+            }
+        } catch (error) {
+            // NO-OP
+        }
+        if (!gl) {
+            alert("Could not get WebGL context!");
+            throw new Error("Could not get WebGL context!");
+        }
+        return gl;
+    }
+
+    function createShader(gl, shaderScriptId) {
+        var shaderScript = $("#" + shaderScriptId);
+        var shaderSource = shaderScript[0].text;
+        var shaderType = null;
+        if (shaderScript[0].type == "x-shader/x-vertex") {
+            shaderType = gl.VERTEX_SHADER;
+        } else if (shaderScript[0].type == "x-shader/x-fragment") {
+            shaderType = gl.FRAGMENT_SHADER;
+        } else {
+            throw new Error("Invalid shader type: " + shaderScript[0].type)
+        }
+        var shader = gl.createShader(shaderType);
+        gl.shaderSource(shader, shaderSource);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            var infoLog = gl.getShaderInfoLog(shader);
+            gl.deleteShader(shader);
+            throw new Error("An error occurred compiling the shader: " + infoLog);
+        } else {
+            return shader;
+        }
+    }
+
+    function createGlslProgram(gl, vertexShaderId, fragmentShaderId) {
+        var program = gl.createProgram();
+        gl.attachShader(program, createShader(gl, vertexShaderId));
+        gl.attachShader(program, createShader(gl, fragmentShaderId));
+        gl.linkProgram(program);
+        gl.validateProgram(program);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            var infoLog = gl.getProgramInfoLog(program);
+            gl.deleteProgram(program);
+            throw new Error("An error occurred linking the program: " + infoLog);
+        } else {
+            return program;
+        }
+    }
+
+    function runCanvas(numberString, min, max, count) {
+        var gl = initializeWebGL("webglCanvas" + numberString);
+        var program = createGlslProgram(gl, "vertexShader" + numberString, "fragmentShader");
+
+        var vertexData = [];
+        for (var i=0; i<count; i++) {
+            vertexData.push(min + (max-min)*i/(count-1));
+        }
+        var vertexArray = new Float32Array(vertexData);
+        var vertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, vertexArray, gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+        function updateWebGL() {
+            gl.clearColor(0.0, 0.0, 0.0, 0.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            gl.useProgram(program);
+            var tLocation = gl.getAttribLocation(program, "t");
+            gl.enableVertexAttribArray(tLocation);
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            gl.vertexAttribPointer(tLocation, 1, gl.FLOAT, false, 4, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+            gl.drawArrays(gl.LINE_STRIP, 0, count);
+            gl.useProgram(null);
+
+            window.requestAnimationFrame(updateWebGL);
+        }
+
+        window.requestAnimationFrame(updateWebGL);
+    }
+
+    runCanvas("00", -1.0, 1.0, 256);
+    runCanvas("01", 0, 2*Math.PI, 256);
+    runCanvas("02", 0, 255, 256);
+</script>
+
+</body>
+</html>

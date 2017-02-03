@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>CS 4621: Lecture 2 -- Exhibit #2: Uniform Variables</title>
+
+    <!-- Bootstrap -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" href="../css/jquery-ui.min.css">
+
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+    });
+
+
+    </script>
+    <!-- MathJax -->
+    <script type="text/javascript" async
+            src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+</head>
+<body>
+<div class="container">
+    <h1>Exhibit #2: Uniform Variables</h1>
+
+    <canvas id="webglCanvas" style="border: none; background-color: black;" width="512" height="512"></canvas>
+
+    <div class="row" style="margin-top: 15px;">
+        <div style="text-align: right;" class="col-md-1">R:</div>
+        <div class="col-sm-2" id="rSlider"></div>
+    </div>
+    <div class="row" style="margin-top: 15px;">
+        <div style="text-align: right;" class="col-md-1">G:</div>
+        <div class="col-sm-2" id="gSlider"></div>
+    </div>
+    <div class="row" style="margin-top: 15px;">
+        <div style="text-align: right;" class="col-md-1">B:</div>
+        <div class="col-sm-2" id="bSlider"></div>
+    </div>
+    <div class="row" style="margin-top: 15px;">
+        <div style="text-align: right;" class="col-md-1">Amplitude:</div>
+        <div class="col-sm-2" id="amplitudeSlider"></div>
+    </div>
+    <div class="row" style="margin-top: 15px;">
+        <div style="text-align: right;" class="col-md-1">Period:</div>
+        <div class="col-sm-2" id="periodSlider"></div>
+    </div>
+    <div class="row" style="margin-top: 15px;">
+        <div style="text-align: right;" class="col-md-1">Period:</div>
+        <div class="col-sm-2" id="phaseSlider"></div>
+    </div>
+
+    <h2>What We Did</h2>
+
+    <ul>
+        <li>There are three ways you can pass information to a GLSL program.
+            <ul>
+                <li>Vertex attributes (covered)</li>
+                <li>Uniform variables (this exhibit)</li>
+                <li>Textures (wait 4 more weeks)</li>
+            </ul>
+        </li>
+        <li>Uniform variables are like global variables in a GLSL program.
+            <ul>
+                <li>You can declare one in the vertex shader, and another with the same name in the fragment shader.
+                    These two are actually the same vraible.</li>
+            </ul>
+        </li>
+        <li>Their values are the same for the whole during the program runs, until you set them
+            to other values from Javascript.</li>
+        <li>Declare one outside the scope of any function: <code>uniform &lt;type&gt; &lt;name&gt;;</code>
+<pre class="prettyprint"><code class="language-glsl">uniform float amplitude;
+uniform float period;
+uniform float phase;
+uniform vec3 color;</code></pre>
+        </li>
+        <li>To set a uniform's value:
+            <ul>
+                <li>First, use your program.</li>
+                <li>Get the uniform location with <code>gl.getUniformLocation(&lt;program&gt;, &lt;uniform-name&gt;)</code>.</li>
+                <li>Use <code>gl.uniform[1234][fi](&lt;location&gt;, ...)</code> to set the uniform value.
+                    <ul>
+                        <li><code>float</code> uniform --> <code>gl.uniform1f(&lt;location&gt;, &lt;value&gt;)</code></li>
+                        <li><code>vec2</code> uniform --> <code>gl.uniform2f(&lt;location&gt;, &lt;value-1&gt;, &lt;value-2&gt;)</code></li>
+                        <li><code>vec3</code> uniform --> <code>gl.uniform3f(&lt;location&gt;, &lt;value-1&gt;, &lt;value-2&gt;, &lt;value-3&gt;)</code></li>
+                        <li><code>vec4</code> uniform --> <code>gl.uniform4f(&lt;location&gt;, &lt;value-1&gt;, &lt;value-2&gt;, &lt;value-3&gt;, &lt;value-4&gt;)</code></li>
+                        <li><code>int</code> uniform --> <code>gl.uniform1i(&lt;location&gt;, &lt;value&gt;)</code></li>
+                        <li>And so on...</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li>Set all uniforms before you draw anything.  Otherwise, their values are not updated when drawing.</li>
+        <li>Uniforms can have matrix types, but we will talk about them in 2 weeks.</li>
+    </ul>
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="../js/jquery-3.1.1.min.js"></script>
+<script src="../js/jquery-ui.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="../js/bootstrap.min.js"></script>
+<!-- Google Code Prettifier -->
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+<script id="vertexShader" type="x-shader/x-vertex">
+    attribute float t;
+
+    const float PI = 3.14159265359;
+
+    uniform float amplitude;
+    uniform float period;
+    uniform float phase;
+
+    void main() {
+        float x = t;
+        float y = amplitude * sin(2.0*PI*x/period + phase);
+        gl_Position = vec4(x, y, 0.0, 1.0);
+    }
+
+</script>
+
+<script id="fragmentShader" type="x-shader/x-fragment">
+    precision highp float;
+
+    uniform vec3 color;
+
+    void main() {
+        gl_FragColor = vec4(color, 1.0);
+    }
+</script>
+
+<script>
+    var rgbSliderNames = ["rSlider", "gSlider", "bSlider"];
+    rgbSliderNames.forEach(function (name) {
+        $("#" + name).slider({
+            min: 0,
+            max: 255,
+            value: 255
+        });
+    });
+    $("#amplitudeSlider").slider({
+        min: 0,
+        max: 1000,
+        value: 800
+    });
+    $("#periodSlider").slider({
+        min: 0,
+        max: 2000,
+        value: 200
+    });
+    $("#phaseSlider").slider({
+        min: -1000,
+        max: 1000,
+        value: 0
+    });
+
+    function initializeWebGL(canvasName) {
+        var canvas = $("#" + canvasName);
+        // Getting WebGL context the right way
+        var gl = null;
+        try {
+            gl = canvas[0].getContext("experimental-webgl");
+            if (!gl) {
+                gl = canvas[0].getContext("webgl");
+            }
+        } catch (error) {
+            // NO-OP
+        }
+        if (!gl) {
+            alert("Could not get WebGL context!");
+            throw new Error("Could not get WebGL context!");
+        }
+        return gl;
+    }
+
+    function createShader(gl, shaderScriptId) {
+        var shaderScript = $("#" + shaderScriptId);
+        var shaderSource = shaderScript[0].text;
+        var shaderType = null;
+        if (shaderScript[0].type == "x-shader/x-vertex") {
+            shaderType = gl.VERTEX_SHADER;
+        } else if (shaderScript[0].type == "x-shader/x-fragment") {
+            shaderType = gl.FRAGMENT_SHADER;
+        } else {
+            throw new Error("Invalid shader type: " + shaderScript[0].type)
+        }
+        var shader = gl.createShader(shaderType);
+        gl.shaderSource(shader, shaderSource);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            var infoLog = gl.getShaderInfoLog(shader);
+            gl.deleteShader(shader);
+            throw new Error("An error occurred compiling the shader: " + infoLog);
+        } else {
+            return shader;
+        }
+    }
+
+    function createGlslProgram(gl, vertexShaderId, fragmentShaderId) {
+        var program = gl.createProgram();
+        gl.attachShader(program, createShader(gl, vertexShaderId));
+        gl.attachShader(program, createShader(gl, fragmentShaderId));
+        gl.linkProgram(program);
+        gl.validateProgram(program);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            var infoLog = gl.getProgramInfoLog(program);
+            gl.deleteProgram(program);
+            throw new Error("An error occurred linking the program: " + infoLog);
+        } else {
+            return program;
+        }
+    }
+
+    var gl = initializeWebGL("webglCanvas");
+    var program = createGlslProgram(gl, "vertexShader", "fragmentShader");
+
+    var min = -1.0;
+    var max = 1.0;
+    var count = 256;
+    var vertexData = [];
+    for (var i = 0; i < count; i++) {
+        vertexData.push(min + (max - min) * i / (count - 1));
+    }
+    var vertexArray = new Float32Array(vertexData);
+    var vertexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, vertexArray, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    function updateWebGL() {
+        var rgb = rgbSliderNames.map(function (name) {
+            return $("#" + name).slider("value") / 255.0;
+        });
+        var amplitude = $("#amplitudeSlider").slider("value") / 1000.0;
+        var period = $("#periodSlider").slider("value") / 1000.0;
+        var phase = $("#phaseSlider").slider("value") / 1000.0 * 2 * Math.PI;
+
+        gl.clearColor(0.0, 0.0, 0.0, 0.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        gl.useProgram(program);
+
+        // ******************
+        // * Using uniforms *
+        // ******************
+        // Step 1: Get its location.
+        var colorLocation = gl.getUniformLocation(program, "color");
+        // Step 2: Set its value using the right function.
+        gl.uniform3f(colorLocation, rgb[0], rgb[1], rgb[2]);
+
+        var amplitudeLocation = gl.getUniformLocation(program, "amplitude");
+        gl.uniform1f(amplitudeLocation, amplitude);
+
+        var periodLocation = gl.getUniformLocation(program, "period");
+        gl.uniform1f(periodLocation, period);
+
+        var phaseLocation = gl.getUniformLocation(program, "phase");
+        gl.uniform1f(phaseLocation, phase);
+
+        var tLocation = gl.getAttribLocation(program, "t");
+        gl.enableVertexAttribArray(tLocation);
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        gl.vertexAttribPointer(tLocation, 1, gl.FLOAT, false, 4, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl.drawArrays(gl.LINE_STRIP, 0, count);
+        gl.useProgram(null);
+
+        window.requestAnimationFrame(updateWebGL);
+    }
+
+    window.requestAnimationFrame(updateWebGL);
+
+</script>
+
+</body>
+</html>

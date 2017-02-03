@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>CS 4621: Lecture 2</title>
+
+    <!-- Bootstrap -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+<div class="container">
+    <h1>CS 4621: Lecture 2</h1>
+
+    <section>
+        <h2>Recap</h2>
+
+        <ul>
+            <li>To use WebGL
+                <ul>
+                    <li>Create a canvas.</li>
+                    <li>From it, get a WebGL context.</li>
+                    <li>Setup a rendering loop with <code>window.requestAnimationFrame</code>.</li>
+                </ul>
+            </li>
+            <li>Useful WebGL commands
+                <ul>
+                    <li><code>gl.getParameter</code></li>
+                    <li><code>gl.clear</code></li>
+                    <li><code>gl.clearColor</code></li>
+                    <li><code>gl.viewport</code></li>
+                </ul>
+            </li>
+            <li>To render something:
+                <ul>
+                    <li>Create a "program", which has
+                        <ul>
+                            <li>a vertex shader and</li>
+                            <li>a fragment shader.</li>
+                        </ul>
+                    </li>
+                    <li>Create a vertex buffer that contains your vertex attribute.</li>
+                    <li>Create an index buffer that contains vertex connectivity information.</li>
+                    <li>Use the program.</li>
+                    <li>Map the data in the vertex buffer to vertex attributes in the vertex shader.</li>
+                    <li>Use the index buffer.</li>
+                    <li>Render with <code>gl.drawElements</code>.</li>
+                    <li>Dont' forget to clean up.
+                        <ul>
+                            <li>Unbind the buffers.</li>
+                            <li>Unuse the program.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>GLSL</h2>
+
+        <ul>
+            <li>Open<b>GL</b> <b>S</b>hading <b>L</b>anguage</li>
+            <li>The language in which you write vertex and fragment shaders.</li>
+            <li>Two versions are used with WebGL so far:
+                <ul>
+                    <li>WebGL 1 uses "The OpenGL ES Shading Language, Version 1.00".</li>
+                    <li>WebGL 2 is backward compatible.  It also accepts "The OpenGL ES Shading Language, Version 3.00".</li>
+                </ul>
+                They have different keywords, so be careful.
+            </li>
+            <li>In this course, we will learn Version 1.00.</li>
+            <li>Similar to the C language.</li>
+            <li>Differences from C
+                <ul>
+                    <li>No pointers.  There are arrays, though.</li>
+                    <li>Has many data types that are convenient for graphics programming.</li>
+                    <li>Special declarations specific to the graphics pipeline.
+                        <ul>
+                            <li>Vertex attributes</li>
+                            <li>Varying variables</li>
+                            <li>Uniforms</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li>Differences from Java
+                <ul>
+                    <li>No OOP features.</li>
+                    <li>You write functions, not methods.</li>
+                    <li>Arguments are <b>passed by values</b>.  There's <b>no passing by reference</b>.
+                        <ul>
+                            <li>Variables can only hold primitive types, basically</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>GLSL Data Types</h2>
+
+        <ul>
+            <li>Standard: <code>void</code>, <code>bool</code>, <code>int</code>, <code>float</code></li>
+            <li><code>vec2</code>
+<pre class="prettyprint"><code class="language-glsl">vec2 a;
+a.x = 0.0;
+a.y = 1.0; // a = (0,1)
+
+vec2 b;
+b.s = 10.0;
+b.t = 12.5; // b = (10,12.5)
+
+vec2 c;
+c[0] = 9.0;
+c[1] = 8.0; // c= (9,8)</code></pre>
+            </li>
+            <li><code>vec3</code>
+<pre class="prettyprint"><code class="language-glsl">vec3 a;
+a.x = 10.0; a.y = 20.0; a.z = 30.0; // a = (10,  20,  30)
+a.r = 0.1;  a.g = 0.2;  a.b = 0.3;  // a = (0.1, 0.2, 0.3)
+a.s = 1.0;  a.t = 2.0;  a.p = 3.0;  // a = (1, 2, 3)
+
+vec3 b = vec3(4.0, 5.0, 6.0);
+
+vec3 c = a + b;      // c = (5, 7, 9)
+vec3 d = a - b;      // d = (-3, -3, -3)
+vec3 e = a * b;      // e = (4, 10, 18)
+vec3 f = a * 3;      // e = (3, 6, 9)
+float g = dot(a, b); // g = 32
+vec3 h = cross(a,b); // h = (-5,6,-3)
+float i = length(a); // i = 3.742</code></pre>
+            </li>
+            <li><code>vec4</code>
+<pre class="prettyprint"><code class="language-glsl">vec4 a;
+a.x = 10.0; a.y = 20.0; a.z = 30.0; a.w = 40.0; // a = (10, 20, 30, 40)
+a.r = 0.1;  a.g = 0.2;  a.b = 0.3;  a.a = 0.4;  // a = (0.1, 0.2, 0.3, 0.4)
+a.s = 1.0;  a.t = 2.0;  a.p = 3.0;  a.q = 4.0;  // a = (1, 2, 3, 4)
+
+vec4 b = vec4(5, 6, 7, 8);
+
+vec4 c = a + b;      // c = (6, 8, 10, 12)
+vec4 d = a - b;      // d = (-4, -4, -4, -4)
+vec4 e = a * b;      // e = (5, 12, 21, 32)
+vec4 f = a * 3;      // f = (3, 6, 9, 12)
+float g = length(a); // g = 5.477</code></pre>
+            </li>
+            <li><code>mat2</code>
+<pre class="prettyprint"><code class="language-glsl">mat2 A = mat2(1.0,2.0,3.0,4.0); // in column-major order
+
+vec2 x = vec2(1.0, 0.0);
+vec2 y = vec2(0.0, 1.0);
+
+vec2 a = A * x; // a = (1,2)
+vec2 b = A * y; // b = (3,4)</code></pre>
+            </li>
+            <li><code>mat3</code>
+<pre class="prettyprint"><code class="language-glsl">mat3 A = mat3(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0); // in column-major order
+
+vec3 x = vec3(1.0, 0.0, 0.0);
+vec3 y = vec3(0.0, 1.0, 0.0);
+vec3 z = vec3(0.0, 0.0, 1.0);
+
+vec3 a = A * x; // a = (1,2,3)
+vec3 b = A * y; // b = (4,5,6)
+vec3 c = A * z; // c = (6,7,8)</code></pre>
+            </li>
+            <li><code>mat4</code>
+<pre class="prettyprint"><code class="language-glsl">mat4 A = mat4(
+    1.0,  2.0,  3.0,  4.0,
+    5.0,  6.0,  7.0,  8.0,
+    9.0,  10.0, 11.0, 12.0,
+    13.0, 14.0, 15.0, 16.0); // in column-major order
+
+vec4 x = vec4(1.0, 0.0, 0.0, 0.0);
+vec4 y = vec4(0.0, 1.0, 0.0, 0.0);
+vec4 z = vec4(0.0, 0.0, 1.0, 0.0);
+vec4 w = vec4(0.0, 0.0, 0.0, 1.0);
+
+vec4 a = A * x; // a = (1,2,3,4)
+vec4 b = A * y; // b = (5,6,7,8)
+vec4 c = A * z; // c = (9,10,11,12)
+vec4 d = A * w; // d = (13,14,15,16)</code></pre>
+            </li>
+            <li>There are also integer vectors (<code>ivec2</code>, <code>ivec3</code>, <code>ivec4</code>)
+                and boolean vectors (<code>bvec2</code>, <code>bvec3</code>, <code>bvec4</code>).</li>
+            <li><b>Array:</b> You can declare fixed-size arrays whose sizes are known at compile time.
+<pre class="prettyprint"><code class="language-glsl">float A[4];
+A[0] = 5; A[3] = 10;
+
+vec4 B[10];
+B[3] = vec4(1,2,3,4);
+B[8].y = 10.0;</code></pre>
+            </li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Other GLSL Language Constructs</h2>
+
+        <ul>
+            <li><b>Swizzling</b> = constructing a vector from another vector by referring to multiple components at one time.
+<pre class="prettyprint"><code class="language-glsl">vec4 a = vec4(1, 2, 3, 4);
+
+vec3 b = a.xyz;  // b = (1,2,3)
+vec2 c = a.qp;   // c = (4,3)
+vec4 d = a.xxyy; // d = (1,1,2,2)</code></pre>
+            </li>
+            <li>To convert between types, use the constructor.  In other words, <code>variable = type(value);</code>
+<pre class="prettyprint"><code class="language-glsl">float a = 1.0;
+int b = int(a);</code></pre>
+            </li>
+
+        </ul>
+    </section>
+
+    <h2>Exhibits</h2>
+    <ul>
+        <li><a href="exhibit00.html">#0: Getting Info about Vertex Attributes</a></li>
+        <li><a href="exhibit01.html">#1: Fun with Vertex Shader</a></li>
+        <li><a href="exhibit02.html">#2: Uniform Variables</a></li>
+        <li><a href="exhibit03.html">#3: Uniform Arrays</a></li>
+        <li><a href="exhibit04.html">#4: Getting Info about Uniforms</a></li>
+        <li><a href="exhibit05.html">#5: Varying Variables</a></li>
+        <li><a href="exhibit06.html">#6: The Magic of Full Screen Quad</a></li>
+    </ul>
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="../js/jquery-3.1.1.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="../js/bootstrap.min.js"></script>
+<!-- Google Code Prettifier -->
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+</body>
+</html>
