@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>CS 4621: Lecture 3 -- Exhibit #0: Handling Keyboard Event</title>
+
+    <!-- Bootstrap -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" href="../css/jquery-ui.min.css">
+
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+    });
+    </script>
+    <!-- MathJax -->
+    <script type="text/javascript" async
+            src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+</head>
+<body>
+<div class="container">
+    <h1>Exhibit #0: Handling Keyboard Event</h1>
+
+    <h2>What are We Doing?</h2>
+
+    <ul>
+        <li>When the browser is in focus and you do something with the keyboard,
+            the browser generates an <i>event</i> that can be processed by your code.</li>
+        <li>We are mainly interested in two types of events:
+            <ul>
+                <li><b>keydown</b> is generated when you press a key on the keyboard.</li>
+                <li><b>keyup</b> is generated when you release a pressed key.</li>
+            </ul>
+        </li>
+        <li>
+            We use jQuery to assign event handlers to these events:
+            <ul>
+                <li><code>$(document).keydown(&lt;handler&gt;)</code></li>
+                <li><code>$(document).keyup(&lt;handler&gt;)</code></li>
+            </ul>
+            The assign handlers will respond to all keyboard events in the page.
+            It is also possible to assign handlers to specific elements, but should not be necessary for our purposes.
+        </li>
+        <li>A keyboard event handler is a function with one argument, which is the <code>KeyboardEvent</code> object.</li>
+        <li>You can see the full documentation of <code>KeyboardEvent</code> <a href="https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent">here</a>.</li>
+        <li>Here are some useful fields of <code>KeyboardEvent</code>
+            <table class="table table-striped">
+                <thead>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Meaning</th>
+                </thead>
+                <tr>
+                    <td><code>key</code></td>
+                    <td>String</td>
+                    <td>The string representing the key value of the key pressed.  For examples, 'a', 'b', 'Alt', 'ArrowLeft', etc.</td>
+                </tr>
+                <tr>
+                    <td><code>ctrlKey</code></td>
+                    <td>Boolean</td>
+                    <td>Whether the Ctrl key is pressed when the event was fired.</td>
+                </tr>
+                <tr>
+                    <td><code>altKey</code></td>
+                    <td>Boolean</td>
+                    <td>Whether the Alt key is pressed when the event was fired.</td>
+                </tr>
+                <tr>
+                    <td><code>shiftKey</code></td>
+                    <td>Boolean</td>
+                    <td>Whether the Shift key is pressed when the event was fired.</td>
+                </tr>
+                <tr>
+                    <td><code>metaKey</code></td>
+                    <td>Boolean</td>
+                    <td>Whether the Meta key (Mac) is pressed when the event was fired.</td>
+                </tr>
+            </table>
+        </li>
+    </ul>
+
+    <h2>Demo</h2>
+
+    <p>Press a key and I'll tell you what's going on.</p>
+
+    <div id="keyboardEventDiv"></div>
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="../js/jquery-3.1.1.min.js"></script>
+<script src="../js/jquery-ui.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="../js/bootstrap.min.js"></script>
+<!-- Google Code Prettifier -->
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+<script>
+    function reportEvent(event) {
+        $("#keyboardEventDiv").html(
+            "<table class='table table-striped'>" +
+            "<tr><td><code>event.target</code></td><td>" + event.target + "</td></tr>" +
+            "<tr><td><code>event.type</code></td><td>" + event.type + "</td></tr>" +
+            "<tr><td><code>event.key</code></td><td>" + event.key + "</td></tr>" +
+            "<tr><td><code>event.keyCode</code></td><td>" + event.keyCode + "</td></tr>" +
+            "<tr><td><code>event.ctrlKey</code></td><td>" + event.ctrlKey + "</td></tr>" +
+            "<tr><td><code>event.shiftKey</code></td><td>" + event.shiftKey + "</td></tr>" +
+            "<tr><td><code>event.altKey</code></td><td>" + event.altKey + "</td></tr>" +
+            "<tr><td><code>event.metaKey</code></td><td>" + event.metaKey + "</td></tr>" +
+            "</table>"
+        );
+    }
+
+    $(document).keydown(reportEvent);
+    $(document).keyup(function() {
+        $("#keyboardEventDiv").html("")
+    });
+</script>
+
+</body>
+</html>
