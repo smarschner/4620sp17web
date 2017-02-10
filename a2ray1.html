@@ -41,7 +41,7 @@ In this assignment, your ray tracer will have support for:
 <p>Your ray tracer will read files in an XML file format and output PNG images. We have split ray tracing in CS4620 into two parts. For now, you will implement basic ray tracing. Later in the semester, after you have learned many more graphics techniques, you will implement other features, such as advanced shaders, faster rendering, and transformations on groups of objects. In this document, we focus on what you need to implement the basic elements of a ray tracer.
 
 <h5>Precisions in the programming assignment</h5>
-<p>All the input in this project is parsed in single precision and the scene is stored in single precision as well (It's a good practice to do this since scene data in real systems is big in memory). But all the geometric calculations and related intermediate results should be done in double precision.
+<p>All the input in this project is parsed in single precision and the scene is stored in single precision as well.  This is a good practice since scene data in real systems can occupy a lot of memory. But accurate ray intersections and shadows are difficult to achieve with single precision.  So you should carry out all the geometric calculations, and store all related intermediate results, in double precision.
 
 <h4>Warmup exercise</h4>
 
@@ -171,28 +171,28 @@ i.e. the camera, a list of surfaces, a list of lights, etc. It also contains a s
 </pre> 
 
   <p>  which sets <tt>outIntensity</tt> (the resulting color) to the fraction of 
-the light that comes from the incoming direction (omega_i)(i.e. the direction towards the light) and scatters out in direction (omega_o) (i.e., towards the viewer).
+the light that comes from the incoming direction \(\omega_i\) (i.e. the direction towards the light) and scatters out in direction \(\omega_o\) (i.e., towards the viewer).
 
 
 
 <p>We ask you to implement two shaders:
 <ul style="list-style: none;">
-  <li><tt><strong>Lambertian</tt></strong>: This class implements the perfectly diffuse shader. Its diffuse color k_d is specified by  the <tt>diffuseColor</tt> field. The <tt>shade</tt> function should set 
+  <li><tt><strong>Lambertian</tt></strong>: This class implements the perfectly diffuse shader. Its diffuse color \(k_d\) is specified by  the <tt>diffuseColor</tt> field. The <tt>shade</tt> function should set 
 <tt>outIntensity</tt> to:
   <ul style="list-style: none; text-align: center;">
-    <li> k_d max ( n dot omega_i , 0 ) k_L/r^2
+    \[\frac{k_L}{r^2} \; k_d \max ( n \cdot \omega_i , 0 ) \]
   </ul>
 where n is the normal at the intersection point, k_L is the
-intensity of the light source, and r is the distance to the light source.
+intensity of the light source, and \(r\) is the distance to the light source.
 See section 4.5.1, though notice the book's definition does not include the
-physically accurate 1/r^2 falloff.
+physically accurate \(1/r^2\) falloff.
 
-  <li><tt><strong>Phong</tt></strong>: This class implements the Blinn-Phong lighting model. It has a diffuse color component  as defined above k_d, as well as <tt>specularColor</tt> k_s, and <tt> exponent</tt> p fields, where the <tt>exponent</tt> is the "shininess". The <tt>shade</tt> function should set <tt>outIntensity</tt> to:
+  <li><tt><strong>Phong</strong></tt>: This class implements the Blinn-Phong lighting model. It has a diffuse color component  as defined above \(k_d\), as well as <tt>specularColor</tt> \(k_s\), and <tt> exponent</tt> \(p\) fields, where the <tt>exponent</tt> is the "shininess". The <tt>shade</tt> function should set <tt>outIntensity</tt> to:
   <ul style="list-style: none; text-align: center;">
-		(k_d max(n dot omega_i, 0) + k_s max(n dot h, 0)^p) k_L/r^2
+		\[\frac{k_L}{r^2} \; (k_d \max(n \cdot \omega_i, 0) + k_s \max(n \cdot h, 0)^p) \]
   </ul>
-	only if (n dot omega_i) is greater than  0, and sets it to 0
-otherwise. Here, h = (omega_i + omega_o)/|omega_i + omega_o|. See section
+	only if \(n \cdot \omega_i\) is greater than  0, and sets it to 0
+otherwise. Here, \(h = (\omega_i + \omega_o)/|\omega_i + \omega_o|\). See section
 4.5.2, but same warning as above.  </ul>
 
 <p>Notice that these values should be computed once for each light in the
@@ -213,7 +213,7 @@ for each <tt>shade</tt> method should look something like:
 
 <p>After the shaders are completed, you should be able to render <tt>one-sphere.xml</tt>, <tt>two-boxes.xml</tt>, <tt>wire-box.xml</tt>, <tt>wire-box-orthographic.xml</tt> and the bunny scenes correctly.
 
-<h5><strong>Textures</h5></strong>
+<h5><strong>Textures</strong></h5>
 
 <p>The <tt>Shader</tt> classes above have a <tt>texture</tt> field that is by default set to <tt>null</tt>. If the scene XML file specifies an image texture for the shader, a <tt>Texture</tt> object will be initialized in this field. If the texture has been loaded, you should use it to determine the diffuse color in the <tt>shade</tt> method rather than the <tt>diffuseColor</tt> field.
 
@@ -221,8 +221,8 @@ for each <tt>shade</tt> method should look something like:
  <tt>Texture</tt>. Both classes convert UV-coordinates into the nearest pixel coordinates corresponding to the image. The difference is in the way they handle UV-coordinates outside of the [0.0, 1.0] range:
 
 <ul style="list-style: none;">
-  <li><strong><tt>ClampTexture</strong></tt>: This class uses the nearest pixel for UV-coordinates that are out of range. As a result, the colors of the boundary pixels of a texture are extended outwards in UV space.
-  <li><strong><tt>RepeatTexture</strong></tt>: This class repeats the texture for out-of-range UV-coordinates. In this case, copies of the texture are tiled across UV space.
+  <li><strong><tt>ClampTexture</tt></strong>: This class uses the nearest pixel for UV-coordinates that are out of range. As a result, the colors of the boundary pixels of a texture are extended outwards in UV space.
+  <li><strong><tt>RepeatTexture</tt></strong>: This class repeats the texture for out-of-range UV-coordinates. In this case, copies of the texture are tiled across UV space.
 </ul>
 
 <p>The details of how to implement these are provided in the code.  Once these are completed, all scenes in subdirectory <tt>scenes_with_textures</tt> should render correctly.
@@ -250,7 +250,7 @@ significant differences, consider checking for bugs in your code.
 
 <p>We've included a <tt>Cylinder</tt> subclass of <tt>Surface</tt>, similar to the <tt>Triangle</tt> and <tt>Sphere</tt> classes. The class contains <tt>center</tt>, a 3D point, and <tt>radius</tt>, <tt>height</tt>, both real numbers. Assume that the cylinder is capped, i.e., the top and bottom have caps (it is not a hollow tube). Also, assume it is aligned with the z-axis, and is centered around <tt>center</tt>; <br>
 i.e., if
-center is (center_x, center_y, center_z), the cylinder's z-extent is from (center_z-height/2) to (center_z+height/2).
+<tt>center</tt> is \((c_x, c_y, c_z)\) and <tt>height</tt> is \(h\), the cylinder's z-extent is from \(c_z-\frac{h}{2}\) to \(c_z+\frac{h}{2}\).
 
 <p>Your task is to implement the <tt>intersect</tt> method of a mathematical cylinder (NOT a meshed cylinder). Add an XML scene that includes a cylinder to test your implementation (See Appendix C for details on how this should be done--you shouldn't need to change any parser code).
 
