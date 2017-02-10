@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>CS 4621: Lecture 3 -- Exhibit #2: Handling Mouse Events</title>
+
+    <!-- Bootstrap -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" href="../css/jquery-ui.min.css">
+
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+    });
+    </script>
+    <!-- MathJax -->
+    <script type="text/javascript" async
+            src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+</head>
+<body>
+<div class="container">
+    <h1>Exhibit #2: Handling Mouse Events</h1>
+
+    <h2>What are We Doing?</h2>
+
+    <ul>
+        <li>The browser fires a number of mouse events.
+            <ul>
+                <li><b>mousemove</b> when the mouse pointer moves over the target element.</li>
+                <li><b>mousedown</b> when a mouse button is pressed over the target element.</li>
+                <li><b>mouseup</b> when a mouse button is released over the target element.</li>
+                <li><b>mouseenter</b> when the mouse pointer enters the target element.</li>
+                <li><b>mouseleave</b> when the mouse pointer leaves the target element.</li>
+                <li><b>click</b> when target element is clicked.</li>
+                <li><b>dblclick</b> when target element is double clicked.</li>
+            </ul>
+        </li>
+        <li>We can use jQuery to assign handlers to these events.
+            <ul>
+                <li><code>$(&lt;selector&gt;).&lt;event-name&gt;(&lt;handler&gt;)</code></li>
+                <li>For example:
+<pre class="prettyprint"><code class="language-javascript">$("#webglCanvas").mouseenter(function (event) {
+    console.log("mouse entered!");
+});
+</code></pre>
+</li>
+            </ul>
+        </li>
+        <li>An event handler is a function which receives a <a href="https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent">MouseEvent</a> object.</li>
+        <li>The <code>MouseEvent</code> object includes the following useful fields:
+            <table class="table table-striped">
+                <thead>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Meaning</th>
+                </thead>
+                <tr>
+                    <td><code>clientX</code></td>
+                    <td>Integer</td>
+                    <td>The X coordinate of the mouse pointer in local (DOM content) coordinates.</td>
+                </tr>
+                <tr>
+                    <td><code>clientY</code></td>
+                    <td>Integer</td>
+                    <td>The Y coordinate of the mouse pointer in local (DOM content) coordinates.</td>
+                </tr>
+                <tr>
+                    <td><code>screenX</code></td>
+                    <td>Integer</td>
+                    <td>The X coordinate of the mouse pointer in global (screen) coordinates.</td>
+                </tr>
+                <tr>
+                    <td><code>screenY</code></td>
+                    <td>Integer</td>
+                    <td>The Y coordinate of the mouse pointer in global (screen) coordinates.</td>
+                </tr>
+                <tr>
+                    <td><code>button</code></td>
+                    <td>Integer</td>
+                    <td>The button number that was pressed when the mouse event was fired.</td>
+                </tr>
+                <tr>
+                    <td><code>ctrlKey</code></td>
+                    <td>Boolean</td>
+                    <td>Whether the Ctrl key is pressed when the event was fired.</td>
+                </tr>
+                <tr>
+                    <td><code>altKey</code></td>
+                    <td>Boolean</td>
+                    <td>Whether the Alt key is pressed when the event was fired.</td>
+                </tr>
+                <tr>
+                    <td><code>shiftKey</code></td>
+                    <td>Boolean</td>
+                    <td>Whether the Shift key is pressed when the event was fired.</td>
+                </tr>
+                <tr>
+                    <td><code>metaKey</code></td>
+                    <td>Boolean</td>
+                    <td>Whether the Meta key (Mac) is pressed when the event was fired.</td>
+                </tr>
+            </table>
+        </li>
+        <li>To find the where the mouse is inside the target element, use the bounding client rectangle of the element.
+            <ul>
+                <li>You can get this by calling the <code>getBoundingClientRect()</code> method of the element.
+                    <ul>
+                        <li>This is the method of the DOM object, not a jQuery method.</li>
+                        <li>Be careful.  You cannot call it from a jQuery wrapped collection.</li>
+                        <li>Example: <code>$("#webglCanvas")[0].getBoundingClientRect()</code></li>
+                    </ul>
+                </li>
+                <li>Then, you can calculate the mouse position relative to the object using
+                    <code>event.clientX</code> and <code>event.clientY</code>.
+                    <ul>
+                        <li>The X position relative to the left edge is <code>event.clientX - clientRect.left</code>.</li>
+                        <li>The Y position relative to the top edge is <code>event.clientY - clientRect.top</code>.</li>
+                    </ul>
+                </li>
+                <li>Be careful though.  WebGL measures Y coordinate relative to the bottom edge!!!</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2>Demo</h2>
+
+    <canvas id="webglCanvas" style="border: none; background-color: black;" width="512" height="128"></canvas>
+
+    <div class="row">
+        <div class="col-sm-2" id="mouseEnterDiv"></div>
+        <div class="col-sm-2" id="mouseMoveDiv"></div>
+        <div class="col-sm-2" id="mouseLeaveDiv"></div>
+        <div class="col-sm-2" id="mouseDownDiv"></div>
+        <div class="col-sm-2" id="mouseUpDiv"></div>
+        <div class="col-sm-2" id="clickDiv"></div>
+    </div>
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="../js/jquery-3.1.1.min.js"></script>
+<script src="../js/jquery-ui.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="../js/bootstrap.min.js"></script>
+<!-- Google Code Prettifier -->
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+
+<script>
+    function reportEvent(targetName, title, event) {
+        var target = $("#"+targetName);
+        var clientRect = $("#webglCanvas")[0].getBoundingClientRect();
+        target.html(
+            "<table class='table table-striped'>" +
+            "<thead><th colspan='2'>" + title + "</th></thead>" +
+            "<tr><td><code>event.clientX</code></td><td>" + event.clientX + "</td></tr>" +
+            "<tr><td><code>event.clientY</code></td><td>" + event.clientY + "</td></tr>" +
+            "<tr><td><code>event.screenX</code></td><td>" + event.screenX + "</td></tr>" +
+            "<tr><td><code>event.screenY</code></td><td>" + event.screenY + "</td></tr>" +
+            "<tr><td><code>event.button</code></td><td>" + event.button + "</td></tr>" +
+            "<tr><td><code>event.buttons</code></td><td>" + event.button + "</td></tr>" +
+            "<tr><td><code>event.ctrlKey</code></td><td>" + event.ctrlKey + "</td></tr>" +
+            "<tr><td><code>event.shiftKey</code></td><td>" + event.shiftKey + "</td></tr>" +
+            "<tr><td><code>event.altKey</code></td><td>" + event.altKey + "</td></tr>" +
+            "<tr><td><code>event.metaKey</code></td><td>" + event.metaKey + "</td></tr>" +
+            "<tr><td>canvas X</td><td>" + (event.clientX - clientRect.left) + "</td></tr>" +
+            "<tr><td>canvas Y</td><td>" + (event.clientY - clientRect.top) + "</td></tr>" +
+            "</table>"
+        );
+    }
+
+    var lastMouseUp = performance.now();
+    var lastMouseLeave = performance.now();
+    var lastClick = performance.now();
+
+    var webglCanvas = $("#webglCanvas");
+    webglCanvas.mousemove(function(event) {
+        reportEvent("mouseMoveDiv", "mousemove", event);
+    });
+    webglCanvas.mouseenter(function(event) {
+        reportEvent("mouseEnterDiv", "mouseenter", event);
+        $("#mouseLeaveDiv").html("");
+    });
+    webglCanvas.mouseleave(function(event) {
+        reportEvent("mouseLeaveDiv", "mouseleave", event);
+        $("#mouseEnterDiv").html("");
+        $("#mouseMoveDiv").html("");
+        lastMouseLeave = performance.now();
+    });
+    webglCanvas.mousedown(function(event) {
+        reportEvent("mouseDownDiv", "mousedown", event);
+        $("#mouseUpDiv").html("");
+    });
+    webglCanvas.mouseup(function(event) {
+        reportEvent("mouseUpDiv", "mouseup", event);
+        $("#mouseDownDiv").html("");
+        lastMouseUp = performance.now();
+    });
+    webglCanvas.click(function(event) {
+        reportEvent("clickDiv", "click", event);
+        lastClick = performance.now();
+    });
+
+
+    function updateDivs(time) {
+        if (time - lastMouseUp > 2000) {
+            $("#mouseUpDiv").html("");
+        }
+        if (time - lastMouseLeave > 2000) {
+            $("#mouseLeaveDiv").html("");
+        }
+        if (time - lastClick > 2000) {
+            $("#clickDiv").html("");
+        }
+        window.requestAnimationFrame(updateDivs);
+    }
+
+    window.requestAnimationFrame(updateDivs);
+</script>
+
+</body>
+</html>
