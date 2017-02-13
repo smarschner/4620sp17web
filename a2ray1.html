@@ -126,13 +126,13 @@ This method generates a new ray starting at the camera through a given image poi
 
 <p>We ask that you implement the intersection method for the following surfaces:
 <ul style="list-style: none;">
-  <li><strong><tt>Sphere</strong></tt>: The class contains a 3D point <tt>center</tt> and a double <tt>radius</tt>. You will need to solve the sphere/ray intersection equations. Be sure to calculate the exact normal at the point of intersection and store it in the <tt>IntersectionRecord</tt>. See section 4.4.1 of the book.
+  <li><strong><tt>Sphere</strong></tt>: The class contains a 3D point <tt>center</tt> and a float <tt>radius</tt>. You will need to solve the sphere/ray intersection equations. Be sure to calculate the exact normal at the point of intersection and store it in the <tt>IntersectionRecord</tt>. Additionally, please compute and store UV-coordinates in the same orientation as Assignment 1 (i.e. the poles should lie on the y-axis, and the seam should intersect the negative z-axis if the sphere is located at the origin). See section 4.4.1 of the book.
   <li><strong><tt>Triangle</strong></tt>: In our system, each triangle belongs to a <tt>Mesh</tt>, which keeps a reference to a <tt>mesh</tt> object. A triangle stores an <tt>OBJFace</tt> object which corresponds to the face formed by the triangle. See section 4.4.2 of the book.
 
 If the owning face does not have a per-vertex normal, the <tt>intersect</tt>
 method should return the triangle normal stored in <tt>Triangle</tt>. If it does,
 it should interpolate the normals of the three vertices using the barycentric
-coordinate of the hit point.
+coordinate of the hit point.Texture coordinates, if available, should be interpolated using barycentric coordinates as well.
 </ul>
 
 <h5><strong>Scene</h5></strong>
