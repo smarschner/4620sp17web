@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>CS 4621: PPA1 -- WebGL Ray</title>
+
+    <!-- Bootstrap -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/cs4620.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+    });
+
+    </script>
+    <!-- MathJax -->
+    <script type="text/javascript" async
+            src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+</head>
+<body>
+<div class="container">
+    <h1>CS 4621 PPA1 <span class="subtitle">WebGL Ray</span></h1>
+    <p class="courseinfo">Out: Friday February 17, 2017</p>
+    <p class="courseinfo">Due: Thursday October March 3, 2017 at 11:59pm</p>
+    <p class="courseinfo">Work in groups of up to 4</p>
+
+    <h2>Overview</h2>
+
+    <p>In this programming assignment, you will implement a simplified GPU version of the CS4620 raytracer (Ray 1).
+        The goal here is not to reproduce all the features we have seen in the other assignment but rather to give you
+        some practice on WebGL programming.</p>
+
+    <p><b>WARNING: WE THINK THIS ASSIGNMENT IS LONG.  START EARLY.</b></p>
+
+    <h2>What You Code Should Be Able to Do</h2>
+
+    <center>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/e1PvI9ld-0k" frameborder="0" allowfullscreen></iframe>
+    </center>
+
+    <h2>Logistics</h2>
+
+    <p>First, clone the <a href="https://github.com/smarschner/4620sp17web">CS 4620 web repository</a>.
+    You will find the template code for this assignment in the <code>cs4621/ppa1_student</code> directory.</p>
+
+    <p>Inside the directory, open <code>index.html</code>, and you should see something like this.</p>
+
+    <center>
+        <a href="template_web.png"><img src="template_web.png" alt="template web page for ppa1" width="300"></a>
+    </center>
+
+    <p>Please modify <code>index.html</code> so that it performs ray tracing and shows the output in the black canvas
+    on the top of the web page.  You may also add other code to the directory.  However, do not use any 3D rendering
+    framework such as <a href="https://threejs.org/">three.js</a>.  Linear algebra libraries such as
+    <a href="http://glmatrix.net/">glMatrix</a> are fine.  Our solution code, however, does not use any
+    extra code besides what is already in the ZIP file.</p>
+
+    <p>Once you're done writing your solution, ZIP the <code>cs4621/ppa1_student</code>, and submit
+    the ZIP file to CMS.</p>
+
+    <h2>Implementation Details</h2>
+
+    <h3>Camera and Ray Generation</h3>
+
+    <p>Instead of a more involved camera model in the Ray 1 assignment, the camera model in this assigment is a little
+        simpler.  It is specified by 4 parameters:
+    </p>
+
+    <ul>
+        <li><b>Eye</b> = the camera's position in world space.</li>
+        <li><b>Target</b> = the point in world space that the camera is looking at.</li>
+        <li><b>Up</b> = the camera's up vector.</li>
+        <li><b>Field of view (FOV)</b> = an indication of the extent of the scene observed by the camera.  It is an angle,
+        measured in <em>degrees</em>.  You can find out more about FOV in this
+        <a href="">Wikipedia article</a>. Since our canvas is a square,
+        the horizontal FOV is equal to the vertical FOV.  So, there's one FOV instead of two.
+        </li>
+    </ul>
+
+    <p>To generate rays from the camera, first form an orthonormal basis $[\mathbf{x}, \mathbf{y}, \mathbf{z}]$
+        as follows:
+        \begin{align*}
+        \mathbf{z} &= \mathrm{normalize}(target - eye) \\
+        \mathbf{x} &= \mathrm{normalize}(up \times \mathbf{z}) \\
+        \mathbf{y} &= \mathrm{normalize}(\mathbf{z} \times \mathbf{x})
+        \end{align*}
+    </p>
+
+    <p>The image plane is parameterized by $(x,y)$ coordinates where both $x$ and $y$ ranges from $[-1,1]$.
+        So, consider drawing a full screen quad so that the bottom-left corner corresponds to $(-1,-1)$ and
+        the top-right corner corresponds to $(1,1)$.
+    </p>
+
+    <p>
+        All rays originate from the camera's eye position.  The ray associated with image plane coordinate $(x,y)$
+        has direction:
+        $$\mathbf{d} = \mathrm{normalize}(-\mathbf{z} + (s\ x)\ \mathbf{x} + (s\ y)\ \mathbf{y})$$
+        where
+        $$ s = \tan \bigg( \frac{\pi}{180} \frac{FOV}{2} \bigg).$$
+        In other words, we convert $FOV/2$ to radian and compute its tangent.
+        Note that the ray starts right off from the eye position, not from a plane that is in front of it.
+        This is because our camera model does not have something equivalent to <code>projDistance</code>
+        like the one in the Ray 1 assignment.
+    </p>
+
+    <p>The camera can be controlled by the GUI elements in <code>index.html</code>.  Its Javascript code
+        contains the convenience methods for retrieving the camera parameters:
+    </p>
+    <ul>
+        <li><code>getCameraEye()</code></li>
+        <li><code>getCameraTarget()</code></li>
+        <li><code>getCameraUp()</code></li>
+        <li><code>getCameraFov()</code></li>
+    </ul>
+    <p>
+        Call these functions every frame, and pass their return values to your shader.
+    </p>
+
+    <h3>Light Source</h3>
+
+    <p>All scenes we will render in this assignment has one point light source, and it is defined
+    by two parameters: its <b>position</b> and <b>intensity</b>.  These parameters can be controlled
+    by GUI elements, and the template code's provide the following functions for retrieving their values:
+    </p>
+    <ul>
+        <li><code>getLightPosition()</code></li>
+        <li><code>getLightIntesity()</code></li>
+    </ul>
+    <p>
+        Again, call these functions every frame, and pass their return values to your shader.
+    </p>
+
+    <h3>Background Color</h3>
+
+    <p>If the eye ray does not hit any geometry, your shader should set the pixel to
+    the background color that is specified by the GUI in <code>index.html</code>.
+    Use the function <code>getBackgroundColor()</code> to retrieve its value.
+    </p>
+
+    <h3>Scenes</h3>
+
+    <p>
+        In the template code, we have included three scenes that you can render: the "triangle," the "cube," and
+        the "full" scene.  You can switch between theme through the GUI.  In Javascript, use the
+        <code>getScene()</code> function to retrieve the current scene specified by the GUI.</p>
+
+    <p>
+        The value returned by the <code>getScene()</code> function is a Javascript object with the following fields:
+    </p>
+
+    <ul>
+        <li><code>numTriangles</code> is the number of triangles in the scene.</li>
+        <li>
+            <code>vertexPositions</code> is an array containing $3 \times 3 \times numTriangles$
+            floating point numbers.  It contains the 3D positions of the three vertices of the triangles.
+        </li>
+        <li>
+            <code>triangleColors</code> is an array containing $3 \times numTriangles$ floating point numbers
+            It contains the diffuse color $(k_D)$ of the triangles.
+        </li>
+    </ul>
+
+    <p>
+        In other words, the triangles are specified using the "separate triangles" representation.
+        (See <a href="http://www.cs.cornell.edu/courses/cs4620/2017sp/slides/02trimesh.pdf">CS 4620 Lecture 2</a>.)
+        We would have loved to represent them using the "indexed triangle set" representation,
+        but WebGL did not allow us to.  (Trust us.  We tried.)  If you would like to know how the scene objects
+        are created, read <code>scenes.js</code>.
+    </p>
+
+    <p>
+        In your shader, you should create a uniform array that can store all the vertex positions and triangle
+        colors.  For example,
+<pre class="prettyprint"><code class="language-glsl">uniform vec3 vertexPositions[MAX_TRIANGLES*3];
+uniform vec3 triangleColors[MAX_TRIANGLES];
+</code></pre>
+        The full scene is the largest scene, and it contains 132 triangles.  So, you can set <code>MAX_TRIANGLES</code>
+        to $132$.  Update these uniforms with the data in the scene object every frame.
+    </p>
+
+    <p>
+        With these uniforms, the 3 vertices of the $i$th triangle are given by:
+        <code>vertexPositions[3*i]</code>, <code>vertexPositions[3*i+1]</code>, and <code>vertexPositions[3*i+2]</code>.
+        The color of the $i$th triangle is given by <code>triangleColors[i]</code>.
+    </p>
+
+    <h3>Render Modes</h3>
+
+    <p>Your ray tracer should support the following rendering modes</p>
+
+    <ul>
+        <li>
+            <b>Face color mode:</b> If the ray associated with a pixel hits a triangle, set that pixel
+            to the triangle's color.
+        </li>
+        <li>
+            <b>Normal mode:</b> If the ray associated with a pixel hits a triangle, compute the triangle's
+            normal vector $\mathbf{n}$.  Then, set the pixel value to $(\mathbf{n} + (1,1,1)) / 2$
+        </li>
+        <li>
+            <b>Shadow mode:</b> If the ray associated with a pixel hits a triangle, trace the shadow ray
+            from the hit point to the light source.  If the light is occluded, set the pixel to black.
+            If not, set the pixel to white.  <i><b>DO NOT FORGET TO ADD EPSILON TO THE RAY STARTING POINT.</b></i>
+        </li>
+        <li>
+            <b>Full mode:</b> This mode performs the full shading of a diffuse BRDF against a point light
+            source.  If the ray associated with a pixel hits a triangle, set the pixel color to:
+            $$ (visibility) \times (triangle\ color) \times \max(0, \mathbf{n} \cdot \mathbf{l}) \times
+            \frac{light\ intensity}{r^2}$$
+            where
+            <ul>
+                <li>visibility is $0$ if the light is occluded and $1$ otherwise,</li>
+                <li>$\mathbf{l}$ is the unit vector pointing in the direction from the hit point
+                    to the light source's position.</li>
+                <li>$r$ is the distance between the hit point and the light source.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <p>
+        The render mode can be changed by the GUI.  You can retrieve the current rendering mode
+        in Javascript by calling the <code>getRenderMode()</code> function.  It returns an integer
+        where $1$ means the face color mode, $2$ means the normal mode, $3$ means the shadow mode,
+        and $4$ means the full mode.  Pass this value to your shader every frame.
+    </p>
+
+    <h3>Some Annoying WebGL Limitations We Would Like You to Know Before Hand</h3>
+
+    <p>WebGL specification was written for hardward with limited capabilities.  So there are
+    something that you would be able to do in normal programming languages but cannot do
+    in GLSL.</p>
+
+    <ol>
+        <li>
+            If you write a for loop, the number of iterations must be known at compile time.
+            This means that you cannot do something like this:
+<pre class="prettyprint">uniform int numTriangles;
+
+for(int i=0; i&lt;numTriangles; i++) {
+    :
+    :
+}
+</pre>
+            But you can do something like this:
+<pre class="prettyprint">#define MAX_TRIANGLES 132
+
+for(int i=0; i&lt;MAX_TRIANGLES; i++) {
+    if (i >= numTriangles)
+        break;
+    :
+    :
+}
+</pre>
+        </li>
+        <li>
+            Array access in the fragment shader is limited.  You can only index an array with an expression
+            made up of loop counters and constants.  In other words, the following is okay:
+<pre class="prettyprint">
+vec3 p = vertexPosition[0];
+
+for(int i=0; i&lt;MAX_TRIANGLES; i++) {
+    vec3 a = vertexPositions[3*i];
+    vec3 b = vertexPositions[3*i+1];
+    vec3 c = vertexPositions[3*i+2];
+    :
+    :
+}
+</pre>
+            But, this is not:
+<pre class="prettyprint">uniform int vertexIndex;
+
+vec3 p = vertexPositions[p];
+</pre>
+            This is why we could not use the "indexed triangle set" mesh representation with WebGL.
+            Moreover, you could not save the index of the triangle the ray first intersect and use
+            it to retrieve the triangle's normal or color later.  There is a work around for this,
+            but we leave it to you to figure it out.
+        </li>
+    </ol>
+
+    <h3>A WebGL Feature We Would Like You to Know Before Hand</h3>
+
+    <p>
+        When writing a function, you can use the keywords to quantify function parameters so that
+        you can pass value <i>back</i> from the function as well.  This is very useful when writing a function that
+        has more than one return values. The keywords you want to use
+        are <code>out</code> and/or <code>inout</code>.  Using them, you can do this:
+<pre class="prettyprint">void computeSomething(float x, out float y, inout float z) {
+    y = x + 1.0;
+    z = 2.0*(x+z);
+}
+
+void main() {
+    float a;
+    float b = 2.0;
+    computeSomething(5, a, b);
+      :
+      :
+      :
+}
+</pre>
+        After <code>computeSomething</code> is called, <code>a</code> becomes 6, and <code>b</code> becomes 14.
+    </p>
+
+    <h2>Programming Tips</h2>
+
+    <p>
+        Okay.  So, we give you some skeleton code, and it has nothing that deals with WebGL at all.
+        You are supposed to write all this by yourselves.  There are many features to implement
+        and many things to keep track of.  How would you actually do it all?
+    </p>
+
+    <p>
+        We advice you to:
+        <blockquote>KEEP CALM AND INCREMENTALLY ADD FEATURES.</blockquote>
+        Do not do it all at one time.  Break the assignment to easy-to-finish and easy-to-test pieces.
+        Here is a possible road map.
+    </p>
+
+    <ol>
+        <li>Initialize WebGL.
+            <ul>
+                <li>Get a WebGL context.  See <a href="http://www.cs.cornell.edu/courses/cs4620/2017sp/cs4621/lecture01/exhibit00.html">Exhibit #0 of Lecture 1</a>.</li>
+                <li>Set up your rendering loop. See <a href="http://www.cs.cornell.edu/courses/cs4620/2017sp/cs4621/lecture01/exhibit05.html">Exhibit #5 of Lecture 1</a></li>
+            </ul>
+        </li>
+        <li>
+            Write a shader that draws the full screen quad and make sure it works.
+            <ul>
+                <li>The easiest way to do this is to make use of the code
+                in <a href="http://www.cs.cornell.edu/courses/cs4620/2017sp/cs4621/lecture02/exhibit06.html">Exhibit #6 of Lecture 2</a>.
+                </li>
+                <li>
+                    What is the texture coordinates of the 4 corners of the full screen quad in Exhibit #6?
+                    Are they the most convenient for this assignment?
+                </li>
+            </ul>
+        </li>
+        <li>
+            Have your shader output the background color.
+            <ul>
+                <li>Learn how to create and use uniforms from <a href="http://www.cs.cornell.edu/courses/cs4620/2017sp/cs4621/lecture02/exhibit06.html">Exhibit #2 of Lecture 2</a></li>
+            </ul>
+        </li>
+        <li>
+            Have your shader generate the rays.  Output ray direction as color.
+            You should see the picture changes as you change the FOV.
+        </li>
+        <li>
+            Work on the face color mode; i.e. eye ray intersection.
+            <ul>
+                <li>Learn how to create and use uniform arrays from <a href="http://www.cs.cornell.edu/courses/cs4620/2017sp/cs4621/lecture02/exhibit06.html">Exhibit #3 of Lecture 2</a></li>
+                <li>Write your code to intersect just the first triangle in the mesh first.</li>
+                <li>Get your code to work with the "triangle" scene, which has only one triangle.</li>
+                <li>Then, write a for loop that goes through all the triangles to find the first intersection.</li>
+                <li>Then, try to get the "cube" scene to work.</li>
+                <li>Once you're confident, run your code on the "full" scene.</li>
+                <li>From our experience, this step is the hardest because ray tracing is complicated in itself.
+                    It's also very easy to trip up over little details.  Be patient here.</li>
+            </ul>
+        </li>
+        <li>
+            Work on the normal mode.
+        </li>
+        <li>
+            Work on the shadow mode; i.e. shadow ray casting.
+        </li>
+        <li>
+            Work on the full mode.
+        </li>
+    </ol>
+
+    <p>We would like to also remind you that the exhibits are for you to use.  However, do not just
+    copy and paste them in your code.  Read and understand them so that so you can modify them to do
+    your bidding.  Also, make use of the code you wrote for the Ray 1 assignment.  If you have to get that
+    part of Ray 1 fixed first, come to us for help.</p>
+
+    <p>To help you check your progress, we provide screenshots of the reference program's renderings
+    of the three scenes under all the modes below.</p>
+
+    <table class="table table-bordered">
+        <tr>
+            <td></td>
+            <td align="center"><b>Triangle Scene</b></td>
+            <td align="center"><b>Cube Scene</b></td>
+            <td align="center"><b>Full Scene</b></td>
+        </tr>
+        <tr>
+            <td align="right"><b>Face Color Mode</b></td>
+            <td align="center"><a href="1_triangle.png"><img src="1_triangle.png" alt="" width="200"></a></td>
+            <td align="center"><a href="1_cube.png"><img src="1_cube.png" alt="" width="200"></a></td>
+            <td align="center"><a href="1_full.png"><img src="1_full.png" alt="" width="200"></a></td>
+        </tr>
+        <tr>
+            <td align="right"><b>Normal Mode</b></td>
+            <td align="center"><a href="2_triangle.png"><img src="2_triangle.png" alt="" width="200"></a></td>
+            <td align="center"><a href="2_cube.png"><img src="2_cube.png" alt="" width="200"></a></td>
+            <td align="center"><a href="2_full.png"><img src="2_full.png" alt="" width="200"></a></td>
+        </tr>
+        <tr>
+            <td align="right"><b>Shadow Mode</b></td>
+            <td align="center"><a href="3_triangle.png"><img src="3_triangle.png" alt="" width="200"></a></td>
+            <td align="center"><a href="3_cube.png"><img src="3_cube.png" alt="" width="200"></a></td>
+            <td align="center"><a href="3_full.png"><img src="3_full.png" alt="" width="200"></a></td>
+        </tr>
+        <tr>
+            <td align="right"><b>Full Mode</b></td>
+            <td align="center"><a href="4_triangle.png"><img src="4_triangle.png" alt="" width="200"></a></td>
+            <td align="center"><a href="4_cube.png"><img src="4_cube.png" alt="" width="200"></a></td>
+            <td align="center"><a href="4_full.png"><img src="4_full.png" alt="" width="200"></a></td>
+        </tr>
+    </table>
+
+    <p>
+        Remember, though, to make up new test cases on your own because we will do so to test your program too.
+        Change the background color.  Move the camera and the light around.
+        What happens when the light is inside the bunny or the box?  Does your program's behavior make sense?
+    </p>
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="../js/jquery-3.1.1.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="../js/bootstrap.min.js"></script>
+<!-- Google Code Prettifier -->
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+</body>
+</html>

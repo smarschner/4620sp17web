@@ -259,7 +259,7 @@ gl.uniform1fv(sizeLocation, sizes);
                 velocityY[i] = -Math.abs(velocityY[i]);
             }
 
-            var factor = 1.0 / 100.0;
+            var factor = delta / 1000.0;
             centerX[i] += velocityX[i] * factor;
             centerY[i] += velocityY[i] * factor;
         }

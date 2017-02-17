@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>CS 4621: PPA1 -- WebGL Ray</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/cs4620.css" rel="stylesheet">
+    <link href="css/jquery-ui.min.css" rel="stylesheet">
+    <link href="css/jquery-ui.theme.min.css" rel="stylesheet">
+    <link href="css/jquery-ui.structure.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+<div class="container">
+    <h1>CS 4621 PPA1 <span class="subtitle">WebGL Ray</span></h1>
+
+    <div align="center">
+        <canvas id="webglCanvas" style="border: none; background-color: black;" width="512" height="512"></canvas>
+    </div>
+
+    <br>
+
+    <table class="table table-bordered">
+        <tr>
+            <td align="right">Render Mode:</td>
+            <td>
+                <select id="renderMode">
+                    <option value="FACE_COLOR">Face Color</option>
+                    <option value="NORMAL">Normal</option>
+                    <option value="SHADOW">Shadow</option>
+                    <option value="FULL">Full Shading</option>
+                </select>
+            </td>
+            <td align="right">Scene:</td>
+            <td>
+                <select id="scene">
+                    <option value="triangle">Triangle Scene</option>
+                    <option value="cube">Cube Scene</option>
+                    <option value="full">Full Scene</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" align="center"><b>Camera Settings</b></td>
+        </tr>
+        <tr>
+            <td align="right">Camera Eye:</td>
+            <td>
+                X = <input type="text" id="cameraEyeX" value="1.0">
+            </td>
+            <td>
+                Y = <input type="text" id="cameraEyeY" value="1.0">
+            </td>
+            <td>
+                Z = <input type="text" id="cameraEyeZ" value="1.0">
+            </td>
+        </tr>
+        <tr>
+            <td align="right">Camera Target:</td>
+            <td>
+                X = <input type="text" id="cameraTargetX" value="0.0">
+            </td>
+            <td>
+                Y = <input type="text" id="cameraTargetY" value="0.0">
+            </td>
+            <td>
+                Z = <input type="text" id="cameraTargetZ" value="0.0">
+            </td>
+        </tr>
+        <tr>
+            <td align="right">Camera Up:</td>
+            <td>
+                X = <input type="text" id="cameraUpX" value="0.0">
+            </td>
+            <td>
+                Y = <input type="text" id="cameraUpY" value="1.0">
+            </td>
+            <td>
+                Z = <input type="text" id="cameraUpZ" value="0.0">
+            </td>
+        </tr>
+        <tr>
+            <td align="right">Camera Field of View:</td>
+            <td colspan="3">
+                <input type="text" id="cameraFov" value="30.0">
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" align="center"><b>Light Settings</b></td>
+        </tr>
+        <tr>
+            <td align="right">Light Position:</td>
+            <td>
+                X = <input type="text" id="lightPositionX" value="1.0">
+            </td>
+            <td>
+                Y = <input type="text" id="lightPositionY" value="1.0">
+            </td>
+            <td>
+                Z = <input type="text" id="lightPositionZ" value="1.0">
+            </td>
+        </tr>
+        <tr>
+            <td align="right">Light Intensity:</td>
+            <td>
+                R = <input type="text" id="lightIntensityR" value="1.0">
+            </td>
+            <td>
+                G = <input type="text" id="lightIntensityG" value="1.0">
+            </td>
+            <td>
+                B = <input type="text" id="lightIntensityB" value="1.0">
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" align="center"><b>Background Settings</b></td>
+        </tr>
+        <tr>
+            <td align="right">Background Color:</td>
+            <td>
+                R = <input type="text" id="backgroundColorR" value="0.0">
+            </td>
+            <td>
+                G = <input type="text" id="backgroundColorG" value="0.0">
+            </td>
+            <td>
+                B = <input type="text" id="backgroundColorB" value="0.0">
+            </td>
+        </tr>
+    </table>
+
+    <h2>Team Members</h2>
+
+    <ul>
+        <li>Please list your team members with NetID in this unordered list.</li>
+        <li>Example: Steve Marschner (srm2)</li>
+    </ul>
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="js/jquery-3.1.1.min.js"></script>
+<script src="js/jquery-ui.min.js"></script>
+<script src="scenes.js"></script>
+
+<script>
+    function initGui() {
+        ["cameraEye", "cameraTarget", "cameraUp"].forEach(function (name) {
+            ["X", "Y", "Z"].forEach(function (axis) {
+                var selector = "#" + name + axis;
+                $(selector).spinner({
+                    min: -10.0,
+                    max: 10.0,
+                    step: 0.01,
+                });
+            });
+        });
+        $("#cameraFov").spinner({
+            min: 1.0,
+            max: 80.0,
+            step: 1.0
+        });
+        ["lightPositionX", "lightPositionY", "lightPositionZ"].forEach(function (name) {
+            $("#" + name).spinner({
+                min: -10.0,
+                max: 10.0,
+                step: 0.01,
+            });
+        });
+        ["lightIntensityR", "lightIntensityG", "lightIntensityB"].forEach(function (name) {
+            $("#" + name).spinner({
+                min: 0.0,
+                max: 500.0,
+                step: 0.01,
+            });
+        });
+        ["backgroundColorR", "backgroundColorG", "backgroundColorB"].forEach(function (name) {
+            $("#" + name).spinner({
+                min: 0.0,
+                max: 1.0,
+                step: 0.01,
+            });
+        });
+    }
+    initGui();
+
+    var renderModes = {
+        "FACE_COLOR": 1,
+        "NORMAL": 2,
+        "SHADOW": 3,
+        "FULL": 4
+    };
+
+    var scenes = createScenes();
+
+    function setSceneGui(scene) {
+        $("#cameraEyeX").spinner("value", scene.initialCamera.eye[0]);
+        $("#cameraEyeY").spinner("value", scene.initialCamera.eye[1]);
+        $("#cameraEyeZ").spinner("value", scene.initialCamera.eye[2]);
+
+        $("#cameraTargetX").spinner("value", scene.initialCamera.target[0]);
+        $("#cameraTargetY").spinner("value", scene.initialCamera.target[1]);
+        $("#cameraTargetZ").spinner("value", scene.initialCamera.target[2]);
+
+        $("#cameraUpX").spinner("value", scene.initialCamera.up[0]);
+        $("#cameraUpY").spinner("value", scene.initialCamera.up[1]);
+        $("#cameraUpZ").spinner("value", scene.initialCamera.up[2]);
+
+        $("#cameraFov").spinner("value", scene.initialCamera.fov);
+
+        $("#lightPositionX").spinner('value', scene.initialLight.position[0]);
+        $("#lightPositionY").spinner('value', scene.initialLight.position[1]);
+        $("#lightPositionZ").spinner('value', scene.initialLight.position[2]);
+
+        $("#lightIntensityR").spinner('value', scene.initialLight.intensity[0]);
+        $("#lightIntensityG").spinner('value', scene.initialLight.intensity[1]);
+        $("#lightIntensityB").spinner('value', scene.initialLight.intensity[2]);
+    }
+
+    function getScene() {
+        return scenes[$("#scene").val()];
+    }
+
+    $("#scene").change(function () {
+        setSceneGui(getScene());
+    });
+    setSceneGui(getScene());
+
+    function getRenderMode() {
+        return renderModes[$("#renderMode").val()];
+    }
+
+    function getBackgroundColor() {
+        return [
+            $("#backgroundColorR").spinner("value"),
+            $("#backgroundColorG").spinner("value"),
+            $("#backgroundColorB").spinner("value")
+        ];
+    }
+
+    function getCameraEye() {
+        return [
+            $("#cameraEyeX").spinner("value"),
+            $("#cameraEyeY").spinner("value"),
+            $("#cameraEyeZ").spinner("value")
+        ]
+    }
+
+    function getCameraTarget() {
+        return [
+            $("#cameraTargetX").spinner("value"),
+            $("#cameraTargetY").spinner("value"),
+            $("#cameraTargetZ").spinner("value")
+        ];
+    }
+
+    function getCameraUp() {
+        return [
+            $("#cameraUpX").spinner("value"),
+            $("#cameraUpY").spinner("value"),
+            $("#cameraUpZ").spinner("value")
+        ];
+    }
+
+    function getCameraFov() {
+        return $("#cameraFov").spinner("value")
+    }
+
+    function getLightPosition() {
+        return [
+            $("#lightPositionX").spinner("value"),
+            $("#lightPositionY").spinner("value"),
+            $("#lightPositionZ").spinner("value")
+        ];
+    }
+
+    function getLightIntensity() {
+        return [
+            $("#lightIntensityR").spinner("value"),
+            $("#lightIntensityG").spinner("value"),
+            $("#lightIntensityB").spinner("value")
+        ];
+    }
+
+    //
+    // TODO: Fill you code here and elsewhere in the HTML.
+    //
+</script>
+
+</body>
+</html>

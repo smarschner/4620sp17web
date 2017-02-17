@@ -306,9 +306,9 @@ void main() {
             var vertPositionLocation = gl.getAttribLocation(program, "vert_position");
             gl.enableVertexAttribArray(vertPositionLocation);
             gl.vertexAttribPointer(vertPositionLocation, 3, gl.FLOAT, false, 4*5, 0);
-            var vertColorLocation = gl.getAttribLocation(program, "vert_texCoord");
-            gl.enableVertexAttribArray(vertColorLocation);
-            gl.vertexAttribPointer(vertColorLocation, 2, gl.FLOAT, false, 4*5, 4*3);
+            var vertTextureLocation = gl.getAttribLocation(program, "vert_texCoord");
+            gl.enableVertexAttribArray(vertTextureLocation);
+            gl.vertexAttribPointer(vertTextureLocation, 2, gl.FLOAT, false, 4*5, 4*3);
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
