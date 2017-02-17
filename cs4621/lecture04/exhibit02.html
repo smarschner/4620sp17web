@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>CS 4621: Lecture 4 -- Exhibit #2: Affine Transformation</title>
+
+    <!-- Bootstrap -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/cs4620.css" rel="stylesheet">
+    <link href="../css/jquery-ui.min.css" rel="stylesheet">
+    <link href="../css/jquery-ui.theme.min.css" rel="stylesheet">
+    <link href="../css/jquery-ui.structure.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+    });
+    </script>
+    <!-- MathJax -->
+    <script type="text/javascript" async
+            src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+</head>
+<body>
+<div class="container">
+    <h1>Exhibit 2 <span class="subtitle">Affine Transformation</span></h1>
+
+    <div class="center-block">
+        <canvas id="objCanvas" style="border: none; background-color: black;" width="500" height="500"></canvas>
+        <canvas id="worldCanvas" style="border: none; background-color: black;" width="500" height="500"></canvas>
+    </div>
+
+    <table class="table table-bordered">
+        <tr>
+            <td colspan="3" align="center"><b>Transformation Matrix</b></td>
+        </tr>
+        <tr>
+            <td>
+                a11 = <input type="text" id="a11" value="1.0">
+            </td>
+            <td>
+                a12 = <input type="text" id="a12" value="0.0">
+            </td>
+            <td>
+                a13 = <input type="text" id="a13" value="0.0">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                a21 = <input type="text" id="a21" value="0.0">
+            </td>
+            <td>
+                a22 = <input type="text" id="a22" value="1.0">
+            </td>
+            <td>
+                a23 = <input type="text" id="a23" value="0.0">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                a31 = <input type="text" id="a31" value="0.0">
+            </td>
+            <td>
+                a32 = <input type="text" id="a32" value="0.0">
+            </td>
+            <td>
+                a33 = <input type="text" id="a33" value="1.0">
+            </td>
+        </tr>
+    </table>
+
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="../js/jquery-3.1.1.min.js"></script>
+<script src="../js/jquery-ui.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<!-- <script src="../js/bootstrap.min.js"></script> -->
+<script src="../js/gl-matrix-min.js"></script>
+<!-- Google Code Prettifier -->
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+<script id="vertexShader" type="x-shader/x-vertex">
+    attribute vec2 position;
+
+    uniform mat3 toWorld;
+
+    void main() {
+        gl_Position = vec4((toWorld * vec3(position, 1.0)).xy, 0.0, 1.0);
+    }
+</script>
+
+<script id="fragmentShader" type="x-shader/x-fragment">
+    precision highp float;
+
+    uniform vec3 color;
+
+    void main() {
+        gl_FragColor = vec4(color, 1.0);
+    }
+</script>
+
+<script>
+    var catData = {
+        vertices: [
+            -0.2461,  0.2279,
+            -0.4069,  0.4277,
+            -0.4069, -0.1475,
+            -0.3561, -0.2904,
+             0.    , -0.4164,
+             0.3561, -0.2904,
+             0.4068, -0.1475,
+             0.4068,  0.4277,
+             0.2461,  0.2279,
+             0.    , -0.3226,
+             0.    , -0.243 ,
+            -0.1142, -0.2912,
+             0.    , -0.3226,
+             0.1142, -0.2912,
+            -0.26  ,  0.0102,
+            -0.2157,  0.06  ,
+            -0.1001,  0.0454,
+            -0.0842, -0.0121,
+            -0.1178, -0.0487,
+            -0.245 , -0.0326,
+             0.26  ,  0.0102,
+             0.2157,  0.06  ,
+             0.1001,  0.0454,
+             0.0842, -0.0121,
+             0.1179, -0.0487,
+             0.245 , -0.0326,
+            -0.0842, -0.0121,
+            -0.0746, -0.1475,
+             0.0842, -0.0121,
+             0.0746, -0.1475,
+            -0.0746, -0.1475,
+             0.0746, -0.1475,
+             0.0398, -0.243 ,
+            -0.0398, -0.243 ,
+            -0.1721,  0.0333,
+            -0.1788, -0.0168,
+             0.1721,  0.0333,
+             0.1788, -0.0168,
+             0.2265,  0.205 ,
+             0.3098,  0.1672,
+             0.2894,  0.3481,
+             0.2102,  0.2676,
+             0.1412,  0.2513,
+             0.0344,  0.2879,
+             0.097 ,  0.117 ,
+             0.1546,  0.1881,
+             0.2251,  0.2047
+        ],
+        lineInd: [
+            0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 0, // head
+            14, 15, 15, 16, 16, 17, 17, 18, 18, 19, 19, 14, // eye
+            20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 25, 20, // eye
+            30, 31, 31, 32, 32, 33, 33, 30,  // nose
+            9, 10, 11, 12, 12, 13, 26, 27, 28, 29, 34, 35, 36, 37, // nose and mouth
+            //38, 39, 39, 40, 40, 41, 41, 42, 42, 43, 43, 44, 44, 45, 45, 46, 46, 38  // bow
+        ],
+        triInd: [
+            0,1,2, 0,2,3, 0,3,4, 8,6,7, 8,5,6, 8,4,5, 4,8,0,
+        ],
+        lineColor: [0.2, 0.2, 0.2],
+        fillColor: [1.0, 0.9, 0.7]
+    };
+
+    function initGUI() {
+        ['1', '2', '3'].forEach(function (j) {
+            ['1', '2', '3'].forEach(function (i) {
+                $(`#a${i}${j}`).spinner({'min': -2, 'max': 2, 'step': 0.1});
+            });
+        });
+    }
+
+    function getMatrix() {
+        var m = mat3.create();
+        mat3.copy(m, ['11','21','31',
+                      '12','22','32',
+                      '13','23','33'].map(function (ij) {
+            return $(`#a${ij}`).spinner('value')
+        }));
+        return m;
+    }
+
+    initGUI();
+
+    function initializeWebGL(canvas) {
+        // Getting WebGL context the right way
+        var gl = null;
+        try {
+            gl = canvas[0].getContext("experimental-webgl");
+            if (!gl) {
+                gl = canvas[0].getContext("webgl");
+            }
+        } catch (error) {
+            // NO-OP
+        }
+        if (!gl) {
+            alert("Could not get WebGL context!");
+            throw new Error("Could not get WebGL context!");
+        }
+        return gl;
+    }
+
+    function createShader(gl, shaderScriptId) {
+        var shaderScript = $("#" + shaderScriptId);
+        var shaderSource = shaderScript[0].text;
+        var shaderType = null;
+        if (shaderScript[0].type == "x-shader/x-vertex") {
+            shaderType = gl.VERTEX_SHADER;
+        } else if (shaderScript[0].type == "x-shader/x-fragment") {
+            shaderType = gl.FRAGMENT_SHADER;
+        } else {
+            throw new Error("Invalid shader type: " + shaderScript[0].type)
+        }
+        var shader = gl.createShader(shaderType);
+        gl.shaderSource(shader, shaderSource);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            var infoLog = gl.getShaderInfoLog(shader);
+            gl.deleteShader(shader);
+            throw new Error("An error occurred compiling the shader: " + infoLog);
+        } else {
+            return shader;
+        }
+    }
+
+    function createGlslProgram(gl, vertexShaderId, fragmentShaderId) {
+        var program = gl.createProgram();
+        gl.attachShader(program, createShader(gl, vertexShaderId));
+        gl.attachShader(program, createShader(gl, fragmentShaderId));
+        gl.linkProgram(program);
+        gl.validateProgram(program);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            var infoLog = gl.getProgramInfoLog(program);
+            gl.deleteProgram(program);
+            throw new Error("An error occurred linking the program: " + infoLog);
+        } else {
+            return program;
+        }
+    }
+
+
+    function createShape(gl, data) {
+        var shape = {};
+
+        shape.vertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, shape.vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data.vertices), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+        shape.lineIndexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.lineIndexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(data.lineInd), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+        shape.triIndexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.triIndexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(data.triInd), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+        shape.lineLen = data.lineInd.length;
+        shape.triLen = data.triInd.length;
+        shape.lineColor = data.lineColor;
+        shape.fillColor = data.fillColor;
+
+        return shape;
+    }
+
+    function drawShape(gl, shape, program, xf) {
+        gl.useProgram(program);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, shape.vertexBuffer);
+        var positionLocation = gl.getAttribLocation(program, "position");
+        gl.enableVertexAttribArray(positionLocation);
+        gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 4 * 2, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+        gl.uniformMatrix3fv(gl.getUniformLocation(program, "toWorld"), false, xf);
+
+        gl.uniform3fv(gl.getUniformLocation(program, "color"), shape.fillColor);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.triIndexBuffer);
+        gl.drawElements(gl.TRIANGLES, shape.triLen, gl.UNSIGNED_SHORT, 0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+        gl.uniform3fv(gl.getUniformLocation(program, "color"), shape.lineColor);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.lineIndexBuffer);
+        gl.drawElements(gl.LINES, shape.lineLen, gl.UNSIGNED_SHORT, 0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+        gl.useProgram(null);
+    }
+
+    function glEnv(canvas) {
+
+        var gl = initializeWebGL(canvas);
+        var program = createGlslProgram(gl, "vertexShader", "fragmentShader");
+        var cat = createShape(gl, catData);
+
+        var xf = mat3.create();
+        function setXf(newXf) {
+            mat3.copy(xf, newXf);
+        }
+
+        function drawFrame() {
+            gl.clearColor(0.15, 0.2, 0.5, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            drawShape(gl, cat, program, xf);
+        }
+
+        return {
+            setXf: setXf,
+            drawFrame: drawFrame
+        }
+    }
+
+    var objSpaceEnv = glEnv($("#objCanvas"));
+    var worldSpaceEnv = glEnv($("#worldCanvas"));
+
+    function updateWebGL(time) {
+
+        worldSpaceEnv.setXf(getMatrix());
+    
+        objSpaceEnv.drawFrame();
+        worldSpaceEnv.drawFrame();
+
+        // Reschedule the next frame.
+        window.requestAnimationFrame(updateWebGL);
+    }
+
+    window.requestAnimationFrame(updateWebGL);
+
+    var objCanvas = $("#objCanvas");
+
+    objCanvas.click(function(event) {
+    });
+    objCanvas.mousemove(function(event) {
+    });
+</script>
+
+</body>
+</html>
