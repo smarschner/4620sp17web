@@ -155,26 +155,28 @@ and type <tt>TODO#A3</tt>. There are quite a few separate code snippets to compl
 
 <h3 id="part2">Part 2: Updating the Camera's Matrix </h3>
 
-Here, we will be working with cs4620.gl.RenderCamera's updateCameraMatrix function, which is called to recompute the viewing transformations whenever the camera moves or one of its parameters is changed. In addition, we will need to know the view size and near and far distances, as well as whether or not this camera utilized a perspective transformation; all this information can be found in the fields of the corresponding SceneCamera. For rendering, we need the viewing transformation (aka. camera transformation), which maps points in world space to points in camera space, and the projection transformation, which maps from camera space to the canonical view volume.  (These transformations are discussed in the book and lecture slides.)  Actually, in this program we only need the product of the two, so your job is to compute the matrix mViewProjection in the RenderCamera object, which is the product of these two transformations.
+Here, we will be working with gl.RenderCamera's updateCameraMatrix function, which is called to recompute the viewing transformations whenever the camera moves or one of its parameters is changed. In addition, we will need to know the view size and near and far distances, as well as whether or not this camera utilized a perspective transformation; all this information can be found in the fields of the corresponding SceneCamera. For rendering, we need the viewing transformation (aka. camera transformation), which maps points in world space to points in camera space, and the projection transformation, which maps from camera space to the canonical view volume.  (These transformations are discussed in the book and lecture slides.)  Actually, in this program we only need the product of the two, so your job is to compute the matrix mViewProjection in the RenderCamera object, which is the product of these two transformations.
 
 <p> The viewing transformation can be computed from the camera's transformation matrix, and there are functions in Matrix4 that will help with construction of the projection matrix. If you're feeling lost, the viewing section of the textbook might be of use.
 
 <p> We recommend that you implement the above before considering the function's parameter, viewportSize, which simply tells you the size in pixels of the image being rendered. You might notice, after implementing the basics of this function, that your view looks rather strange and objects appear stretched out of shape. This is because the aspect ratio (the ratio of width to height) differs between the viewport and the camera, so the image get stretched to fit the viewport. To fix the strange ratios you're seeing, you'll have to adjust the width and height of the view from the one's given in the camera, considering both the size of the viewport (viewportSize) and the image size (iSize).
 
 <h3 id="part3">Part 3: Controlling the Camera</h3>
-CameraController is the class responsible for controlling the camera in response to user input. There are two kinds of controls: the ones that translate the camera (in its local frame, so that the controls move left/right, front/back, up/down relative to the user's current view), and the ones that rotate the camera (around axes that are aligned to the left/right, up/down, and front/back directions in the camera frame).
+gl.CameraController is the class responsible for controlling the camera in response to user input. There are two kinds of controls: the ones that translate the camera (in its local frame, so that the controls move left/right, front/back, up/down relative to the user's current view), and the ones that rotate the camera (around axes that are aligned to the left/right, up/down, and front/back directions in the camera frame).
 
 <p> The one additional question with rotation is what center point to rotate around. If you are navigating the camera around a scene (walking or flying around), it makes sense to rotate around the viewpoint: you rotate the camera to look around from a stationary viewpoint, or to change direction as you move forward. We call this "flying mode" (selected using 'F'). On the other hand, when you are inspecting some object, it makes sense to rotate around that object, so that if you are looking at it you stay looking at it but see it from a different view. We call this "orbit mode" (selected using 'O').
 
 <p> We have written the code that polls keyboard and mouse input for you. The way it works is to collect the user's requests for translation along and rotation around the three axes into two 3-vectors, called "motion" and "rotation". For instance, pressing "D" requests a rightward motion of the camera, which is in the positive x direction in the camera's local frame, so this action results in a positive value in motion.x. Similarly, pressing the right arrow, or clicking and dragging to the right, requests a rotation pointing the camera rightwards, which is achieved by a negative rotation around the y axis, so both these actions will result in a negative value in rotation.y. Note that these rotations are measured in degrees. Since the user could conceivably operate many of the controls at once, we just add them all up into these vectors.
 
-<p> Here, we will be working with cs4620.gl.CameraController's rotate and translate functions. Each function has roughly the same inputs and outputs.
+<p> Here, we will be working with gl.CameraController's rotate and translate functions. Each function has roughly the same inputs and outputs.
 
 <ul>
 <li> Matrix4 parentWorld, this camera's parent's world transformation
 <li> Matrix4 transformation, the matrix that acts as your function's output. Each of your functions will modify this matrix by applying a new transformation to it. Transformations are specified in this camera's frame
 <li> Vector3 (rotation) or (motion), a vector specifying (the X, Y, and Z axis rotation amounts) or (the X, Y, and Z displacement)
 </ul>
+
+In addition, the orbitMode member variable specifies whether to use orbit or fly mode.
 
 In these functions, the input is in the object's frame -- this distinction should help you decide whether or not to use mulBefore or mulAfter.
 
