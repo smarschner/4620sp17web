@@ -112,7 +112,7 @@ What are the coordinates of the two points in question?
 
 <hr/>
 
-<p><strong>Do the programming part alone or in groups of two, as you prefer.</strong>
+<p><strong>Do this programming part alone or in groups of two, as you prefer.</strong>
 
 <h3 id="overview">Getting Started</h3>
 
@@ -120,10 +120,10 @@ What are the coordinates of the two points in question?
 switching to your master branch, pulling this commit, and creating a new branch (e.g. A3
 solution) and committing your work there. This new commit contains all the framework changes and additions necessary for this project. For this project, we use lwjgl, so you may need to update some settings of your build to have this external library work properly. We have included the correct jar files, but you may need to configure your native library location. To do this in Eclipse, 
 <ul>
-  <li>Right-click on the CS4620 project in Package Explorer and press <tt>"Build Path->Configure Build Path"</tt>
+  <li>Right-click on the project in Package Explorer and press <tt>"Build Path->Configure Build Path"</tt>
   <li>Navigate to the <tt>"Libraries"</tt> tab
   <li>Expand the <tt>lwjgl.jar</tt> file and select <tt>"Native library location"</tt>
-  <li>Press <tt>"Edit"</tt> and enter in your specific path, which will be <tt>"CS4620/deps/native/&lt;your OS&gt;"</tt>.
+  <li>Press <tt>"Edit"</tt> and enter in your specific path, which will be <tt>"deps/native/&lt;your OS&gt;"</tt>.
 </ul>
 
 <h3 id="spec">Specification and Implementation</h3>
@@ -136,49 +136,48 @@ and type <tt>TODO#A3</tt>. There are quite a few separate code snippets to compl
 
 <h3 id="part1">Part 1: Traversing the Render Tree </h3>
 
-<p>Your goal is to apply the appropriate transformation matrices to each object in your scene tree to produce the correct world coordinates for each object, which can then be appropriately transformed into screen coordinates (see written question 2). Our scene graph (more complex ones are possible!) associates a RenderObject at each node in the tree. A RenderObject can be a triangle mesh, a light, or a camera, depending on its associated SceneObject. For the purposes of this part of the assignment, however, the distinction between these different types of RenderObjects is abstracted away.
+<p>Your goal is to apply the appropriate transformation matrices to each object in your scene tree to produce the correct world coordinates for each object, which can then be appropriately transformed into screen coordinates (see written question 2). Our scene graph (more complex ones are possible!) associates a <tt>RenderObject</tt> at each node in the tree. A <tt>RenderObject</tt> can be a triangle mesh, a light, or a camera, depending on its associated <tt>SceneObject</tt>. For the purposes of this part of the assignment, however, the distinction between these different types of <tt>RenderObject</tt>s is abstracted away.
 
 <p> Switching focus back to the tree, if a node has children, it acts as a group node, and its transformation applies to all members of its group. For instance, if you wanted to rotate a group of objects, instead of rotating each object individually, you'd be smart to apply a rotation matrix to that group's group node, which automatically propagates to all of the children.
 
 <p>As discussed in class, the transformation matrix you'd like to apply to each object is the transformation matrix you multiplicatively "accumulate" by traversing your scene tree from the root node to a given object's node. A naive way of interpreting a scene tree might be to loop over each object, find its corresponding transformation matrix by finding a path from the root to its associated node, and work from there. However, trees are scene data structures that (purposefully) lend themselves to cleaner methods.
 
-<p> Before continuing, it is worth pointing out that there are two matrix multiplication functions in the Matrix4 class, mulBefore and mulAfter. mulBefore adds a matrix that transforms a point before the old matrix, whereas mulAfter adds a matrix that transforms a point after the old matrix. More specifically A.mulBefore(B) does an in-place modification of A, replacing it with AB. A.mulAfter(B) does an in-place modification of A, replace it with BA. The distinction between these two functions can be interpreted as "which frame is the transformation B specified in?" If the transformation corresponding to B is specified in A's frame, then mulBefore is appropriate. If B is specified in A's parent's frame, then mulAfter is appropriate.
+<p> Before continuing, it is worth pointing out that there are two matrix multiplication functions in the <tt>Matrix4</tt> class, <tt>mulBefore</tt> and <tt>mulAfter</tt>. <tt>mulBefore</tt> adds a matrix that transforms a point before the old matrix, whereas <tt>mulAfter</tt> adds a matrix that transforms a point after the old matrix. More specifically <tt>A.mulBefore(B)</tt> does an in-place modification of A, replacing it with AB. <tt>A.mulAfter(B)</tt> does an in-place modification of A, replace it with BA. The distinction between these two functions can be interpreted as "which frame is the transformation B specified in?" If the transformation corresponding to B is specified in A's frame, then <tt>mulBefore</tt> is appropriate. If B is specified in A's parent's frame, then <tt>mulAfter</tt> is appropriate.
 
 <h4>Tree Traversal</h4>
 
-<p> Your first job is to implement a recursive function that traverses a given scene tree, and propagates group transformations to child nodes. The function you'll need to implement to accomplish this task is rippleTransformations in cs4620.gl.RenderTreeBuilder.java. Your input render tree is stored in a RenderEnvironment object. A render tree has a single node with no parent called the "root".
+<p> Your first job is to implement a recursive function that traverses a given scene tree, and propagates group transformations to child nodes. The function you'll need to implement to accomplish this task is rippleTransformations in <tt>gl.RenderTreeBuilder.java</tt>. Your input render tree is stored in a <tt>RenderEnvironment</tt> object. A render tree has a single node with no parent called the "root".
 
-<p> rippleTransformations should be recursive (or utilize a recursive helper function). First, for a given RenderObject that is not the root node, we need to set mWorldTransform and mWorldTransformIT within that render object. mWorldTransform should be set to the composition of two matrices, AB, where A is the render object's parent's world transform, and B is the render object's local transform (stored in its corresponding SceneObject). mWorldTransformIT is a bit more complex. Recall from class that surface normals are not preserved when applying a transformation matrix, i.e. if you were to apply the same transformation to an object and its corresponding surface normals, the resulting surface would not be normal. Therefore, mWorldTransformIT needs to be set to the matrix you use to transform transform normal vectors to preserve normalcy.
+<p> rippleTransformations should be recursive (or utilize a recursive helper function). First, for a given <tt>RenderObject</tt> that is not the root node, we need to set <tt>mWorldTransform</tt> and <tt>mWorldTransform</tt>IT within that render object. <tt>mWorldTransform</tt> should be set to the composition of two matrices, AB, where A is the render object's parent's world transform, and B is the render object's local transform (stored in its corresponding <tt>SceneObject</tt>). <tt>mWorldTransform</tt>IT is a bit more complex. Recall from class that surface normals are not preserved when applying a transformation matrix, i.e. if you were to apply the same transformation to an object and its corresponding surface normals, the resulting surface would not be normal. Therefore, <tt>mWorldTransform</tt>IT needs to be set to the matrix you use to transform transform normal vectors to preserve normalcy.
 
-<p> After you've correctly set the two necessary matrices at a given node, you need to traverse through the tree by making a recursive call on each of the RenderObject's children.
-<p> Additionally, for all the cameras in the scene (RenderEnvironment.cameras) you must recalculate the camera's ViewPerspectiveProjection matrix.
+<p> After you've correctly set the two necessary matrices at a given node, you need to traverse through the tree by making a recursive call on each of the <tt>RenderObject</tt>'s children.
+<p> Additionally, for all the cameras in the scene (<tt>RenderEnvironment.cameras</tt>) you must recalculate the camera's <tt>ViewPerspectiveProjection</tt> matrix.
 
 <h3 id="part2">Part 2: Updating the Camera's Matrix </h3>
 
-Here, we will be working with gl.RenderCamera's updateCameraMatrix function, which is called to recompute the viewing transformations whenever the camera moves or one of its parameters is changed. In addition, we will need to know the view size and near and far distances, as well as whether or not this camera utilized a perspective transformation; all this information can be found in the fields of the corresponding SceneCamera. For rendering, we need the viewing transformation (aka. camera transformation), which maps points in world space to points in camera space, and the projection transformation, which maps from camera space to the canonical view volume.  (These transformations are discussed in the book and lecture slides.)  Actually, in this program we only need the product of the two, so your job is to compute the matrix mViewProjection in the RenderCamera object, which is the product of these two transformations.
+Here, we will be working with <tt>gl.RenderCamera</tt>'s <tt>updateCameraMatrix</tt> function, which is called to recompute the viewing transformations whenever the camera moves or one of its parameters is changed. In addition, we will need to know the view size and near and far distances, as well as whether or not this camera utilized a perspective transformation; all this information can be found in the fields of the corresponding <tt>SceneCamera</tt>. For rendering, we need the viewing transformation (aka. camera transformation), which maps points in world space to points in camera space, and the projection transformation, which maps from camera space to the canonical view volume.  (These transformations are discussed in the book and lecture slides.)  Actually, in this program we only need the product of the two, so your job is to compute the matrix <tt>mViewProjection</tt> in the <tt>RenderCamera</tt> object, which is the product of these two transformations.
 
-<p> The viewing transformation can be computed from the camera's transformation matrix, and there are functions in Matrix4 that will help with construction of the projection matrix. If you're feeling lost, the viewing section of the textbook might be of use.
+<p> The viewing transformation can be computed from the camera's transformation matrix, and there are functions in <tt>Matrix4</tt> that will help with construction of the projection matrix. If you're feeling lost, the viewing section of the textbook might be of use.
 
-<p> We recommend that you implement the above before considering the function's parameter, viewportSize, which simply tells you the size in pixels of the image being rendered. You might notice, after implementing the basics of this function, that your view looks rather strange and objects appear stretched out of shape. This is because the aspect ratio (the ratio of width to height) differs between the viewport and the camera, so the image get stretched to fit the viewport. To fix the strange ratios you're seeing, you'll have to adjust the width and height of the view from the one's given in the camera, considering both the size of the viewport (viewportSize) and the image size (iSize).
+<p> We recommend that you implement the above before considering the function's parameter, <tt>viewportSize</tt>, which simply tells you the size in pixels of the image being rendered. You might notice, after implementing the basics of this function, that your view looks rather strange and objects appear stretched out of shape. This is because the aspect ratio (the ratio of width to height) differs between the viewport and the camera, so the image get stretched to fit the viewport. To fix the strange ratios you're seeing, you'll have to adjust the width and height of the view from the one's given in the camera, considering both the size of the viewport (<tt>viewportSize</tt>) and the image size (<tt>iSize</tt>).
 
 <h3 id="part3">Part 3: Controlling the Camera</h3>
-gl.CameraController is the class responsible for controlling the camera in response to user input. There are two kinds of controls: the ones that translate the camera (in its local frame, so that the controls move left/right, front/back, up/down relative to the user's current view), and the ones that rotate the camera (around axes that are aligned to the left/right, up/down, and front/back directions in the camera frame).
+<tt>gl.CameraController</tt> is the class responsible for controlling the camera in response to user input. There are two kinds of controls: the ones that translate the camera (in its local frame, so that the controls move left/right, front/back, up/down relative to the user's current view), and the ones that rotate the camera (around axes that are aligned to the left/right, up/down, and front/back directions in the camera frame).
 
 <p> The one additional question with rotation is what center point to rotate around. If you are navigating the camera around a scene (walking or flying around), it makes sense to rotate around the viewpoint: you rotate the camera to look around from a stationary viewpoint, or to change direction as you move forward. We call this "flying mode" (selected using 'F'). On the other hand, when you are inspecting some object, it makes sense to rotate around that object, so that if you are looking at it you stay looking at it but see it from a different view. We call this "orbit mode" (selected using 'O').
 
-<p> We have written the code that polls keyboard and mouse input for you. The way it works is to collect the user's requests for translation along and rotation around the three axes into two 3-vectors, called "motion" and "rotation". For instance, pressing "D" requests a rightward motion of the camera, which is in the positive x direction in the camera's local frame, so this action results in a positive value in motion.x. Similarly, pressing the right arrow, or clicking and dragging to the right, requests a rotation pointing the camera rightwards, which is achieved by a negative rotation around the y axis, so both these actions will result in a negative value in rotation.y. Note that these rotations are measured in degrees. Since the user could conceivably operate many of the controls at once, we just add them all up into these vectors.
+<p> We have written the code that polls keyboard and mouse input for you. The way it works is to collect the user's requests for translation along and rotation around the three axes into two 3-vectors, called "motion" and "rotation". For instance, pressing "D" requests a rightward motion of the camera, which is in the positive x direction in the camera's local frame, so this action results in a positive value in <tt>motion.x</tt>. Similarly, pressing the right arrow, or clicking and dragging to the right, requests a rotation pointing the camera rightwards, which is achieved by a negative rotation around the y axis, so both these actions will result in a negative value in <tt>rotation.y</tt>. Note that these rotations are measured in degrees. Since the user could conceivably operate many of the controls at once, we just add them all up into these vectors.
 
-<p> Here, we will be working with gl.CameraController's rotate and translate functions. Each function has roughly the same inputs and outputs.
+<p> Here, we will be working with <tt>gl.CameraController</tt>'s <tt>rotate</tt> and <tt>translate</tt> functions. Each function has roughly the same inputs and outputs.
 
 <ul>
-<li> Matrix4 parentWorld, this camera's parent's world transformation
-<li> Matrix4 transformation, the matrix that acts as your function's output. Each of your functions will modify this matrix by applying a new transformation to it. Transformations are specified in this camera's frame
-<li> Vector3 (rotation) or (motion), a vector specifying (the X, Y, and Z axis rotation amounts) or (the X, Y, and Z displacement)
+<li> <tt>Matrix4 parentWorld</tt>, this camera's parent's world transformation
+<li> <tt>Matrix4 transformation</tt>, the matrix that acts as your function's output. Each of your functions will modify this matrix by applying a new transformation to it. Transformations are specified in this camera's frame
+<li> <tt>Vector3</tt> (rotation) or (motion), a vector specifying (the X, Y, and Z axis rotation amounts) or (the X, Y, and Z displacement)
+<li> (implicitly -- it is a member of the class that you need to use) <tt>boolean orbitMode</tt>, a boolean indicating whether to use fly or orbit mode
 </ul>
 
-In addition, the orbitMode member variable specifies whether to use orbit or fly mode.
-
-In these functions, the input is in the object's frame -- this distinction should help you decide whether or not to use mulBefore or mulAfter.
+In these functions, the input is in the object's frame -- this distinction should help you decide whether or not to use <tt>mulBefore</tt> or <tt>mulAfter</tt>.
 
 <h4>Camera Translation</h4>
 
@@ -188,7 +187,7 @@ The camera translation function is the easier of the two to implement. This func
 
 Camera rotation is a bit more tricky, given that we have two distinct camera modes, fly and orbit, that handle rotations differently. We recommend that you get fly working first. 
 
-<p> Once fly is working, you should move on to orbit. Here, all rotations are about the origin in world coordinates. You'll need to compute the coordinates of the world's origin in camera space, and then construct your rotation around that point. When everything is working properly, the earth in Earth.xml should appear stationary when the camera is rotated, as it is orbiting around the origin.
+<p> Once fly is working, you should move on to orbit. Here, all rotations are about the origin in world coordinates. You'll need to compute the coordinates of the world's origin in camera space, and then construct your rotation around that point. When everything is working properly, the earth in <tt>Earth.xml</tt> should appear stationary when the camera is rotated, as it is orbiting around the origin.
 
 <p> Note that there's a bit of ambiguity with respect to rotation ordering here. If the user requests rotations around multiple axes at once (for example, using a diagonal drag of the mouse) it is not clear exactly what we should do. Should we rotate left and then down, or rotate down and then left? It makes a difference because rotations do not commute, though it is a small difference because the rotations for each frame are small in magnitude. We don't particularly care how you deal with this issue, just do something reasonable.
 
@@ -198,15 +197,15 @@ The basic idea of manipulators is to give the user a reasonably intuitive tool t
 
 <p> There are two ways to modify the transformation. Suppose we want to apply a translation T. We could compose T with the object's current transformation M on the right (M = M * T, where T is the adjustment), which corresponds to translating along an axis in the object's coordinate system, or on the left (M = T * M), which corresponds to translating it along an axis in the parent's coordinate system. When M contains any rotation, these axes will be different. Each is equally easy to do, so we want to provide both options to the user, and the Scene application does this by providing the 'P' key, which toggles "parent mode" on and off. When parent mode is on, adjustments to an object's transformation happen along the axes of the parent space; when it is off ("local mode"), adjustments happen in the object's space.
 
-<p> The code in the framework handles selecting objects, drawing the manipulators, and detecting when the user has clicked on a part of a manipulator (they each have three parts, one for each axis). When the user clicks on a manipulator and drags, the framework code calls your code to compute and apply the transformation. For instance, if an object is selected in translation mode, and the user clicks on the red (x axis) arrow and drags the mouse, the method applyTranslation will be called with axis==Manipulator.Axis.X, with the currently selected camera and object, and the previous and current mouse position. Specifically, the parameters are...
+<p> The code in the framework handles selecting objects, drawing the manipulators, and detecting when the user has clicked on a part of a manipulator (they each have three parts, one for each axis). When the user clicks on a manipulator and drags, the framework code calls your code to compute and apply the transformation. For instance, if an object is selected in translation mode, and the user clicks on the red (x axis) arrow and drags the mouse, the method <tt>applyTranslation</tt> will be called with <tt>axis==Manipulator.Axis.X</tt>, with the currently selected camera and object, and the previous and current mouse position. Specifically, the parameters are...
 
 <ul>
-<li> int axis, an integer identifying which axis the manipulator corresponds to
-<li> Matrix4 mViewProjection, which takes coordinates in world space and transforms them into the canonical view volume.
-<li> RenderObject object, the object that's being directly manipulated (it's children would be as well, if it has them)
-<li> Vector2 lastMousePos, the starting position of the mouse 
-<li> Vector2 curMousePos, the current position of the mouse
-<li> (implicitly -- it is a member of the class that you need to use) boolean parentSpace, a boolean indicating whether the transformation should occur in the object space of the parent, or the child
+<li> <tt>int axis</tt>, an integer identifying which axis the manipulator corresponds to
+<li> <tt>Matrix4</tt> <tt>mViewProjection</tt>, which takes coordinates in world space and transforms them into the canonical view volume.
+<li> <tt>RenderObject</tt> object, the object that's being directly manipulated (it's children would be as well, if it has them)
+<li> <tt>Vector2 lastMousePos</tt>, the starting position of the mouse 
+<li> <tt>Vector2 curMousePos</tt>, the current position of the mouse
+<li> (implicitly -- it is a member of the class that you need to use) <tt>boolean parentSpace</tt>, a boolean indicating whether the transformation should occur in the object space of the parent, or the child
 </ul> 
 
 <p> The first step in implementing manipulators is to get the correct transformations, not worrying yet about the size of the transformations. For this, you just need to make a transformation of the right type, along the given axis, with a magnitude that is computed from the mouse delta in some easy way: for instance, translate by the difference in mouse x coordinate times 0.01 (the details don't matter since this is just temporary). Once this works, you will see the object moving in the direction of the manipulator arrow you clicked on, but it will generally be confusing to figure out which way to move the mouse to get the desired result.
