@@ -3,7 +3,7 @@
 
 <p><strong>Do this written part alone.</strong>
 
-<h3 id="overview">Matrices, Viewing, and Manipulators</h3>
+<h3 id="written_overview">Matrices, Viewing, and Manipulators</h3>
 
 <p>We were able to make some really neat images with our ray tracer, but, unfortunately, those images took a long time to compute. You might be wondering how your favorite video game or CAD program is able to create 30-120 images every second. In general, ray tracing is not used for these applications because beautiful looking ray-traced images are too expensive to compute in real time.
 
@@ -12,7 +12,7 @@
 <p>In this assignment, you will complete some warm-up exercises, implement a traversal of a scene tree, and implement three types of real-time manipulators. Again, we will provide framework code, so your focus is on implementing the more "interesting," graphics-related components. However, you also have some freedom to redesign our system as you see fit.
 
 
-<h3 id="part1">Q1. 2-D transformations (with 3x3 matrices)</h3>
+<h3 id="written_part1">Q1. 2-D transformations (with 3x3 matrices)</h3>
 
 Consider the following matrices:
 
@@ -41,7 +41,7 @@ C = \begin{pmatrix}
 <li>Why are these different?
 </ol>
 
-<h3 id="part2">Q2. Big Matrix Stack</h3>
+<h3 id="written_part2">Q2. Big Matrix Stack</h3>
 In graphics pipelines, we often apply a series of transformations to coordinates in world space to achieve accurate screen coordinates. In this exercise, the position of a single point in world space is given (in a real graphics pipeline, this might correspond to one of three points that defines a triangle) and it's your job to apply the appropriate matrices to answer the following questions.
 
 <h4>Parameters</h4>
@@ -71,7 +71,7 @@ the perspective matrix?
 <p>How about our canonical z-coordinate?
 </ul>
 
-<h3 id="part3">Q3. Manipulator Warmup</h3>
+<h3 id="written_part3">Q3. Manipulator Warmup</h3>
 In this assignment, you're going to be implementing "manipulators." Manipulators allow users to apply transformations to objects in scenes visually. In this question, we will consider a translation manipulator. A translation manipulator can be thought of as a ray in three-dimensional space that corresponds to an object space axis (either x, y, or z) for a given object. One challenge with implementing manipulators is how one maps the actions of users (in a 2-D image plane) to 3-D transformations. We will think of a simplified case -- we are given the coordinates and direction of the manipulator and two click locations on screen. The question we will investigate is: given all of this information, what translation should be applied to the object in question?
 
 <p> Consider a manipulator as a ray with a given origin o and direction d. Any point p on that ray can be described by a parameter t in the usual p = o + td fashion. For a translation manipulator, the goal is to find the positions on the ray that the user clicked (t1 being the first click point, and t2 being the second). Once we've determined the best t1 and t2, we can then apply a translation transformation on the object in the object's frame along the manipulator's axis by the amount (t2-t1).
@@ -114,7 +114,7 @@ What are the coordinates of the two points in question?
 
 <p><strong>Do this programming part alone or in groups of two, as you prefer.</strong>
 
-<h3 id="overview">Getting Started</h3>
+<h3 id="code_overview">Getting Started</h3>
 
 <p>A new commit has been pushed to the class Github page in the master branch. We recommend
 switching to your master branch, pulling this commit, and creating a new branch (e.g. A3
@@ -126,7 +126,7 @@ solution) and committing your work there. This new commit contains all the frame
   <li>Press <tt>"Edit"</tt> and enter in your specific path, which will be <tt>"deps/native/&lt;your OS&gt;"</tt>.
 </ul>
 
-<h3 id="spec">Specification and Implementation</h3>
+<h3 id="code_spec">Specification and Implementation</h3>
 
 <p>We have marked all the functions or parts of the functions you need to complete with <tt>TODO#A3</tt>
 in the source code. To see all these TODO's in Eclipse, select <tt>Search</tt> menu, then <tt>File Search</tt>
@@ -134,7 +134,7 @@ and type <tt>TODO#A3</tt>. There are quite a few separate code snippets to compl
 
 <p> This assignment is best broken down into four parts. We highly recommend completing the parts in order.
 
-<h3 id="part1">Part 1: Traversing the Render Tree </h3>
+<h3 id="code_part1">Part 1: Traversing the Render Tree </h3>
 
 <p>Your goal is to apply the appropriate transformation matrices to each object in your scene tree to produce the correct world coordinates for each object, which can then be appropriately transformed into screen coordinates (see written question 2). Our scene graph (more complex ones are possible!) associates a <tt>RenderObject</tt> at each node in the tree. A <tt>RenderObject</tt> can be a triangle mesh, a light, or a camera, depending on its associated <tt>SceneObject</tt>. For the purposes of this part of the assignment, however, the distinction between these different types of <tt>RenderObject</tt>s is abstracted away.
 
@@ -153,7 +153,7 @@ and type <tt>TODO#A3</tt>. There are quite a few separate code snippets to compl
 <p> After you've correctly set the two necessary matrices at a given node, you need to traverse through the tree by making a recursive call on each of the <tt>RenderObject</tt>'s children.
 <p> Additionally, for all the cameras in the scene (<tt>RenderEnvironment.cameras</tt>) you must recalculate the camera's <tt>ViewPerspectiveProjection</tt> matrix.
 
-<h3 id="part2">Part 2: Updating the Camera's Matrix </h3>
+<h3 id="code_part2">Part 2: Updating the Camera's Matrix </h3>
 
 Here, we will be working with <tt>gl.RenderCamera</tt>'s <tt>updateCameraMatrix</tt> function, which is called to recompute the viewing transformations whenever the camera moves or one of its parameters is changed. In addition, we will need to know the view size and near and far distances, as well as whether or not this camera utilized a perspective transformation; all this information can be found in the fields of the corresponding <tt>SceneCamera</tt>. For rendering, we need the viewing transformation (aka. camera transformation), which maps points in world space to points in camera space, and the projection transformation, which maps from camera space to the canonical view volume.  (These transformations are discussed in the book and lecture slides.)  Actually, in this program we only need the product of the two, so your job is to compute the matrix <tt>mViewProjection</tt> in the <tt>RenderCamera</tt> object, which is the product of these two transformations.
 
@@ -161,7 +161,7 @@ Here, we will be working with <tt>gl.RenderCamera</tt>'s <tt>updateCameraMatrix<
 
 <p> We recommend that you implement the above before considering the function's parameter, <tt>viewportSize</tt>, which simply tells you the size in pixels of the image being rendered. You might notice, after implementing the basics of this function, that your view looks rather strange and objects appear stretched out of shape. This is because the aspect ratio (the ratio of width to height) differs between the viewport and the camera, so the image get stretched to fit the viewport. To fix the strange ratios you're seeing, you'll have to adjust the width and height of the view from the one's given in the camera, considering both the size of the viewport (<tt>viewportSize</tt>) and the image size (<tt>iSize</tt>).
 
-<h3 id="part3">Part 3: Controlling the Camera</h3>
+<h3 id="code_part3">Part 3: Controlling the Camera</h3>
 <tt>gl.CameraController</tt> is the class responsible for controlling the camera in response to user input. There are two kinds of controls: the ones that translate the camera (in its local frame, so that the controls move left/right, front/back, up/down relative to the user's current view), and the ones that rotate the camera (around axes that are aligned to the left/right, up/down, and front/back directions in the camera frame).
 
 <p> The one additional question with rotation is what center point to rotate around. If you are navigating the camera around a scene (walking or flying around), it makes sense to rotate around the viewpoint: you rotate the camera to look around from a stationary viewpoint, or to change direction as you move forward. We call this "flying mode" (selected using 'F'). On the other hand, when you are inspecting some object, it makes sense to rotate around that object, so that if you are looking at it you stay looking at it but see it from a different view. We call this "orbit mode" (selected using 'O').
@@ -191,7 +191,7 @@ Camera rotation is a bit more tricky, given that we have two distinct camera mod
 
 <p> Note that there's a bit of ambiguity with respect to rotation ordering here. If the user requests rotations around multiple axes at once (for example, using a diagonal drag of the mouse) it is not clear exactly what we should do. Should we rotate left and then down, or rotate down and then left? It makes a difference because rotations do not commute, though it is a small difference because the rotations for each frame are small in magnitude. We don't particularly care how you deal with this issue, just do something reasonable.
 
-<h3 id="part4">Part 4: Manipulators</h3>
+<h3 id="code_part4">Part 4: Manipulators</h3>
 
 The basic idea of manipulators is to give the user a reasonably intuitive tool to adjust any of the many transformations in the scene. The user selects an object by clicking on it, to indicate that he or she wishes to edit that object's transformation. We modify the transformations by applying axis-aligned rotations, translations, or scales to them, and the goal of a manipulator is (a) to give a visual indication of what will happen when you apply one of these transforms and (b) to give a direct "handle" to pull on to indicate the direction and size of the transformation.
 
@@ -234,7 +234,7 @@ map vertical mouse motion directly to the rotation angle.
 Then, you should multiply this quantity by some constant (pick something reasonable) to determine
 the change in the angle of rotation about the selected axis.
 
-<h3 id="demo"> Demo Video</h3>
+<h3 id="code_demo"> Demo Video</h3>
 
 <p>The following video contains a demo of our solution for this assignment. This should give you an idea of what behavior to expect from working manipulators and camera operations.</p>
 
@@ -245,7 +245,7 @@ the change in the angle of rotation about the selected axis.
       </div>
 </div> 
 
-<h3 id="appendix">Appendix: More Framework Information</h3>
+<h3 id="code_appendix">Appendix: More Framework Information</h3>
 
 <h4>Control Guide</h4>
 <ul>
