@@ -1,0 +1,349 @@
+<!-- <h1><strong>PA 2: Ray1</strong></h1> -->
+<h3><strong>Due:  Friday February 17th 2017 (11:59pm)</strong></h3>
+
+<p><strong>Do this project alone or in groups of two, as you prefer. </strong>You can use <a href="https://piazza.com/class/iy7ekv7ao0r1aj">Piazza</a> to help pair yourselves up.
+
+<p><strong>Modification:</strong> You only are required to complete 3 of the following 4 features for full credit on this assignment:
+  <ul>
+    <li> Texture coordinates for <tt>Sphere</tt>s (if omitted, always use texture coordinate (0,0))
+    <li> <tt>Phong</tt> shader (if omitted, behave as <tt>Lambertian</tt>)
+    <li> <tt>RepeatTexture</tt> (if omitted, behave as <tt>ClampTexture</tt>)
+    <li> <tt>ClampTexture</tt> (if omitted, behave as <tt>RepeatTexture</tt>)
+  </ul>
+Completing all four will earn extra credit.  Please make it clear which features you completed (so we know which ones to grade) in your Readme file.
+
+<h4>Introduction</h4>
+
+<p>Ray tracing is a simple and powerful algorithm for rendering images. Within the accuracy of the scene and shading models and with enough computing time, the images produced by a ray tracer can be physically accurate and can appear indistinguishable from real images. Cornell pioneered research in accurate rendering. See <a href="http://www.graphics.cornell.edu/online/box/compare.html">http://www.graphics.cornell.edu/online/box/compare.html</a> for the famous Cornell box, which exists in Rhodes Hall.
+
+<p>The basic idea behind ray tracing is to model the movement of photons as they travel along their path from a light source, to a surface, and finally to a viewer's eye. Tracing forward along this path is difficult, since it can be unclear which photons will make it to the eye, especially when photons can bounce between objects several times along their path (and in unpredictable ways). To simplify the system, these paths are computed in reverse; that is, rays originate from the position of the eye. Color information, which depends on the scene's light sources, is computed when these rays intersect an object, and is sent back towards the eye to determine the color of any particular pixel.
+
+<p>In this assignment, you will complete an implementation of a ray tracer.  It will not be able to produce physically accurate images, but later in the semester you will extend it to produce nice looking images with many interesting effects.
+
+<p>We have provided framework code to save you from spending time on class
+hierarchy design and input/output code, and rather to have you focus on implementing the core ray
+tracing components. However, you also have the freedom to redesign the system
+as long as your ray tracer meets our requirements and produces the same images
+for the given scenes.
+
+<p>In general, this assignment consists of the written part (warm up exercise) and the programming part. <span style="font-weight:bold">Please complete the written part alone and do the programming part alone or in groups of two, as you prefer.</span>
+
+<h4>Requirement Overview</h4>
+
+<p>The programming portion of this assignment is described below.
+
+<p>A ray tracer computes images in <i>image order</i>, meaning that the outer loop visits pixels one at a time.  (In our framework the outer loop is found in the class <tt>RayTracer</tt>).  For each pixel it performs the following operations:
+<ul style="list-style: none;">
+  <li><strong>Ray generation</strong>, in which the viewing ray corresponding to the current pixel is found.  The calculations depend on the characteristics of the camera: where it is located, which way it is looking, etc.  In our framework, ray generation happens in the subclasses of <tt>Camera</tt>.
+  <li><strong> Ray intersection</strong>, which determines the visible surface at the current pixel by finding the closest intersection between the ray and a surface in the scene (in our framework, ray intersection is handled by the <tt>Scene</tt> class).
+  <li><strong>Shading</strong>, in which the color of the object, as seen from the camera, is determined.  Shading accounts for the effects of illumination and shadows (in our framework, shading happens in the subclasses of <tt>Shader</tt>).
+</ul>
+
+In this assignment, your ray tracer will have support for:
+<ul>
+  <li>Spheres and triangle meshes
+  <li>Lambertian and Phong shading
+  <li>Point lights with shadows
+  <li>Parallel and perspective cameras
+</ul>
+
+<p>Your ray tracer will read files in an XML file format and output PNG images. We have split ray tracing in CS4620 into two parts. For now, you will implement basic ray tracing. Later in the semester, after you have learned many more graphics techniques, you will implement other features, such as advanced shaders, faster rendering, and transformations on groups of objects. In this document, we focus on what you need to implement the basic elements of a ray tracer.
+
+<h5>Precisions in the programming assignment</h5>
+<p>All the input in this project is parsed in single precision and the scene is stored in single precision as well.  This is a good practice since scene data in real systems can occupy a lot of memory. But accurate ray intersections and shadows are difficult to achieve with single precision.  So you should carry out all the geometric calculations, and store all related intermediate results, in double precision.
+
+<h4>Warmup exercise</h4>
+
+<p>A group of astronauts has just left on their journey to Mars when ground control informs them that there will be a lunar eclipse back home.  The astronauts are asked to take a picture of this rare event from their location in space and report back.  The situation at the moment they take the picture is as follows:
+
+<p>Note that we use Earth-centered coordinates that match the ones for the sphere in the mesh assignment.  So 1 Earth radius is the unit of measure.
+<ul>
+  <li>The sun is positioned 23,679 units away from the Earth (from the center, if you must ask), exactly above the point at latitude and longitude zero, at (0, 0, 23679).
+  <li>The moon is positioned at (0, 1, -10) units away from the center of the earth.  It has radius 0.15.
+  <li>The spacecraft is at (15, 0, 20) and its camera is looking in the direction (-3/5, 0, -4/5) (which is the ray through the very center of the image)
+</ul>
+
+<h5>Q1. In the astronauts' photo,</h5>
+
+<ol type="a">
+   <li>What (x, y, z) point on the Earth's surface appears exactly at the center of the image? Check your work by showing that the point is both on the ray and on the surface of the Earth (plug the point into the ray and sphere equations). See Sec. 4.4.1 of the textbook.
+   <li>Is the point (0, .91, -9.88) on the moon in the shadow of the Earth? You can approximate the direction from the point to the sun as (0, 0, 1).
+</ol>
+
+<h5>Q2. For the point on the Earth at the center of the image,</h5>
+
+<ol type="a">
+  <li>Let's assume for this question that colors only have one component (reflectance) instead of three RGB components. If the intensity of the sun is 100,000,000 units, and the Earth at that point has a diffuse reflectance 0.5, specular reflectance 0.9, and exponent 100, then what is the total light reflected from that point toward the camera (not taking into account ambient light or exposure)? Again, you can approximate the light direction as (0, 0, 1).
+</ol>
+
+<h5>Q3. Write an xml scene file that models the above scenario.</h5>
+<ol type="a">
+  <li>The spaceship's camera is a perspective camera with the following properties: up-direction is (0, 1, 0), projectionDistance is 25 units, viewWidth and viewHeight are 10 units. The resolution of the camera is 2048 x 2048 pixels. The exposure is 3.3.
+  <li>The Earth has diffuse color (0.5, 0.5, 0.5), specular color (0.9, 0.9, 0.9), and exponent 100. The moon has diffuse color (0.8, 0.8, 0.8). specular color (1, 1, 0). and exponent 50.
+  <li>You can check your work once the coding assignment is finished by ray tracing this xml file. Both the Earth and moon should be visible.
+</ol>
+
+<h4>Getting Started</h4>
+
+<p>A new commit has been pushed to the class Github page in the master branch. We recommend
+switching to your master branch, pulling this commit, and creating a new branch (e.g. A2
+solution) and committing your work there. This new commit contains all the framework changes and additions necessary for this project.
+
+<h4>Specification and Implementation</h4>
+
+<p>We have marked all the functions or parts of the functions you need to complete with <tt>TODO#A2</tt>
+in the source code. To see all these TODO's in Eclipse, select <tt>Search</tt> menu, then <tt>File Search</tt>
+and type <tt>"TODO#A2"</tt>. There are quite a few separate code snippets to
+complete in this assignment. To check your progress as you go along, we
+recommend implementation in the following order.
+
+
+<h5><strong>Cameras</h5></strong>
+
+<p>An instance of the <tt>Camera</tt> class represents a camera in the scene. It must implement the following methods: 
+
+<pre>
+  public void init()
+</pre>
+
+This method sets an orthonormal basis for the camera based on the view and up directions. 
+
+<pre>
+  public void getRay(Ray outRay, double inU, double inV)
+</pre>
+
+This method generates a new ray starting at the camera through a given image point and stores it in <tt>outRay</tt>. The image point is given in UV coordinates, which must first be converted into view coordinates. Recall that an orthographic camera produces rays with varying origin and constant direction, whereas a perspective camera produces rays with constant origin and varying direction.
+
+<p>You will implement these two methods for both the <tt>OrthographicCamera</tt> and the <tt>PerspectiveCamera</tt>. All of the properties you will need are stored in the <tt>Camera</tt> class.
+
+<p>You can then test your getRay() method for both of these classes by running the main method in Camera.java. You should get "Test successful" messages if your implementation is correct.
+
+
+<h5><strong>Surfaces</h5></strong>
+
+<p>An instance of the <tt>Surface</tt> class represents a piece of geometry in the scene. It has to implement the following method:
+<pre>
+  boolean intersect(IntersectionRecord outRecord, Ray ray)
+</pre>
+
+  <p>  This method intersects the given ray with the surface. Return true if the ray intersects the geometry 
+  and write relevant information to the IntersectionRecord structure. Relevant information 
+  includes the position of the hit point, the surface normal at the hit point, 
+  the value <tt>t</tt> of the ray at the hit point, 
+  and the surface being hit itself. See the <tt>IntersectionRecord</tt> class for details.
+
+
+<p>We ask that you implement the intersection method for the following surfaces:
+<ul style="list-style: none;">
+  <li><strong><tt>Sphere</strong></tt>: The class contains a 3D point <tt>center</tt> and a float <tt>radius</tt>. You will need to solve the sphere/ray intersection equations. Be sure to calculate the exact normal at the point of intersection and store it in the <tt>IntersectionRecord</tt>. Additionally, please compute and store UV-coordinates in the same orientation as Assignment 1 (i.e. the poles should lie on the y-axis, and the seam should intersect the negative z-axis if the sphere is located at the origin). See section 4.4.1 of the book.
+  <li><strong><tt>Triangle</strong></tt>: In our system, each triangle belongs to a <tt>Mesh</tt>, which keeps a reference to a <tt>mesh</tt> object. A triangle stores an <tt>OBJFace</tt> object which corresponds to the face formed by the triangle. See section 4.4.2 of the book.
+
+If the owning face does not have a per-vertex normal, the <tt>intersect</tt>
+method should return the triangle normal stored in <tt>Triangle</tt>. If it does,
+it should interpolate the normals of the three vertices using the barycentric
+coordinate of the hit point. Texture coordinates, if available, should be interpolated using barycentric coordinates as well.
+</ul>
+
+<h5><strong>Scene</h5></strong>
+
+<p>The <tt>Scene</tt> class stores information relating to the composition, 
+i.e. the camera, a list of surfaces, a list of lights, etc. It also contains a scene-file-specified <tt>exposure</tt> field, which can be used to adjust the brightness of the resulting image. You need to implement the following method: 
+<pre>
+  boolean intersect(IntersectionRecord outRecord, Ray rayIn, boolean anyIntersection)
+</pre>
+
+<p>  The method should loop through all surfaces in the scene (stored in the <tt>Surfaces</tt> field), looking for intersections along <tt>rayIn</tt>.
+  This is done by calling the <tt>intersect</tt> method on each surface and it is used when a ray is first cast out into the scene. If <tt>anyIntersection</tt> is false, 
+  it should only record the first intersection that happens along <tt>rayIn</tt>, i.e. the intersection   
+  with the lowest value of <tt>t</tt>. If there is such an intersection, it is recorded in <tt>outRecord</tt>
+  and true is returned; otherwise, the method returns false, and <tt>outRecord</tt> is not modified. 
+  If <tt>anyIntersection</tt> is true, the method may return true immediately upon finding any intersection 
+  with the scene's geometry, even without setting <tt>outRecord</tt> 
+  (this version is used to make shadow calculations faster).
+
+
+
+<h5><strong>Ray Tracing</h5></strong>
+
+<p>You then need to complete the <tt>shadeRay</tt> method of the <tt>RayTracer</tt> class. This method contains the main logic of the ray tracer. It takes a ray generated by the camera, intersects it with the scene, and returns a color based on what the ray hits. Fortunately, most of the details are implemented in other methods; all you need to do is call those methods, and this should only take a few lines. For instance, the <tt>Scene</tt> class contains a method for finding the first object a given ray hits. Details are in the code's comments.
+
+
+<p>We have provided a normal shader that determines color based on the normal of the surface, as well as some sample scenes that use this shader. Once you have completed the previous sections, you should be able to render the scenes <tt>one-sphere-rgb-normals.xml</tt> and <tt>two-boxes-rgb-normals.xml</tt> correctly. See Appendix A for details on rendering scenes.
+
+
+
+<h5><strong>Shaders</h5></strong>
+
+<p>A shader is represented by an instance of the <tt>Shader</tt> class. You need to implement the following method:
+<pre>
+  public void shade(Colord outIntensity, Scene scene, Ray ray, IntersectionRecord record)
+</pre> 
+
+  <p>  which sets <tt>outIntensity</tt> (the resulting color) to the fraction of 
+the light that comes from the incoming direction \(\omega_i\) (i.e. the direction towards the light) and scatters out in direction \(\omega_o\) (i.e., towards the viewer).
+
+
+
+<p>We ask you to implement two shaders:
+<ul style="list-style: none;">
+  <li><tt><strong>Lambertian</tt></strong>: This class implements the perfectly diffuse shader. Its diffuse color \(k_d\) is specified by  the <tt>diffuseColor</tt> field. The <tt>shade</tt> function should set 
+<tt>outIntensity</tt> to:
+  <ul style="list-style: none; text-align: center;">
+    \[\frac{k_L}{r^2} \; k_d \max ( n \cdot \omega_i , 0 ) \]
+  </ul>
+where n is the normal at the intersection point, k_L is the
+intensity of the light source, and \(r\) is the distance to the light source.
+See section 4.5.1, though notice the book's definition does not include the
+physically accurate \(1/r^2\) falloff.
+
+  <li><tt><strong>Phong</strong></tt>: This class implements the Blinn-Phong lighting model. It has a diffuse color component  as defined above \(k_d\), as well as <tt>specularColor</tt> \(k_s\), and <tt> exponent</tt> \(p\) fields, where the <tt>exponent</tt> is the "shininess". The <tt>shade</tt> function should set <tt>outIntensity</tt> to:
+  <ul style="list-style: none; text-align: center;">
+		\[\frac{k_L}{r^2} \; (k_d \max(n \cdot \omega_i, 0) + k_s \max(n \cdot h, 0)^p) \]
+  </ul>
+	only if \(n \cdot \omega_i\) is greater than  0, and sets it to 0
+otherwise. Here, \(h = (\omega_i + \omega_o)/|\omega_i + \omega_o|\). See section
+4.5.2, but same warning as above.  </ul>
+
+<p>Notice that these values should be computed once for each light in the
+scene, and the contributions from each light should be summed, unless something
+is blocking the path from the light source to the object. <tt>Shader.java</tt>
+contains a useful <tt>isShadowed()</tt> method to check this. Overall, the code
+for each <tt>shade</tt> method should look something like:
+
+<pre>
+ <strong>reset</strong> <tt>outIntensity</tt> to (0, 0, 0)
+   <strong>for</strong> each light in the scene
+     <strong>if</strong> <tt>!isShadowed(...)</tt>
+       compute color contribution from this light
+       add this contribution to <tt>outIntensity</tt>
+     <strong>end if</strong> 
+   <strong>end for</strong> 
+</pre>
+
+<p>After the shaders are completed, you should be able to render <tt>one-sphere.xml</tt>, <tt>two-boxes.xml</tt>, <tt>wire-box.xml</tt>, <tt>wire-box-orthographic.xml</tt> and the bunny scenes correctly.
+
+<h5><strong>Textures</strong></h5>
+
+<p>The <tt>Shader</tt> classes above have a <tt>texture</tt> field that is by default set to <tt>null</tt>. If the scene XML file specifies an image texture for the shader, a <tt>Texture</tt> object will be initialized in this field. If the texture has been loaded, you should use it to determine the diffuse color in the <tt>shade</tt> method rather than the <tt>diffuseColor</tt> field.
+
+<p>The <tt>Texture</tt> class and its subclasses are responsible for using the UV-coordinates of a particular point on the <tt>Surface</tt> to find this color on a given image (located in the <tt>Texture</tt> class). You will be implementing the <tt>getTexColor(Vector2d texCoord)</tt> method for two very similar subclasses of
+ <tt>Texture</tt>. Both classes convert UV-coordinates into the nearest pixel coordinates corresponding to the image. The difference is in the way they handle UV-coordinates outside of the [0.0, 1.0] range:
+
+<ul style="list-style: none;">
+  <li><strong><tt>ClampTexture</tt></strong>: This class uses the nearest pixel for UV-coordinates that are out of range. As a result, the colors of the boundary pixels of a texture are extended outwards in UV space.
+  <li><strong><tt>RepeatTexture</tt></strong>: This class repeats the texture for out-of-range UV-coordinates. In this case, copies of the texture are tiled across UV space.
+</ul>
+
+<p>The details of how to implement these are provided in the code.  Once these are completed, all scenes in subdirectory <tt>scenes_with_textures</tt> should render correctly.
+
+
+<h4>Appendix A: Testing</h4>
+
+<p>The <tt>data</tt> directory contains scene files and reference images for the purpose of testing your code. Right click on the 
+<tt> RayTracer</tt> file in <tt>Package Explorer</tt>, and choose <tt>Run As->Java Application</tt>. 
+
+Without any command line arguments, the ray tracer will attempt to render all scenes in the default scene directory (i.e. <tt>data/scenes/ray1</tt>).
+If you want to render specific scenes, you can list the file names individually on the command line. This can be done from the <tt>Run</tt> dialog (<tt>Run Configurations</tt>). Choose the <tt>Arguments</tt> tab, and provide your command line arguments in <tt>Program arguments</tt>. Additionally, passing in a directory name will render all scenes in that directory.
+
+
+<p>Note that <tt>RayTracer</tt> prepends 
+<tt>data/scenes/ray1</tt> to its arguments. This means that you only need to provide a scene file name to render it. For example, if you give the argument <tt>one-sphere.xml</tt> to the <tt>RayTracer</tt> it will load the scene file <tt>data/scenes/ray1/one-sphere.xml</tt> and produce an output image in the same directory as the scene file.
+
+<p>If you would like to change the default scene location, there is a <tt>-p</tt> command line option that allows you to specify a different default path instead of using <tt>data/scenes/ray1</tt>. 
+
+
+<p>Compare the images you have with the reference images, if there are visually
+significant differences, consider checking for bugs in your code.
+
+<h4>Appendix B: Extra Credit</h4>
+
+<p>We've included a <tt>Cylinder</tt> subclass of <tt>Surface</tt>, similar to the <tt>Triangle</tt> and <tt>Sphere</tt> classes. The class contains <tt>center</tt>, a 3D point, and <tt>radius</tt>, <tt>height</tt>, both real numbers. Assume that the cylinder is capped, i.e., the top and bottom have caps (it is not a hollow tube). Also, assume it is aligned with the z-axis, and is centered around <tt>center</tt>; <br>
+i.e., if
+<tt>center</tt> is \((c_x, c_y, c_z)\) and <tt>height</tt> is \(h\), the cylinder's z-extent is from \(c_z-\frac{h}{2}\) to \(c_z+\frac{h}{2}\).
+
+<p>Your task is to implement the <tt>intersect</tt> method of a mathematical cylinder (NOT a meshed cylinder). Add an XML scene that includes a cylinder to test your implementation (See Appendix C for details on how this should be done--you shouldn't need to change any parser code).
+
+<p>Once this is done, try implementing a cylinder that is arbitrarily oriented. You will need to add two parameters, <tt>rotX</tt> and <tt>rotY</tt>, to specify the cylinder's rotation about the x and y axes. Note that this will require changing the coordinate system of the incoming ray within the <tt> intersect</tt> method to account for these rotations. After the coordinate system change, the math used to intersect the ray with the cylinder should be the same as its axis-aligned variant. Finally, build a test scene with a cylinder object.
+
+
+<h4>Appendix C: Framework</h4>
+
+<p>This section describes the framework code that comes with the assignment. You do not need to spend time trying to understand it and it is not essential to read this to get started on the assignment. Instead, you can reference it as needed.
+
+<p>The framework for this assignment includes a simple main program,
+some utility classes for vector math, a parser for the input file
+format, and stubs for the classes that are required by the parser.
+
+<h5><strong>RayTracer</strong></h5>
+
+<p>This class holds the entry point for the program. The <tt>main</tt>
+method is provided, so that your program will have a command-line
+interface compatible with ours. It treats each command line argument
+as the name of an input file, which it parses, renders an image, and
+writes the image to a PNG file. The method <tt>RayTracer.renderImage</tt> is called to do the actual rendering.
+
+<h5><strong>Image</strong></h5>
+
+<p>This class contains an array of pixel colors (stored as doubles) and the requisite
+code to get and set pixels and to output the image to a PNG file.
+
+<h5><strong><tt>egl.math</tt> package</strong></h5>
+
+<p>This package contains classes to represent 2D and 3D vectors,
+as well as RGB colors. They support all the standard vector arithmetic
+operations you're likely to need, including dot and cross products
+for vectors and addition and scaling for colors.
+
+<h5><strong>Parser</strong></h5>
+
+<p>The <tt>Parser</tt> class contains a simple parser based on Java's built-in XML
+parsing. The parser simply reads a XML document and instantiates an object for
+each XML entity, adding it to its containing element by calling
+<tt>set...</tt> or <tt>add...</tt> methods on the containing object.
+
+<p>For instance, the input:
+<pre>
+&lt;scene&gt;
+    &lt;surface type="Sphere"&gt;
+        &lt;shader type="Lambertian"&gt;
+            &lt;diffuseColor&gt;0 0 1&lt;/diffuseColor&gt;
+        &lt;/shader&gt;
+        &lt;center&gt;1 2 3&lt;/center&gt;
+        &lt;radius&gt;4&lt;/radius&gt;
+    &lt;/surface&gt;
+&lt;/scene&gt;
+</pre>
+results in the following construction sequence:
+<ul>
+  <li>Create the scene.
+  <li>Create an object of class <tt>Sphere</tt> and add it to the scene
+by calling <tt>Scene.addSurface</tt>. This is OK because <tt>Sphere</tt>
+extends the <tt>Surface</tt> class.
+  <li>Create an object of class <tt>Lambertian</tt> and add it to the sphere using <tt>Sphere.setShader</tt>. 
+This is OK because <tt>Lambertian</tt> extends the <tt>Shader</tt> class.
+ <li>Call <tt>setDiffuseColor(new Colord(0, 0, 1))</tt> on the shader.
+ <li>Call <tt>setCenter(new Vector3d(1, 2, 3))</tt> on the sphere.
+ <li>Call <tt>setRadius(4)</tt> on the sphere.
+</ul>
+
+<p>Which elements are allowed where in the file is determined by which
+classes contain appropriate methods, and the types of those methods'
+parameters determine how the tag's contents are parsed (as a number,
+a vector, etc.). There is more detail for the curious in the header
+comment of the <tt>Parser</tt> class.
+
+<p>The practical result of all this is that your ray tracer is handed
+an object of class <tt>Scene</tt> that contains objects that are in one-to-one correspondence
+with the elements in the input file. You shouldn't need to change
+the parser in any way.
+
+<h4>What to Submit</h4>
+<p>Submit your solution of the written part individually on CMS, which should includes a PDF file for Q1 and Q2 together and an xml file for Q3.
+<p>As for the code part, submit a zip file containing your solution organized the same way as the code on Github, along with any additional files.
+Include a readme in your zip that contains:
+<ul>
+  <li>You and your partner's names and NetIDs.
+  <li>Any problems with your solution.
+  <li>Anything else you want us to know.
+</ul>
+<p><strong><a href=https://cms.csuglab.cornell.edu>Upload here (CMS)</a></strong>
