@@ -145,7 +145,7 @@ and type <tt>TODO#A3</tt>. There are quite a few separate code snippets to compl
 <p> <tt>rippleTransformations</tt> should be recursive (or utilize a recursive helper function). First, for a given <tt>RenderObject</tt> that is not the root node, we need to set <tt>mWorldTransform</tt> and <tt>mWorldTransformIT</tt> within that render object. <tt>mWorldTransform</tt> should be set to the composition of two matrices, AB, where A is the render object's parent's world transform, and B is the render object's local transform (stored in its corresponding <tt>SceneObject</tt>). <tt>mWorldTransformIT</tt> is a bit more complex. Recall from class that surface normals are not preserved when applying a transformation matrix, i.e. if you were to apply the same transformation to an object and its corresponding surface normals, the resulting surface would not be normal. Therefore, <tt>mWorldTransformIT</tt> needs to be set to the matrix you use to transform transform normal vectors to preserve normalcy.
 
 <p> After you've correctly set the two necessary matrices at a given node, you need to traverse through the tree by making a recursive call on each of the <tt>RenderObject</tt>'s children.
-<p> Additionally, for all the cameras in the scene (<tt>RenderEnvironment.cameras</tt>) you must recalculate the camera's <tt>ViewPerspectiveProjection</tt> matrix.
+<p> Additionally, for all the cameras in the scene (<tt>RenderEnvironment.cameras</tt>) you must recalculate the camera's <tt>ViewPerspectiveProjection</tt> matrix by calling <tt>RenderCamera.updateCameraMatrix()</tt>---which you will implement in the next part.
 
 <h4 id="code_part2">Part 2: Updating the Camera's Matrix </h4>
 
@@ -231,18 +231,9 @@ map vertical mouse motion directly to the rotation angle.
 Then, you should multiply this quantity by some constant (pick something reasonable) to determine
 the change in the angle of rotation about the selected axis.
 
-<h4 id="code_demo"> Demo Video</h4>
+<h4>The Complete Program</h4>
 
-<p>The following video contains a demo of our solution for this assignment. This should give you an idea of what behavior to expect from working manipulators and camera operations.</p>
-
-<div class="thumbnails" style="text-align: center">
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/i4FWBsjMO9g" frameborder="0" allowfullscreen></iframe>
-      <div class="caption">
-        <strong>Project demo</strong>
-      </div>
-</div> 
-
-<h4 id="code_appendix">Appendix: More Framework Information</h4>
+What this program actually does is to load and display a scene that is defined in an XML file. The loaded scene can then be viewed using the implemented camera controls, and modified using the implemented manipulators. A side window shows the structure of the scene, and allows the user to replace meshes, materials, and/or textures, as well as control the camera and manipulators using raw numbers.
 
 <h5>Control Guide</h5>
 <ul>
@@ -253,6 +244,17 @@ the change in the angle of rotation about the selected axis.
 <li> P: Parent space toggle
 <li> G: Toggle grid on and off
 </ul>
+
+<h5 id="code_demo"> Demo Video</h5>
+
+<p>The following video contains a demo of our solution for this assignment. This should give you an idea of what behavior to expect from working manipulators and camera operations.</p>
+
+<div class="thumbnails" style="text-align: center">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/i4FWBsjMO9g" frameborder="0" allowfullscreen></iframe>
+      <div class="caption">
+        <strong>Project demo</strong>
+      </div>
+</div> 
 
 <h4>What to Submit</h4>
 <p>Submit your solution of the written part individually on CMS as a PDF file.
