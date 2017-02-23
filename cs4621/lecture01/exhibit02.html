@@ -94,7 +94,10 @@
         alert("Cannot get WebGL context!");
     } else {
         // Fetch and display OpenGL parameters.
+        var debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
         var paramNames = [
+            "UNMASKED_VENDOR_WEBGL",
+            "UNMASKED_RENDERER_WEBGL",
             "MAX_TEXTURE_SIZE",
             "MAX_CUBE_MAP_TEXTURE_SIZE",
             "MAX_RENDERBUFFER_SIZE",
@@ -107,14 +110,15 @@
             "MAX_VARYING_VECTORS"
         ];
         var tableRows = paramNames.map(function (paramName) {
-            var value = gl.getParameter(gl[paramName]);
+            var parmID = gl[paramName] || debugInfo[paramName];
+            var value = gl.getParameter(parmID);
             return "<tr><td>" + paramName + "</td><td>" + String(value) + "</td></tr>"
         });
         var paramsTableHtml = "<table class='table table-striped'>" +
                 "<thead><th>Name</th><th>Value</th></thead>" +
                 tableRows.join("") +
                 "</table>";
-        $("#paramsTable")[0].html(paramsTableHtml);
+        $("#paramsTable").html(paramsTableHtml);
 
         // Fetch and list supported extensions.
         var extensions = gl.getSupportedExtensions();
