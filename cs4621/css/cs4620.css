@@ -148,3 +148,19 @@ code {
     background: none;
     border: none;
 }
+table.matrix td {
+    padding: 4px;
+    width: 5em;
+    text-align: right;
+}
+fieldset legend {
+    font-size: 100%;
+    display: inline;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+fieldset label {
+    margin-left: 1em;
+    margin-right: 4px;
+}
