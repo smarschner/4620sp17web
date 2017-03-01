@@ -162,7 +162,7 @@
     uniform mat4 toWorld;
 
     void main() {
-        gl_Position = vec4((toWorld * vec4(position, 1.0)).xyz, 1.0);
+        gl_Position = toWorld * vec4(position, 1.0);
     }
 </script>
 

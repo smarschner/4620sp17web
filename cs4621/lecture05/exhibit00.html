@@ -252,9 +252,9 @@
 
         var M = mat3.create();
         if ($('#orderTRS').get(0).checked) { 
-            mat3.mul(M, M, T);
-            mat3.mul(M, M, R);
-            mat3.mul(M, M, S);
+            mat3.mul(M, S, M);
+            mat3.mul(M, R, M);
+            mat3.mul(M, T, M);
         } else  { 
             mat3.mul(M, M, S);
             mat3.mul(M, M, R);
