@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>CS 4621: Lecture 5 -- Exhibit #2: Orthographic viewing</title>
+
+    <!-- Bootstrap -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/cs4620.css" rel="stylesheet">
+    <link href="../css/jquery-ui.min.css" rel="stylesheet">
+    <link href="../css/jquery-ui.theme.min.css" rel="stylesheet">
+    <link href="../css/jquery-ui.structure.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+    });
+    </script>
+    <!-- MathJax -->
+    <script type="text/javascript" async
+            src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <style>
+    input.numeric { width: 5em; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Exhibit 2 <span class="subtitle">Orthographic viewing</span></h1>
+
+    <div class="center-block">
+        <canvas id="objCanvas" style="border: none; background-color: black;" width="500" height="500"></canvas>
+        <canvas id="worldCanvas" style="border: none; background-color: black;" width="500" height="500"></canvas>
+    </div>
+
+    <table class="table table-bordered">
+        <tr>
+            <td colspan="5" align="center"><b>Projection transformation</b></td>
+        </tr>
+        <tr>
+            <td>
+                Projection:
+            </td>
+            <td>
+                left = <input type="text" class="numeric" id="left" value="-1.0"><br>
+                right = <input type="text" class="numeric" id="right" value="1.0">
+            </td>
+            <td>
+                bot = <input type="text" class="numeric" id="bottom" value="-1.0"><br>
+                top = <input type="text" class="numeric" id="top" value="1.0">
+            </td>
+            <td>
+                near = <input type="text" class="numeric" id="near" value="-1.0"><br>
+                far = <input type="text" class="numeric" id="far" value="1.0">
+            </td>
+            <td>
+                <table id="projMatrix" class="matrix">
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="5" align="center"><b>Model-view transformation</b></td>
+        </tr>
+        <tr>
+            <td>
+                Translation:
+            </td>
+            <td>
+                X = <input type="text" class="numeric" id="transX" value="0.0">
+            </td>
+            <td>
+                Y = <input type="text" class="numeric" id="transY" value="0.0">
+            </td>
+            <td>
+                Z = <input type="text" class="numeric" id="transZ" value="0.0">
+            </td>
+            <td>
+                <table id="transMatrix" class="matrix">
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Rotation: 
+            </td>
+            <td>
+                X angle = <input type="text" class="numeric" id="rotX" value="0.0">
+            </td>
+            <td>
+                Y angle = <input type="text" class="numeric" id="rotY" value="0.0">
+            </td>
+            <td>
+                Z angle = <input type="text" class="numeric" id="rotZ" value="0.0">
+            </td>
+            <td>
+                <table id="rotMatrix" class="matrix">
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Scale: 
+            </td>
+            <td>
+                X = <input type="text" class="numeric" id="scaleX" value="1.0">
+            </td>
+            <td>
+                Y = <input type="text" class="numeric" id="scaleY" value="1.0">
+            </td>
+            <td>
+                Z = <input type="text" class="numeric" id="scaleZ" value="1.0">
+            </td>
+            <td>
+                <table id="scaleMatrix" class="matrix">
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Compound Transformation: 
+            </td>
+            <td>
+              <fieldset>
+                <legend>Composition order: </legend>
+                <label for="orderTRS">TRS</label>
+                <input type="radio" name="comp-order" id="orderTRS" checked="true">
+                <label for="orderSRT">SRT</label>
+                <input type="radio" name="comp-order" id="orderSRT">
+              </fieldset>
+            </td>
+            <td>
+              <fieldset>
+                <legend>Rotation order: </legend>
+                <label for="orderXYZ">XYZ</label>
+                <input type="radio" name="rot-order" id="orderXYZ" checked="true">
+                <label for="orderZYX">ZYX</label>
+                <input type="radio" name="rot-order" id="orderZYX">
+              </fieldset>
+            </td>
+            <td>
+            </td>
+            <td>
+                <table id="compMatrix" class="matrix">
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td></tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="../js/jquery-3.1.1.min.js"></script>
+<script src="../js/jquery-ui.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<!-- <script src="../js/bootstrap.min.js"></script> -->
+<script src="../js/gl-matrix-min.js"></script>
+<!-- Google Code Prettifier -->
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+<script id="vertexShader" type="x-shader/x-vertex">
+    attribute vec3 position;
+
+    uniform mat4 projection;
+    uniform mat4 toWorld;
+
+    void main() {
+        gl_Position = projection * toWorld * vec4(position, 1.0);
+    }
+</script>
+
+<script id="fragmentShader" type="x-shader/x-fragment">
+    precision highp float;
+
+    uniform vec3 color;
+
+    void main() {
+        gl_FragColor = vec4(color, 1.0);
+    }
+</script>
+
+<script>
+    var cubeData = {
+        vertices: [
+            -0.5, -0.5, -0.5,
+            -0.5, -0.5,  0.5,
+            -0.5,  0.5, -0.5,
+            -0.5,  0.5,  0.5,
+             0.5, -0.5, -0.5,
+             0.5, -0.5,  0.5,
+             0.5,  0.5, -0.5,
+             0.5,  0.5,  0.5,
+        ],
+        lineInd: [
+            0, 1, 0, 2, 0, 4, 1, 3, 1, 5, 2, 3, 2, 6, 4, 5, 4, 6, 6, 7, 5, 7, 3, 7
+        ],
+        triInd: [
+        ],
+        lineColor: [0.8, 0.8, 0.8],
+        fillColor: [1.0, 0.9, 0.7]
+    };
+
+    function initGUI() {
+        $('#left').spinner({'min': -2, 'max': 2, 'step': 0.1});
+        $('#right').spinner({'min': -2, 'max': 2, 'step': 0.1});
+        $('#top').spinner({'min': -2, 'max': 2, 'step': 0.1});
+        $('#bottom').spinner({'min': -2, 'max': 2, 'step': 0.1});
+        $('#near').spinner({'min': -2, 'max': 2, 'step': 0.1});
+        $('#far').spinner({'min': 0, 'max': 5, 'step': 0.1});
+        $('#transX').spinner({'min': -2, 'max': 2, 'step': 0.1});
+        $('#transY').spinner({'min': -2, 'max': 2, 'step': 0.1});
+        $('#transZ').spinner({'min': -2, 'max': 2, 'step': 0.1});
+        $('#rotX').spinner({'min': -360, 'max': 360, 'step': 5});
+        $('#rotY').spinner({'min': -360, 'max': 360, 'step': 5});
+        $('#rotZ').spinner({'min': -360, 'max': 360, 'step': 5});
+        $('#scaleX').spinner({'min': -2, 'max': 2, 'step': 0.1});
+        $('#scaleY').spinner({'min': -2, 'max': 2, 'step': 0.1});
+        $('#scaleZ').spinner({'min': -2, 'max': 2, 'step': 0.1});
+    }
+
+    function displayMatrix4(sel, M) {
+        $(sel).find('tr').each(function (i, elt) {
+            $(elt).find('td').each(function (j, elt) {
+                $(elt).html(M[i + 4 * j].toFixed(3));
+            });
+        });
+    }
+
+    var xAxis = vec3.fromValues(1, 0, 0);
+    var yAxis = vec3.fromValues(0, 1, 0);
+    var zAxis = vec3.fromValues(0, 0, 1);
+
+    function getProjMatrix() {
+        var t = vec3.fromValues($('#transX').spinner('value'), $('#transY').spinner('value'), $('#transZ').spinner('value'));
+        var P = mat4.create();
+        mat4.ortho(P, 
+            $('#left').spinner('value'), $('#right').spinner('value'), 
+            $('#bottom').spinner('value'), $('#top').spinner('value'), 
+            $('#near').spinner('value'), $('#far').spinner('value'));
+        displayMatrix4('#projMatrix', P);
+        return P;
+    }
+
+    function getMVMatrix() {
+        var t = vec3.fromValues($('#transX').spinner('value'), $('#transY').spinner('value'), $('#transZ').spinner('value'));
+        var T = mat4.create();
+        mat4.fromTranslation(T, t);
+        displayMatrix4('#transMatrix', T);
+
+        var R = mat4.create();
+        if ($('#orderXYZ').get(0).checked) { 
+            mat4.rotate(R, R, $('#rotX').spinner('value') * Math.PI/180, xAxis);
+            mat4.rotate(R, R, $('#rotY').spinner('value') * Math.PI/180, yAxis);
+            mat4.rotate(R, R, $('#rotZ').spinner('value') * Math.PI/180, zAxis);
+        } else { 
+            mat4.rotate(R, R, $('#rotZ').spinner('value') * Math.PI/180, zAxis);
+            mat4.rotate(R, R, $('#rotY').spinner('value') * Math.PI/180, yAxis);
+            mat4.rotate(R, R, $('#rotX').spinner('value') * Math.PI/180, xAxis);
+        }
+        displayMatrix4('#rotMatrix', R);
+
+        var s = vec3.fromValues($('#scaleX').spinner('value'), $('#scaleY').spinner('value'), $('#scaleZ').spinner('value'));
+        var S = mat4.create();
+        mat4.fromScaling(S, s);
+        displayMatrix4('#scaleMatrix', S);
+
+        var M = mat4.create();
+        if ($('#orderTRS').get(0).checked) { 
+            mat4.mul(M, M, T);
+            mat4.mul(M, M, R);
+            mat4.mul(M, M, S);
+        } else  { 
+            mat4.mul(M, M, S);
+            mat4.mul(M, M, R);
+            mat4.mul(M, M, T);
+        }
+        displayMatrix4('#compMatrix', M);
+        return M;
+    }
+
+    initGUI();
+
+    function initializeWebGL(canvas) {
+        // Getting WebGL context the right way
+        var gl = null;
+        try {
+            gl = canvas[0].getContext("experimental-webgl");
+            if (!gl) {
+                gl = canvas[0].getContext("webgl");
+            }
+        } catch (error) {
+            // NO-OP
+        }
+        if (!gl) {
+            alert("Could not get WebGL context!");
+            throw new Error("Could not get WebGL context!");
+        }
+        return gl;
+    }
+
+    function createShader(gl, shaderScriptId) {
+        var shaderScript = $("#" + shaderScriptId);
+        var shaderSource = shaderScript[0].text;
+        var shaderType = null;
+        if (shaderScript[0].type == "x-shader/x-vertex") {
+            shaderType = gl.VERTEX_SHADER;
+        } else if (shaderScript[0].type == "x-shader/x-fragment") {
+            shaderType = gl.FRAGMENT_SHADER;
+        } else {
+            throw new Error("Invalid shader type: " + shaderScript[0].type)
+        }
+        var shader = gl.createShader(shaderType);
+        gl.shaderSource(shader, shaderSource);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            var infoLog = gl.getShaderInfoLog(shader);
+            gl.deleteShader(shader);
+            throw new Error("An error occurred compiling the shader: " + infoLog);
+        } else {
+            return shader;
+        }
+    }
+
+    function createGlslProgram(gl, vertexShaderId, fragmentShaderId) {
+        var program = gl.createProgram();
+        gl.attachShader(program, createShader(gl, vertexShaderId));
+        gl.attachShader(program, createShader(gl, fragmentShaderId));
+        gl.linkProgram(program);
+        gl.validateProgram(program);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            var infoLog = gl.getProgramInfoLog(program);
+            gl.deleteProgram(program);
+            throw new Error("An error occurred linking the program: " + infoLog);
+        } else {
+            return program;
+        }
+    }
+
+
+    function createShape(gl, data) {
+        var shape = {};
+
+        shape.vertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, shape.vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data.vertices), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+        shape.lineIndexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.lineIndexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(data.lineInd), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+        shape.triIndexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.triIndexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(data.triInd), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+        shape.lineLen = data.lineInd.length;
+        shape.triLen = data.triInd.length;
+        shape.lineColor = data.lineColor;
+        shape.fillColor = data.fillColor;
+
+        return shape;
+    }
+
+    function drawShape(gl, shape, program, xf, proj) {
+        gl.useProgram(program);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, shape.vertexBuffer);
+        var positionLocation = gl.getAttribLocation(program, "position");
+        gl.enableVertexAttribArray(positionLocation);
+        gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 4 * 3, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+        gl.uniformMatrix4fv(gl.getUniformLocation(program, "toWorld"), false, xf);
+        gl.uniformMatrix4fv(gl.getUniformLocation(program, "projection"), false, proj);
+
+        gl.uniform3fv(gl.getUniformLocation(program, "color"), shape.fillColor);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.triIndexBuffer);
+        gl.drawElements(gl.TRIANGLES, shape.triLen, gl.UNSIGNED_SHORT, 0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+        gl.uniform3fv(gl.getUniformLocation(program, "color"), shape.lineColor);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.lineIndexBuffer);
+        gl.drawElements(gl.LINES, shape.lineLen, gl.UNSIGNED_SHORT, 0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+        gl.useProgram(null);
+    }
+
+    function glEnv(canvas) {
+
+        var gl = initializeWebGL(canvas);
+        var program = createGlslProgram(gl, "vertexShader", "fragmentShader");
+        var cat = createShape(gl, cubeData);
+
+        var xf = mat4.create();
+        function setXf(newXf) {
+            mat4.copy(xf, newXf);
+        }
+
+        var proj = mat4.create();
+        function setProj(newProj) {
+            mat4.copy(proj, newProj);
+        }
+
+        function drawFrame() {
+            gl.clearColor(0.15, 0.2, 0.5, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            drawShape(gl, cat, program, xf, proj);
+        }
+
+        return {
+            setXf: setXf,
+            setProj: setProj,
+            drawFrame: drawFrame
+        }
+    }
+
+    var objSpaceEnv = glEnv($("#objCanvas"));
+    var worldSpaceEnv = glEnv($("#worldCanvas"));
+
+    function updateWebGL(time) {
+
+        worldSpaceEnv.setXf(getMVMatrix());
+        worldSpaceEnv.setProj(getProjMatrix());
+    
+        objSpaceEnv.drawFrame();
+        worldSpaceEnv.drawFrame();
+
+        // Reschedule the next frame.
+        window.requestAnimationFrame(updateWebGL);
+    }
+
+    window.requestAnimationFrame(updateWebGL);
+
+    var objCanvas = $("#objCanvas");
+
+    objCanvas.click(function(event) {
+    });
+    objCanvas.mousemove(function(event) {
+    });
+</script>
+
+</body>
+</html>
