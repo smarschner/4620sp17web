@@ -1,0 +1,57 @@
+<p class="duedate">Due:  Friday March 24th 2017 (11:59pm)</p>
+
+<h3>Written Part</h3>
+<p><strong>Do this written part alone.</strong>
+
+<h4>1. Mirror Reflection</h4>
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a4/reflect.jpg" alt="">
+</div>
+
+In this question, we aim to compute the mirror reflection direction at a point.
+Given a view direction \[v\] and normal direction \[n\], how to compute the
+reflected direction \[w\] using the given quantities?
+
+<h4>2. Texture Mapping</h4>
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a4/texture_mapping.jpg" alt="">
+</div>
+
+Sketch the result of texture mapping the image shown on the left to the
+quadrilateral shown on the right, with texture coordinates as shown next to the
+quadrilateral’s vertices. Assume that texture coordinates wrap if they exceed
+1.
+
+<h4>3. Texture Filtering</h4>
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a4/texture_filtering.png" alt="">
+</div>
+
+When we look up the texture value in a 2D image, there is one issue we need to think about: The 3D world space is continuous, so that the transformed and normalized 2D image space are also continuous. However, the texture image is a discrete 2D array.<br/>
+
+This can be shown from the figure 4 above. Consider a simple texture image with \[5 \times 5 = 25\] pixels. Their 2D coordinates are discrete as \[\{(0, 0), (0.25, 0), ..., (1,0), (1,1.25), ..., (1,1)\}\]. The index \[(s,t) = (0.7, 0.4)\] is our transformed 2D coordinate which doesn't match any pixel in the texture image. So texture filtering comes out.
+
+Given the nearest 4 texture values \[\{a, b, c, d\}$ around the index \[(s, t)\], show the filtered texture value using:<br/>
+
+<ol type="A">
+<li>Nearest neighbor</li>
+<li>Bilinear interpolation</li>
+</ol>
+
+<p><strong>Do this programming part alone or in groups of two, as you prefer.</strong>
+
+TODO
+
+<h4>What to Submit</h4>
+<p>Submit your solution of the written part individually on CMS as a PDF file.
+<p>As for the code part, submit a zip file containing your solution organized the same way as the code on Github, along with any additional files.
+Include a readme in your zip that contains:
+<ul>
+  <li>You and your partner's names and NetIDs.
+  <li>Any problems with your solution.
+  <li>Anything else you want us to know.
+</ul>
+<p><strong><a href=https://cms.csuglab.cornell.edu>Upload here (CMS)</a></strong>
