@@ -130,10 +130,12 @@ Similarly to a 2D texture, you can look up into a cube using the <tt>textureCube
 <p>Your task is to implement normal mapping. You will start with the Phong shader, but instead of using the mesh's (interpolated) normal, you will need to use a weighted combination of the normal and two tangent vectors. These are provided to the vertex shader as attributes: <tt>normal</tt> (as before), <tt>tangent</tt>, and <tt>tangent2</tt>. In addition we have provided a <tt>flatness</tt> uniform as a crude way of scaling the "strength" of the normal map. All-in-all, the resulting normal should be proportional to the sum of the following:
 
 <ul>
-<li><tt>tangent</tt> times the red channel of the normal map texture.</li>
-<li><tt>tangent2</tt> times the green channel of the normal map texture.</li>
-<li><tt>normal</tt> times the blue channel of the normal map texture times <tt>flatness</tt>.
+<li><tt>tangent</tt> times the red channel of the normal map texture - 0.5.</li>
+<li><tt>tangent2</tt> times the green channel of the normal map texture - 0.5.</li>
+<li><tt>normal</tt> times the (blue channel of the normal map texture - 0.5) times <tt>flatness</tt>.
 </ul>
+
+<p>We subtract 0.5 since color channel values run from 0 to 1, but we want to be able to represent directions with negative components.
 
 <p>Note that you will need to pass and interpolate <tt>normal</tt>, <tt>tangent</tt>, and <tt>tangent2</tt> between the vertex and fragment shaders. You can do this by using <tt>varying</tt>s.
 
