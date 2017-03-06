@@ -55,11 +55,17 @@ There are four main components to the assignment:
 <li>Implement a displacement mapping shader (also without environment mapping) and compare results with normal mapping.</li>
 </ol>
 
-<p>Each part is contained in its own webpage, which includes a framework based on the mesh viewer you saw in Assignment 1 (Mesh). This will allow you to load any meshes and textures you might like to test with. All of the work outside of the shaders themselves has been done for you, but be sure to understand what uniforms and attributes are being passed to your GLSL program.
+<p>Each part is contained in its own webpage, which includes a framework based on the mesh viewer you saw in Assignment 1 (Mesh). This will allow you to load any meshes and textures you might like to test with. All of the work outside of the shaders themselves has been done for you, but be sure to understand what uniforms and attributes are being passed to your GLSL program. Some of the uniforms may be controlled using a slider on the webpage.
+
+<p>A few test meshes and textures have been provided in the <tt>data</tt> directory.
 
 <h4>Problem 1: Cook-Torrance Shader</h4>
 
-<p>Blinn-Phong shading can give you nice results and it's fast and easy to implement -- but it's far from the reality of light reflection. For more realistic appearance, we should use more sophisticated models like Cook-Torrance shading. Note the difference between Blinn-Phong and Cook-Torrance shading in Figure \ref{fig:ckscene} and \ref{fig:ckgrazingscene}.
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a4/cook_torrance_reference.jpg" alt="">
+</div>
+
+<p>Blinn-Phong shading can give you nice results and it's fast and easy to implement -- but it's far from the reality of light reflection. For more realistic appearance, we should use more sophisticated models like Cook-Torrance shading.
 
 <p>The Cook-Torrance shading model starts with the same Lambertian diffuse shading as Blinn-Phong, but it models the surface's microstructure to give a more physically accurate approximation for the specular term. The microfacet model used in Cook-Torrance shading assumes that the surface consists of randomly aligned small smooth planar facets. The model also takes the Fresnel refraction-reflection term and the shadowing effect of the microfacets into account. If you are interested in this topic, we suggest reading Cook's original 1982 paper, <cite>A Reflectance Model for Computer Graphics</cite>.
 
@@ -101,6 +107,11 @@ G = min(1, \frac{2(N \cdot H)(N \cdot V)}{V \cdot H}, \frac{2(N \cdot H)(N \cdot
 \]
 
 <h4>Problem 2: Environment Mapping</h4>
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a4/environment_reference.jpg" alt="">
+</div>
+
 <p>You used point lights in the Raytracer and Scene assignments. Real world scenes
 usually have much more complex lighting conditions than that and environment
 mapping is a clever technique to capture complex lighting in a texture. The
@@ -120,11 +131,16 @@ in a certain direction. See section 11.6 of the book.
 <p>In this assignment we have already loaded a cubemap for you as <tt>uniform samplerCube environmentMap</tt>. 
 Similarly to a 2D texture, you can look up into a cube using the <tt>textureCube</tt> function that is built into GLSL.
 
-<p>Your task is to implement specular reflection under environment lighting. Given a viewing direction and a normal direction, we can use the equation in the written part (i.e., Mirror Reflection) to compute the reflection direction, and then use it to sample the cube map. You may assume the environment map is fixed in view space; i.e. the mouse rotates the scene relative to the environment map.
+<p>Your task is to implement specular reflection under environment lighting. Given a viewing direction and a normal direction, we can use the equation in the written part (i.e., Mirror Reflection) to compute the reflection direction, and then use it to sample the cube map. You may assume the environment map is fixed in view space; i.e. the mouse rotates the scene relative to the environment map, but the environment map remains fixed relative to the camera.
 
-<p>NOTE: Some browsers (Chrome) may not load the environment map properly due to security restrictions. If this happens, there are workarounds, but it's probably easiest to simply try a different browser.
+<p>NOTE: Some browsers may not load the environment map properly due to security restrictions. If this happens, there are workarounds, but it is probably easiest to simply try a different browser.
 
 <h4>Problem 3: Normal Mapping</h4>
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a4/normal_reference.jpg" alt="">
+</div>
+
 <p>Creating detailed models with thousands of polygons is a time consuming job and rendering them in real-time can be also problematic. However, with normal mapping, we can make simple, low resolution models look like highly detailed ones. In addition to the polygon model, we provide a high resolution normal map which we can use in the fragment shader instead of the interpolated normals, adding detail to the low resolution model. Normal maps can be generated procedurally in the shaders or read from an image and used as a texture.
 
 <p>Your task is to implement normal mapping. You will start with the Phong shader, but instead of using the mesh's (interpolated) normal, you will need to use a weighted combination of the normal and two tangent vectors. These are provided to the vertex shader as attributes: <tt>normal</tt> (as before), <tt>tangent</tt>, and <tt>tangent2</tt>. In addition we have provided a <tt>flatness</tt> uniform as a crude way of scaling the "strength" of the normal map. All-in-all, the resulting normal should be proportional to the sum of the following:
@@ -137,20 +153,25 @@ Similarly to a 2D texture, you can look up into a cube using the <tt>textureCube
 
 <p>We subtract 0.5 since color channel values run from 0 to 1, but we want to be able to represent directions with negative components.
 
-<p>Note that you will need to pass and interpolate <tt>normal</tt>, <tt>tangent</tt>, and <tt>tangent2</tt> between the vertex and fragment shaders. You can do this by using <tt>varying</tt>s.
+<p>Note that you will need to pass (and implicitly interpolate) <tt>normal</tt>, <tt>tangent</tt>, and <tt>tangent2</tt> between the vertex and fragment shaders. You can do this by using <tt>varying</tt>s.
 
 <p>An example normal map texture can be found at <tt>data/textures/earthNormalMap_1k.png</tt>.
 
 <h4>Problem 4: Displacement Mapping</h4>
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a4/displacement_reference.jpg" alt="">
+</div>
+
 <p>Displacement mapping takes a step further towards accurate rendering of a bumpy surface, and moves the vertices of the mesh along the normal vectors. We call the map which stores the magnitude values a height map.
 
 <p>Again you will start with the Phong shader. Instead of placing each vertex at its given position, you will move it along the normal direction by a distance equal to the mean of the red, green, and blue channels of the height map texture at that point, times a scale factor <tt>displacementScale</tt>.
 
-<p>An example height map texture can be found at <tt>data/textures/earthbump1k.jpg</tt>.
+<p>An example height map texture can be found at <tt>data/textures/earthbump1k.jpg</tt>. We recommend using <tt>data/meshes/sphere_highres.obj</tt> for testing.
 
 <h4>Additional implementation notes</h4>
 
-We use a scaling factor for all pixel values of the final image. This can be used to fine tune the final image brightness. It is called \[exposure\] and it can be reached from all shaders. You should multiply the computed pixel color with <tt>exposure</tt>, before setting the final pixel color.
+We use a scaling factor for all pixel values of the final image. This can be used to fine tune the final image brightness. It is called <tt>exposure</tt> and it can be reached from all shaders. You should multiply the computed pixel color with <tt>exposure</tt>, before setting the final pixel color.
 
 <tt>gl_FragColor = computedColor * exposure;</tt>
 
