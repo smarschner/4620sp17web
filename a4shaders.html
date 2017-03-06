@@ -21,7 +21,7 @@ reflected direction \[w\] using the given quantities?
 
 <p>Sketch the result of texture mapping the image shown on the left to the
 quadrilateral shown on the right, with texture coordinates as shown next to the
-quadrilateral’s vertices. Assume that texture coordinates wrap if they exceed
+quadrilateral's vertices. Assume that texture coordinates wrap if they exceed
 1.
 
 <h4>3. Texture Filtering</h4>
@@ -34,7 +34,7 @@ quadrilateral’s vertices. Assume that texture coordinates wrap if they exceed
 
 <p>This can be shown from the figure 4 above. Consider a simple texture image with \[5 \times 5 = 25\] pixels. Their 2D coordinates are discrete as \[\{(0, 0), (0.25, 0), ..., (1,0), (1,1.25), ..., (1,1)\}\]. The index \[(s,t) = (0.7, 0.4)\] is our transformed 2D coordinate which doesn't match any pixel in the texture image. So texture filtering comes out.
 
-<p>Given the nearest 4 texture values \[\{a, b, c, d\}$ around the index \[(s, t)\], show the filtered texture value using:
+<p>Given the nearest 4 texture values \[\{a, b, c, d\}\] around the index \[(s, t)\], show the filtered texture value using:
 
 <ol type="A">
 <li>Nearest neighbor</li>
@@ -79,7 +79,7 @@ There are four main components to the assignment:
 color = \left(k_s\frac{F(\beta)}{\pi} \frac{D(\theta_h)G}{(N\cdot V)(N\cdot L)} + k_d\right) max(N\cdot L, 0) \frac{I}{r^2} + k_d * I_a
 \]
 
-<p>where \[F\] is the Fresnel term, \[D\] is the microfacet distribution, \[G\] is the geometric attenuation, \[N\] is the normal vector of the surface, \[V\] is the viewing direction, \[L\] is the light direction, \[I\] is the light intensity, \[r\] is the shaded point's distance from the light source, \[I_a\] is the ambient light intensity, \[k_s\] and \[k_d\] are the diffuse and specular reflectance of the surface, and the angles \[\beta\] and \[\theta_h\] are as defined below.
+<p>where \[F\] is the Fresnel term, \[D\] is the microfacet distribution, \[G\] is the geometric attenuation, \(N\) is the normal vector of the surface, \[V\] is the viewing direction, \[L\] is the light direction, \[I\] is the light intensity, \[r\] is the shaded point's distance from the light source, \[I_a\] is the ambient light intensity, \[k_s\] and \[k_d\] are the diffuse and specular reflectance of the surface, and the angles \[\beta\] and \[\theta_h\] are as defined below.
 
 <p>For this assignment, we will assume \[k_s\] is always pure white, i.e. <tt>1.0</tt> in every component. As for \[k_d\], you will need to look it up in <tt>uniform sampler2D diffuseTexture</tt>, which you can do using the <tt>texture2D</tt> function that is built into GLSL.
 
@@ -125,12 +125,11 @@ you look up by direction to answer the question "how much light do we see if
 we look in that direction?". Your task here is to implement specular reflection
 under a given environment map.
 
-<p>Environment lighting is the lighting conditions surrounding the rendered
-object. In OpenGL, there is a special kind of texture called cube map, which
+<p>Environment lighting is a way of recording the lighting conditions surrounding the rendered
+object. In OpenGL, there is a special kind of texture called a cube map, which
 stores images of the distant environment. A cube map consists of six faces, and
-each of them has a 2D texture. You can sample a
-point on the cube with a 3D vector in order to get environment light intensity
-in a certain direction. See section 11.6 of the book. 
+each of them has a 2D texture that shows the environment viewed in perspective through one face of the cube. You can sample a cubemap with a 3D vector in order to get environment light intensity
+in the direction that vector is pointing. See section 11.6 of the book. 
 
 <p>In this assignment we have already loaded a cubemap for you as <tt>uniform samplerCube environmentMap</tt>. 
 Similarly to a 2D texture, you can look up into a cube using the <tt>textureCube</tt> function that is built into GLSL.
