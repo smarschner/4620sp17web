@@ -127,12 +127,24 @@ Similarly to a 2D texture, you can look up into a cube using the <tt>textureCube
 <h4>Problem 3: Normal Mapping</h4>
 <p>Creating detailed models with thousands of polygons is a time consuming job and rendering them in real-time can be also problematic. However, with normal mapping, we can make simple, low resolution models look like highly detailed ones. In addition to the polygon model, we provide a high resolution normal map which we can use in the fragment shader instead of the interpolated normals, adding detail to the low resolution model. Normal maps can be generated procedurally in the shaders or read from an image and used as a texture.
 
-<p>TODO
+<p>Your task is to implement normal mapping. You will start with the Phong shader, but instead of using the mesh's (interpolated) normal, you will need to use a weighted combination of the normal and two tangent vectors. These are provided to the vertex shader as attributes: <tt>normal</tt> (as before), <tt>tangent</tt>, and <tt>tangent2</tt>. In addition we have provided a <tt>flatness</tt> uniform as a crude way of scaling the "strength" of the normal map. All-in-all, the resulting normal should be proportional to the sum of the following:
+
+<ul>
+<li><tt>tangent</tt> times the red channel of the normal map texture.</li>
+<li><tt>tangent2</tt> times the green channel of the normal map texture.</li>
+<li><tt>normal</tt> times the blue channel of the normal map texture times <tt>flatness</tt>.
+</ul>
+
+<p>Note that you will need to pass and interpolate <tt>normal</tt>, <tt>tangent</tt>, and <tt>tangent2</tt> between the vertex and fragment shaders. You can do this by using <tt>varying</tt>s.
+
+<p>An example normal map texture can be found at <tt>data/textures/earthNormalMap_1k.png</tt>.
 
 <h4>Problem 4: Displacement Mapping</h4>
 <p>Displacement mapping takes a step further towards accurate rendering of a bumpy surface, and moves the vertices of the mesh along the normal vectors. We call the map which stores the magnitude values a height map.
 
-<p>TODO
+<p>Again you will start with the Phong shader. Instead of placing each vertex at its given position, you will move it along the normal direction by a distance equal to the mean of the red, green, and blue channels of the height map texture at that point, times a scale factor <tt>displacementScale</tt>.
+
+<p>An example height map texture can be found at <tt>data/textures/earthbump1k.jpg</tt>.
 
 <h4>Additional implementation notes</h4>
 
@@ -142,11 +154,15 @@ We use a scaling factor for all pixel values of the final image. This can be use
 
 <h4>Uniforms, Attributes, and Varyings</h4>
 
-In addition to these variables, you might want to use <tt>varying</tt> variables. These variables are the output of the vertex shader and before arriving to the fragment shader input, they are interpolated across triangles. They are how your vertex and fragment shaders communicate, and deciding what variables you need is up to you.
+<p>The framework is based on Three.js, which provides a set of built-in uniforms and attributes. A list can be found here: <a href="https://threejs.org/docs/api/renderers/webgl/WebGLProgram.html">https://threejs.org/docs/api/renderers/webgl/WebGLProgram.html</a>
+
+For each part we may also provide some additional uniforms. These uniforms are declared in the skeleton code we have provided you.
+
+<p>In addition to these variables, you might want to use <tt>varying</tt> variables. These variables are the output of the vertex shader and before arriving to the fragment shader input, they are interpolated across triangles. They are how your vertex and fragment shaders communicate, and deciding what variables you need is up to you.
 
 <h4>Samplers</h4>
 
-TODO
+<p>Textures are accessed using special uniform variables called samplers. In this assignment you will use two types of samplers: <tt>sampler2D</tt> and <tt>samplerCube</tt>. The <tt>texture2D</tt> and <tt>textureCube</tt> functions respectively will let you look up into the corresponding texture: the first argument is the sampler you want to look up into, and the second is the coordinates to look up in: UV coordinates for a 2D texture, and a direction for the cube texture.
 
 <h4>Additional Notes</h4>
 
