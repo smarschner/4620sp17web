@@ -1,0 +1,209 @@
+<p class="duedate">Due:  Friday March 24th 2017 (11:59pm)</p>
+
+<h3>Written Part</h3>
+<p><strong>Do this written part alone.</strong>
+
+<h4>1. Mirror Reflection</h4>
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a4/reflect.jpg" alt="">
+</div>
+
+<p>In this question, we aim to compute the mirror reflection direction at a point.
+Given a view direction \[v\] and normal direction \[n\], how to compute the
+reflected direction \[w\] using the given quantities?
+
+<h4>2. Texture Mapping</h4>
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a4/texture_mapping.jpg" alt="">
+</div>
+
+<p>Sketch the result of texture mapping the image shown on the left to the
+quadrilateral shown on the right, with texture coordinates as shown next to the
+quadrilateral’s vertices. Assume that texture coordinates wrap if they exceed
+1.
+
+<h4>3. Texture Filtering</h4>
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a4/texture_filtering.png" alt="">
+</div>
+
+<p>When we look up the texture value in a 2D image, there is one issue we need to think about: The 3D world space is continuous, so that the transformed and normalized 2D image space are also continuous. However, the texture image is a discrete 2D array.
+
+<p>This can be shown from the figure 4 above. Consider a simple texture image with \[5 \times 5 = 25\] pixels. Their 2D coordinates are discrete as \[\{(0, 0), (0.25, 0), ..., (1,0), (1,1.25), ..., (1,1)\}\]. The index \[(s,t) = (0.7, 0.4)\] is our transformed 2D coordinate which doesn't match any pixel in the texture image. So texture filtering comes out.
+
+<p>Given the nearest 4 texture values \[\{a, b, c, d\}$ around the index \[(s, t)\], show the filtered texture value using:
+
+<ol type="A">
+<li>Nearest neighbor</li>
+<li>Bilinear interpolation</li>
+</ol>
+
+<p><strong>Do this programming part alone or in groups of two, as you prefer.</strong>
+
+<h4>Overview</h4>
+
+<p>In this assignment, you will implement some shaders in GLSL, a graphics-specific language that lets you write programs that run on the graphics processor (GPU).
+
+There are four main components to the assignment:
+<ol>
+<li>Implement a Cook-Torrance shader with texture-mapped diffuse component. This can produce more realistic illumination than the Blinn-Phong shader you implemented in the Ray 1 assignment.</li>
+<li>Implement specular (mirror-like) reflection under environment lighting.</li>
+<li>Implement a normal mapping shader (without environment mapping).</li>
+<li>Implement a displacement mapping shader (also without environment mapping) and compare results with normal mapping.</li>
+</ol>
+
+<p>Each part is contained in its own webpage, which includes a framework based on the mesh viewer you saw in Assignment 1 (Mesh). This will allow you to load any meshes and textures you might like to test with. All of the work outside of the shaders themselves has been done for you, but be sure to understand what uniforms and attributes are being passed to your GLSL program. Some of the uniforms may be controlled using a slider on the webpage.
+
+<p>A few test meshes and textures have been provided in the <tt>data</tt> directory.
+
+<h4>Problem 1: Cook-Torrance Shader</h4>
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a4/cook_torrance_reference.jpg" alt="">
+</div>
+
+<p>Blinn-Phong shading can give you nice results and it's fast and easy to implement -- but it's far from the reality of light reflection. For more realistic appearance, we should use more sophisticated models like Cook-Torrance shading.
+
+<p>The Cook-Torrance shading model starts with the same Lambertian diffuse shading as Blinn-Phong, but it models the surface's microstructure to give a more physically accurate approximation for the specular term. The microfacet model used in Cook-Torrance shading assumes that the surface consists of randomly aligned small smooth planar facets. The model also takes the Fresnel refraction-reflection term and the shadowing effect of the microfacets into account. If you are interested in this topic, we suggest reading Cook's original 1982 paper, <cite>A Reflectance Model for Computer Graphics</cite>.
+
+<p>To compute Cook-Torrance shading, you will need the same vectors which you used in Blinn-Phong shading: the viewing direction vector, the normal vector and the light direction vector (for each light source). The shading equation is the following in case of one light source, taken from the book by Dutre, Bala, and Bekaert <cite>Advanced Global Illumination</cite>:
+
+\[
+color = \left(k_s\frac{F(\beta)}{\pi} \frac{D(\theta_h)G}{(N\cdot V)(N\cdot L)} + k_d\right) max(N\cdot L, 0) \frac{I}{r^2} + k_d * I_a
+\]
+
+<p>where \[F\] is the Fresnel term, \[D\] is the microfacet distribution, \[G\] is the geometric attenuation, \[N\] is the normal vector of the surface, \[V\] is the viewing direction, \[L\] is the light direction, \[I\] is the light intensity, \[r\] is the shaded point's distance from the light source, \[I_a\] is the ambient light intensity, \[k_s\] and \[k_d\] are the diffuse and specular reflectance of the surface, and the angles \[\beta\] and \[\theta_h\] are as defined below.
+
+<p>For this assignment, we will assume \[k_s\] is always pure white, i.e. <tt>1.0</tt> in every component. As for \[k_d\], you will need to look it up in <tt>uniform sampler2D diffuseTexture</tt>, which you can do using the <tt>texture2D</tt> function that is built into GLSL.
+
+<h5>Fresnel Term</h5>
+The Fresnel equations describe the reflective/refractive behavior of the light when it reaches a smooth surface. For this assignment we'll use an approximation of the reflectance part here and ignore refraction. This approximation uses \[\beta\] which is the angle between the viewing direction \[V\] and the half vector \[H\]:
+
+\[
+H = \frac{L + V}{||L + V||}
+\]
+\[
+F(\beta) = F_0 + (1-F_0)(1-\cos \beta )^5 = F_0 + (1-F_0)(1 - (V \cdot H))^5
+\]
+where \[F_0\] is the specular reflectance when light arrives perpendicularly to the surface; we'll use \[0.04\].
+
+<h5>Microfacet Distribution</h5>
+This determine the distribution of the microfacets, we use the Beckmann distribution function. \[\theta_h\] is the angle between the normal \[N\] and the half vector \[H\]:
+
+\[
+D(\theta_h) = \frac{1}{m^2\cos^4 \theta_h} e^{-(\frac{\tan \theta_h}{m})^2} = \frac{1}{m^2\cos^4 \theta_h} e^{-\frac{1 - \cos^2  \theta_h}{m^2 \cos^2 \theta_h}} = \frac{1}{m^2 (N \cdot H)^4} e^{\frac{(N \cdot H)^2 - 1}{m^2 (N \cdot H)^2}}
+\]
+
+where \[m \in [0, 1]\] is the roughness term, which controls the sharpness of highlights. Roughness has the same function as Phong exponent, but the effect goes in the opposite direction; 0 is a perfect mirror surface, and 0.1-0.2 is a slightly glossy surface.
+
+<h5>Geometric Attenuation</h5>
+This term captures the self-shadowing of the microfacets, for detailed explanation see Cook's original 1982 paper, <cite>A Reflectance Model for Computer Graphics</cite>.
+
+\[
+G = min(1, \frac{2(N \cdot H)(N \cdot V)}{V \cdot H}, \frac{2(N \cdot H)(N \cdot L)}{V \cdot H})
+\]
+
+<h4>Problem 2: Environment Mapping</h4>
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a4/environment_reference.jpg" alt="">
+</div>
+
+<p>You used point lights in the Raytracer and Scene assignments. Real world scenes
+usually have much more complex lighting conditions than that and environment
+mapping is a clever technique to capture complex lighting in a texture. The
+idea of an environment map is that the illumination from the environment
+depends on which direction you look, and an environment map is simply a texture
+you look up by direction to answer the question "how much light do we see if
+we look in that direction?". Your task here is to implement specular reflection
+under a given environment map.
+
+<p>Environment lighting is the lighting conditions surrounding the rendered
+object. In OpenGL, there is a special kind of texture called cube map, which
+stores images of the distant environment. A cube map consists of six faces, and
+each of them has a 2D texture. You can sample a
+point on the cube with a 3D vector in order to get environment light intensity
+in a certain direction. See section 11.6 of the book. 
+
+<p>In this assignment we have already loaded a cubemap for you as <tt>uniform samplerCube environmentMap</tt>. 
+Similarly to a 2D texture, you can look up into a cube using the <tt>textureCube</tt> function that is built into GLSL.
+
+<p>Your task is to implement specular reflection under environment lighting. Given a viewing direction and a normal direction, we can use the equation in the written part (i.e., Mirror Reflection) to compute the reflection direction, and then use it to sample the cube map. You may assume the environment map is fixed in view space; i.e. the mouse rotates the scene relative to the environment map, but the environment map remains fixed relative to the camera.
+
+<p>NOTE: Some browsers may not load the environment map properly due to security restrictions. If this happens, there are workarounds, but it is probably easiest to simply try a different browser.
+
+<h4>Problem 3: Normal Mapping</h4>
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a4/normal_reference.jpg" alt="">
+</div>
+
+<p>Creating detailed models with thousands of polygons is a time consuming job and rendering them in real-time can be also problematic. However, with normal mapping, we can make simple, low resolution models look like highly detailed ones. In addition to the polygon model, we provide a high resolution normal map which we can use in the fragment shader instead of the interpolated normals, adding detail to the low resolution model. Normal maps can be generated procedurally in the shaders or read from an image and used as a texture.
+
+<p>Your task is to implement normal mapping. You will start with the Phong shader, but instead of using the mesh's (interpolated) normal, you will need to use a weighted combination of the normal and two tangent vectors. These are provided to the vertex shader as attributes: <tt>normal</tt> (as before), <tt>tangent</tt>, and <tt>tangent2</tt>. In addition we have provided a <tt>flatness</tt> uniform as a crude way of scaling the "strength" of the normal map. All-in-all, the resulting normal should be proportional to the sum of the following:
+
+<ul>
+<li><tt>tangent</tt> times the red channel of the normal map texture - 0.5.</li>
+<li><tt>tangent2</tt> times the green channel of the normal map texture - 0.5.</li>
+<li><tt>normal</tt> times the (blue channel of the normal map texture - 0.5) times <tt>flatness</tt>.
+</ul>
+
+<p>We subtract 0.5 since color channel values run from 0 to 1, but we want to be able to represent directions with negative components.
+
+<p>Note that you will need to pass (and implicitly interpolate) <tt>normal</tt>, <tt>tangent</tt>, and <tt>tangent2</tt> between the vertex and fragment shaders. You can do this by using <tt>varying</tt>s.
+
+<p>An example normal map texture can be found at <tt>data/textures/earthNormalMap_1k.png</tt>.
+
+<h4>Problem 4: Displacement Mapping</h4>
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a4/displacement_reference.jpg" alt="">
+</div>
+
+<p>Displacement mapping takes a step further towards accurate rendering of a bumpy surface, and moves the vertices of the mesh along the normal vectors. We call the map which stores the magnitude values a height map.
+
+<p>Again you will start with the Phong shader. Instead of placing each vertex at its given position, you will move it along the normal direction by a distance equal to the mean of the red, green, and blue channels of the height map texture at that point, times a scale factor <tt>displacementScale</tt>.
+
+<p>An example height map texture can be found at <tt>data/textures/earthbump1k.jpg</tt>. We recommend using <tt>data/meshes/sphere_highres.obj</tt> for testing.
+
+<h4>Additional implementation notes</h4>
+
+We use a scaling factor for all pixel values of the final image. This can be used to fine tune the final image brightness. It is called <tt>exposure</tt> and it can be reached from all shaders. You should multiply the computed pixel color with <tt>exposure</tt>, before setting the final pixel color.
+
+<tt>gl_FragColor = computedColor * exposure;</tt>
+
+<h4>Uniforms, Attributes, and Varyings</h4>
+
+<p>The framework is based on Three.js, which provides a set of built-in uniforms and attributes. A list can be found here: <a href="https://threejs.org/docs/api/renderers/webgl/WebGLProgram.html">https://threejs.org/docs/api/renderers/webgl/WebGLProgram.html</a>
+
+For each part we may also provide some additional uniforms. These uniforms are declared in the skeleton code we have provided you.
+
+<p>In addition to these variables, you might want to use <tt>varying</tt> variables. These variables are the output of the vertex shader and before arriving to the fragment shader input, they are interpolated across triangles. They are how your vertex and fragment shaders communicate, and deciding what variables you need is up to you.
+
+<h4>Samplers</h4>
+
+<p>Textures are accessed using special uniform variables called samplers. In this assignment you will use two types of samplers: <tt>sampler2D</tt> and <tt>samplerCube</tt>. The <tt>texture2D</tt> and <tt>textureCube</tt> functions respectively will let you look up into the corresponding texture: the first argument is the sampler you want to look up into, and the second is the coordinates to look up in: UV coordinates for a 2D texture, and a direction for the cube texture.
+
+<h4>Additional Notes</h4>
+
+<p>Note that color values in the range \[[0,1]\] in GLSL correspond to the full range of brightnesses that can
+be displayed. If you need more information about OpenGL or GLSL, there is an excellent webpage: <a href="https://www.opengl.org/wiki/GLSL">https://www.opengl.org/wiki/GLSL</a>. You can also look at <a href="http://www.lighthouse3d.com/opengl/glsl/">http://www.lighthouse3d.com/opengl/glsl/</a>, where you can find a tutorial and plenty of examples. Beware that there are lots of different GLSL versions out there with different syntax. Our framework uses WebGL 1.0, which is based on OpenGL ES 2.0. (The first implementations of WebGL 2.0 appeared only at the beginning of this year.)
+
+<p>Also, we have marked all the functions or parts of the functions you need to
+complete in with <tt>// TODO#A4</tt> in the source code.
+
+<p>When debugging it can be helpful to bring up your browser's developer console (usually F12) so you can see any errors that are occuring. In addition, Firefox has a built-in shader editor which allows you to edit the shader code on the fly. Similar plugins exist for other browsers as well. Just remember to copy and save your work if you use these!
+
+<h4>What to Submit</h4>
+<p>Submit your solution of the written part individually on CMS as a PDF file.
+<p>As for the code part, submit a zip file containing your solution organized the same way as the code on Github, along with any additional files.
+Include a readme in your zip that contains:
+<ul>
+  <li>You and your partner's names and NetIDs.
+  <li>Any problems with your solution.
+  <li>Anything else you want us to know.
+</ul>
+<p><strong><a href=https://cms.csuglab.cornell.edu>Upload here (CMS)</a></strong>
