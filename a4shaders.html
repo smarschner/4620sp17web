@@ -21,7 +21,7 @@ reflected direction \(w\) using the given quantities?
 
 <p>Sketch the result of texture mapping the image shown on the left to the
 quadrilateral shown on the right, with texture coordinates as shown next to the
-quadrilateral’s vertices. Assume that texture coordinates wrap if they exceed
+quadrilateral's vertices. Assume that texture coordinates wrap if they exceed
 1.
 
 <h4>3. Texture Filtering</h4>
@@ -125,12 +125,11 @@ you look up by direction to answer the question "how much light do we see if
 we look in that direction?". Your task here is to implement specular reflection
 under a given environment map.
 
-<p>Environment lighting is the lighting conditions surrounding the rendered
-object. In OpenGL, there is a special kind of texture called cube map, which
+<p>Environment lighting is a way of recording the lighting conditions surrounding the rendered
+object. In OpenGL, there is a special kind of texture called a cube map, which
 stores images of the distant environment. A cube map consists of six faces, and
-each of them has a 2D texture. You can sample a
-point on the cube with a 3D vector in order to get environment light intensity
-in a certain direction. See section 11.6 of the book. 
+each of them has a 2D texture that shows the environment viewed in perspective through one face of the cube. You can sample a cubemap with a 3D vector in order to get environment light intensity
+in the direction that vector is pointing. See section 11.6 of the book. 
 
 <p>In this assignment we have already loaded a cubemap for you as <tt>uniform samplerCube environmentMap</tt>. 
 Similarly to a 2D texture, you can look up into a cube using the <tt>textureCube</tt> function that is built into GLSL.
