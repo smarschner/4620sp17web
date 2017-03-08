@@ -57,15 +57,15 @@ There are four main components to the assignment:
 
 <p>Each part is contained in its own webpage, which includes a framework based on the mesh viewer you saw in Assignment 1 (Mesh). This will allow you to load any meshes and textures you might like to test with. All of the work outside of the shaders themselves has been done for you, but be sure to understand what uniforms and attributes are being passed to your GLSL program. Some of the uniforms may be controlled using a slider on the webpage.
 
-<p>The shaders are embedded in the HTML documents themselves. You will edit and submit these directly.
+<p>The shaders are embedded in the HTML documents themselves. You will edit and submit these directly. We have marked all the shaders you need to write with <tt>// TODO#A4</tt> in the source code.
 
 <p>A few test meshes and textures have been provided in the <tt>data</tt> directory.
 
 <h4>Example: Phong Shader</h4>
 
-<p>We have provided an example in <tt>phong.html</tt>. You do not need to submit this file, but it may be useful as a reference. Note the built-in uniforms and attributes provided by Three.js as well those we have provided via Javascript. Uniforms include the model, view, and projection matrices. Attributes include vertex positions and normals (in local object space). See also how the "Roughness" slider changes the <tt>roughness</tt> uniform with a corresponding change in the rendering.
+<p>We have provided an example in <tt>phong.html</tt>. You do not need to modify this file, but it may be useful as a reference. Note the built-in uniforms and attributes provided by Three.js as well those we have provided via Javascript. Uniforms include the model, view, and projection matrices. Attributes include vertex positions and normals (in local object space). See also how the "Roughness" slider changes the <tt>roughness</tt> uniform with a corresponding change in the rendering. (This is the inverse of the Phong exponent; we have chosen to display it this way so that moving the slider to the right has a similar effect to doing the same with the Cook-Torrance shader.)
 
-<p>Note that this example performs the bulk of its computations in eye space, as this is the most convenient for the provided set of built-in uniforms. We recommend you do the same. Similarly, while we have provided a toggle between fixing light positions to world space and fixing light positions to eye space, in the shader the light positions will always be provided in eye space.
+<p>Note that this example performs the bulk of its computations in eye space, as this is the most convenient for the provided set of built-in uniforms. We recommend you do the same. Similarly, while we have provided a toggle between fixing light positions to world space and fixing light positions to eye space, in the shader the light position uniforms will always be provided in eye space.
 
 <h4>Problem 1: Cook-Torrance Shader</h4>
 
@@ -99,13 +99,13 @@ F(\beta) = F_0 + (1-F_0)(1-\cos \beta )^5 = F_0 + (1-F_0)(1 - (V \cdot H))^5
 where \(F_0\) is the specular reflectance when light arrives perpendicularly to the surface; we'll use \(0.04\).
 
 <h5>Microfacet Distribution</h5>
-This determine the distribution of the microfacets, we use the Beckmann distribution function. \(\theta_h\) is the angle between the normal \(N\) and the half vector \(H\):
+To determine the distribution of the microfacet orientations, we use the Beckmann distribution function. \(\theta_h\) is the angle between the normal \(N\) and the half vector \(H\):
 
 \[
 D(\theta_h) = \frac{1}{m^2\cos^4 \theta_h} e^{-(\frac{\tan \theta_h}{m})^2} = \frac{1}{m^2\cos^4 \theta_h} e^{-\frac{1 - \cos^2  \theta_h}{m^2 \cos^2 \theta_h}} = \frac{1}{m^2 (N \cdot H)^4} e^{\frac{(N \cdot H)^2 - 1}{m^2 (N \cdot H)^2}}
 \]
 
-where \(m \in [0, 1]\) is the roughness term, which controls the sharpness of highlights. Roughness has the same function as Phong exponent, but the effect goes in the opposite direction; 0 is a perfect mirror surface, and 0.1-0.2 is a slightly glossy surface.
+where \(m \in [0, 1]\) is the roughness term, which controls the sharpness of highlights. Roughness has the same function as the Phong exponent, but the effect goes in the opposite direction; 0 is a perfect mirror surface, and 0.1-0.2 is a slightly glossy surface.
 
 <h5>Geometric Attenuation</h5>
 This term captures the self-shadowing of the microfacets, for detailed explanation see Cook's original 1982 paper, <cite>A Reflectance Model for Computer Graphics</cite>.
@@ -177,38 +177,34 @@ Similarly to a 2D texture, you can look up into a cube using the <tt>textureCube
 
 <p>As for the normal, you may use the mesh normal without any changes. (It would be better to adjust the normal alongside the height map, but we will not require this as part of the assignment.)
 
-<h4>Additional implementation notes</h4>
+<h4>Additional notes</h4>
 
-We use a scaling factor for all pixel values of the final image. This can be used to fine tune the final image brightness. It is called <tt>exposure</tt> and it can be reached from all shaders. You should multiply the computed pixel color with <tt>exposure</tt>, before setting the final pixel color.
+<h5>Exposure</h5>
 
-<tt>gl_FragColor = computedColor * exposure;</tt>
+<p>Color values in the range \([0,1]\) in GLSL correspond to the full range of brightnesses that can be displayed. However, the range of brightnesses in a scene can be quite wide. Therefore, we use a scaling factor for all pixel values of the final image. This can be used to fine tune the final image brightness. It is called <tt>exposure</tt> and it can be reached from all shaders. You should multiply the computed pixel color with <tt>exposure</tt>, before setting the final pixel color: <tt>gl_FragColor = computedColor * exposure;</tt>
 
-<h4>Uniforms, Attributes, and Varyings</h4>
+<h5>Developer Console</h5>
+
+<p>When debugging it can be helpful to bring up your browser's developer console so you can see any errors that are occuring. In addition, Firefox has a built-in shader editor which allows you to edit the shader code on the fly. Similar plugins exist for other browsers as well. Just remember to copy and save your work if you use these, as there is generally no direct save option!
+
+<h5>Uniforms, Attributes, and Varyings</h5>
 
 <p>The framework is based on Three.js, which provides a set of built-in uniforms and attributes.
 Uniform variables, such as the model, view, and projection matrices, remain constant across every vertex or fragment processed by a shader program. Meanwhile, attributes, such as positions and normals, can have a different value for every vertex. Although only the vertex shader recieves attributes, they are often used to compute varyings (see below).
-A list of Three.js's built-in uniforms and attributes can be found here: <a href="https://threejs.org/docs/api/renderers/webgl/WebGLProgram.html">https://threejs.org/docs/api/renderers/webgl/WebGLProgram.html</a> D
-eclarations for these uniforms and attributes are automatically prepended to your shader code, so you do not need to declare them yourself.
+A list of Three.js's built-in uniforms and attributes can be found here: <a href="https://threejs.org/docs/api/renderers/webgl/WebGLProgram.html">https://threejs.org/docs/api/renderers/webgl/WebGLProgram.html</a> 
+Declarations for these uniforms and attributes are automatically prepended to your shader code, so you do not need to declare them yourself.
 
 <p>For each part we may also provide some additional uniforms. These uniforms are already declared in the skeleton code we have provided you.
 
-<p>In addition to these uniforms and attributes, you might want to use <tt>varying</tt> variables. These variables are the output of the vertex shader and before arriving to the fragment shader input, they are interpolated across triangles. They are how your vertex and fragment shaders communicate, and deciding what variables you need is up to you.
+<p>In addition to these uniforms and attributes, you will want to use <tt>varying</tt> variables. These variables are the output of the vertex shader and before arriving to the fragment shader input, they are interpolated across triangles. They are how your vertex and fragment shaders communicate, and deciding what variables you need is up to you.
 
-<h4>Samplers</h4>
+<h5>Samplers</h5>
 
-<p>Textures are accessed using special uniform variables called samplers. In this assignment you will use two types of samplers: <tt>sampler2D</tt> and <tt>samplerCube</tt>. The <tt>texture2D</tt> and <tt>textureCube</tt> functions respectively will let you look up into the corresponding texture: the first argument is the sampler you want to look up into, and the second is the coordinates to look up in: UV coordinates for a 2D texture, and a direction for the cube texture.
+<p>Textures are accessed using special uniform variables called samplers. In this assignment you will use two types of samplers: <tt>sampler2D</tt> and <tt>samplerCube</tt>. The <tt>texture2D</tt> and <tt>textureCube</tt> functions respectively will let you look up into the corresponding texture. The first argument is the sampler you want to look up into, and the second is the coordinates to look up in: UV coordinates for a 2D texture, and a direction for the cube texture.
 
-<h4>Additional Notes</h4>
-
-<p>Note that color values in the range \([0,1]\) in GLSL correspond to the full range of brightnesses that can
-be displayed. 
+<h5>Additional References</h5>
 
 <p>If you need more information about OpenGL or GLSL, there is an excellent webpage: <a href="https://www.opengl.org/wiki/GLSL">https://www.opengl.org/wiki/GLSL</a>. You can also look at <a href="http://www.lighthouse3d.com/opengl/glsl/">http://www.lighthouse3d.com/opengl/glsl/</a>, where you can find a tutorial and plenty of examples. Beware that there are lots of different GLSL versions out there with different syntax. Our framework uses WebGL 1.0, which is based on OpenGL ES 2.0. (The first implementations of WebGL 2.0 appeared only at the beginning of this year.)
-
-<p>Also, we have marked all the functions or parts of the functions you need to
-complete in with <tt>// TODO#A4</tt> in the source code.
-
-<p>When debugging it can be helpful to bring up your browser's developer console (usually F12) so you can see any errors that are occuring. In addition, Firefox has a built-in shader editor which allows you to edit the shader code on the fly. Similar plugins exist for other browsers as well. Just remember to copy and save your work if you use these!
 
 <h4>What to Submit</h4>
 <p>Submit your solution of the written part individually on CMS as a PDF file.
