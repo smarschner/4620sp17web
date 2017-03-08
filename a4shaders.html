@@ -65,7 +65,7 @@ There are four main components to the assignment:
 
 <p>We have provided an example in <tt>phong.html</tt>. You do not need to submit this file, but it may be useful as a reference. Note the built-in uniforms and attributes provided by Three.js as well those we have provided via Javascript. Uniforms include the model, view, and projection matrices. Attributes include vertex positions and normals (in local object space). See also how the "Roughness" slider changes the <tt>roughness</tt> uniform with a corresponding change in the rendering.
 
-<p>We recommend that you perform your computations in eye space, as this is the most convenient for the provided set of built-in uniforms. As such, light positions have been provided in eye space.
+<p>Note that this example performs the bulk of its computations in eye space, as this is the most convenient for the provided set of built-in uniforms. We recommend you do the same. Similarly, while we have provided a toggle between fixing light positions to world space and fixing light positions to eye space, in the shader the light positions will always be provided in eye space.
 
 <h4>Problem 1: Cook-Torrance Shader</h4>
 
@@ -129,8 +129,7 @@ you look up by direction to answer the question "how much light do we see if
 we look in that direction?". Your task here is to implement specular reflection
 under a given environment map.
 
-<p>Environment lighting is a way of recording the lighting conditions surrounding the rendered
-object. In OpenGL, there is a special kind of texture called a cube map, which
+<p>In OpenGL, there is a special kind of texture called a cube map, which
 stores images of the distant environment. A cube map consists of six faces, and
 each of them has a 2D texture that shows the environment viewed in perspective through one face of the cube. You can sample a cubemap with a 3D vector in order to get environment light intensity
 in the direction that vector is pointing. See section 11.6 of the book. 
@@ -138,7 +137,7 @@ in the direction that vector is pointing. See section 11.6 of the book.
 <p>In this assignment we have already loaded a cubemap for you as <tt>uniform samplerCube environmentMap</tt>. 
 Similarly to a 2D texture, you can look up into a cube using the <tt>textureCube</tt> function that is built into GLSL.
 
-<p>Your task is to implement specular reflection under environment lighting. Given a viewing direction and a normal direction, we can use the equation in the written part (i.e., Mirror Reflection) to compute the reflection direction, and then use it to sample the cube map. You may assume the environment map is fixed in view space; i.e. the mouse rotates the scene relative to the environment map, but the environment map remains fixed relative to the camera.
+<p>Your task is to implement specular reflection under environment lighting. Given a viewing direction and a normal direction, we can use the equation in the written part (i.e., Mirror Reflection) to compute the reflection direction, and then use it to sample the cube map. You may assume the environment map is fixed in eye space; i.e. the mouse rotates the scene relative to the environment map, but the environment map remains fixed relative to the camera.
 
 <p>NOTE: Some browsers may not load the environment map properly due to security restrictions. If this happens, there are workarounds, but it is probably easiest to simply try a different browser.
 
@@ -176,7 +175,7 @@ Similarly to a 2D texture, you can look up into a cube using the <tt>textureCube
 
 <p>An example height map texture can be found at <tt>data/textures/earthbump1k.jpg</tt>. We recommend using <tt>data/meshes/sphere_highres.obj</tt> for testing.
 
-<p>As for the normal, you may use the mesh normal without any changes.
+<p>As for the normal, you may use the mesh normal without any changes. (It would be better to adjust the normal alongside the height map, but we will not require this as part of the assignment.)
 
 <h4>Additional implementation notes</h4>
 
