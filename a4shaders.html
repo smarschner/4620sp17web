@@ -66,6 +66,8 @@ There are four main components to the assignment:
 
 <p>We have provided an example in <tt>phong.html</tt>. You do not need to modify this file, but it may be useful as a reference. Note the built-in uniforms and attributes provided by Three.js as well those we have provided via Javascript. Uniforms include the model, view, and projection matrices. Attributes include vertex positions and normals (in local object space). See also how the "Roughness" slider changes the <tt>roughness</tt> uniform with a corresponding change in the rendering. (This is the inverse of the Phong exponent; we have chosen to display it this way so that moving the slider to the right has a similar effect to doing the same with the Cook-Torrance shader.)
 
+<p>Also note how the lights are handled. There is one uniform array for the positions and another for the colors. The constant <tt>NUM_LIGHTS</tt> gives the number of lights.
+
 <p>Note that this example performs the bulk of its computations in eye space, as this is the most convenient for the provided set of built-in uniforms. We recommend you do the same. Similarly, while we have provided a toggle between fixing light positions to world space and fixing light positions to eye space, in the shader the light position uniforms will always be provided in eye space.
 
 <h4>Problem 1: Cook-Torrance Shader</h4>
@@ -150,7 +152,7 @@ Similarly to a 2D texture, you can look up into a cube using the <tt>textureCube
 
 <p>Creating detailed models with thousands of polygons is a time consuming job and rendering them in real-time can be also problematic. However, with normal mapping, we can make simple, low resolution models look like highly detailed ones. In addition to the polygon model, we provide a high resolution normal map which we can use in the fragment shader instead of the interpolated normals, adding detail to the low resolution model. Normal maps can be generated procedurally in the shaders or read from an image and used as a texture.
 
-<p>Your task is to implement normal mapping. You will start with the Phong shader, but instead of using the mesh's (interpolated) normal, you will need to use a weighted combination of the normal and two tangent vectors. These are provided to the vertex shader as attributes: <tt>normal</tt> (as before), <tt>tangent</tt>, and <tt>tangent2</tt>. These three vectors form an orthonormal basis, where <tt>tangent</tt> is perpendicular to the <tt>normal</tt> direction and points towards the increasing \(u\) direction of the UV coordinates, and <tt>normal2</tt> completes the basis by being perpendicular to the other two. In addition we have provided a <tt>bumpiness</tt> uniform as a crude way of scaling the "strength" of the normal map. All-in-all, the resulting normal should be proportional to the sum of the following:
+<p>Your task is to implement normal mapping. You will start with the Phong shader (or, if you prefer, Cook-Torrance), but instead of using the mesh's (interpolated) normal, you will need to use a weighted combination of the normal and two tangent vectors. These are provided to the vertex shader as attributes: <tt>normal</tt> (as before), <tt>tangent</tt>, and <tt>tangent2</tt>. These three vectors form an orthonormal basis, where <tt>tangent</tt> is perpendicular to the <tt>normal</tt> direction and points towards the increasing \(u\) direction of the UV coordinates, and <tt>normal2</tt> completes the basis by being perpendicular to the other two. In addition we have provided a <tt>bumpiness</tt> uniform as a crude way of scaling the "strength" of the normal map. All-in-all, the resulting normal should be proportional to the sum of the following:
 
 <ul>
 <li><tt>tangent</tt> times (the red channel of the normal map texture - 0.5) times <tt>bumpiness</tt>.</li>
@@ -172,7 +174,7 @@ Similarly to a 2D texture, you can look up into a cube using the <tt>textureCube
 
 <p>Displacement mapping takes a step further towards accurate rendering of a bumpy surface, and moves the vertices of the mesh along the normal vectors. We call the map which stores the magnitude values a height map.
 
-<p>Again you will start with the Phong shader. Instead of placing each vertex at its given position, you will move it along the normal direction by a distance equal to the mean of the red, green, and blue channels of the height map texture at that point, times a scale factor <tt>displacementScale</tt>.
+<p>Again you will start with the Phong shader (or, if you prefer, Cook-Torrance). Instead of placing each vertex at its given position, you will move it along the normal direction by a distance equal to the mean of the red, green, and blue channels of the height map texture at that point, times a scale factor <tt>displacementScale</tt>.
 
 <p>An example height map texture can be found at <tt>data/textures/earthbump1k.jpg</tt>. We recommend using <tt>data/meshes/sphere_highres.obj</tt> for testing.
 
