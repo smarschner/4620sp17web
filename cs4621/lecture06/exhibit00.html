@@ -209,8 +209,8 @@
     varying vec3 objPosition;
 
     void main() {
-        gl_FragColor = vec4(0.5 * (objPosition + 1.0), 1.0);
-//        gl_FragColor = vec4(gl_FragCoord.z * vec3(1.0, 1.0, 1.0), 1.0);
+       gl_FragColor = vec4(0.5 * (objPosition + 1.0), 1.0);
+        // gl_FragColor = vec4(gl_FragCoord.z * vec3(1.0, 1.0, 1.0), 1.0);
     }
 </script>
 
@@ -417,8 +417,8 @@
 
     function drawShape(gl, shape, program, xf, proj) {
 
-        // gl.depthFunc(gl.LESS);
-        // gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LESS);
+        gl.enable(gl.DEPTH_TEST);
         gl.useProgram(program);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, shape.vertexBuffer);
@@ -441,7 +441,7 @@
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
         gl.useProgram(null);
-        // gl.disable(gl.DEPTH_TEST);
+        gl.disable(gl.DEPTH_TEST);
     }
 
     function glEnv(canvas) {
@@ -462,7 +462,8 @@
 
         function drawFrame() {
             gl.clearColor(0.15, 0.2, 0.5, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.clearDepth(1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
             drawShape(gl, cat, program, xf, proj);
         }
