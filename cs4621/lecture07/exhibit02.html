@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>CS 4621: Lecture 7 -- Exhibit #2: Minification Parameters and Textured 3D Mesh</title>
+
+    <!-- Bootstrap -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/cs4620.css" rel="stylesheet">
+    <link href="../css/jquery-ui.min.css" rel="stylesheet">
+    <link href="../css/jquery-ui.theme.min.css" rel="stylesheet">
+    <link href="../css/jquery-ui.structure.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+    });
+    </script>
+    <!-- MathJax -->
+    <script type="text/javascript" async
+            src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+</head>
+<body>
+<div class="container">
+    <h1>Exhibit 2 <span class=subtitle>Minification Parameters and Textured 3D Mesh</a></h1>
+
+    <center>
+        <canvas id="webglCanvas" style="border: none; background-color: black;" width="512" height="512"></canvas>
+    </center>
+
+    <h3>How to Use</h3>
+
+    <p>Hit the space bar to pause/resume the spinning.</p>
+
+    <h3>Filtering Parameters</h3>
+
+    <table class="table table-bordered">
+        <tr>
+            <td align="right" width="20%"><code>gl.TEXTURE_MAG_FILTER</code></td>
+            <td width="30%">
+                <select id="textureMagFilterSelect">
+                    <option value="LINEAR">LINEAR</option>
+                    <option value="NEAREST">NEAREST</option>
+                </select>
+            </td>
+            <td width="20%" align="right"><code>gl.TEXTURE_MIN_FILTER</code></td>
+            <td width="30%">
+                <select id="textureMinFilterSelect">
+                    <option value="LINEAR">LINEAR</option>
+                    <option value="NEAREST">NEAREST</option>
+                    <option value="NEAREST_MIPMAP_NEAREST">NEAREST_MIPMAP_NEAREST</option>
+                    <option value="LINEAR_MIPMAP_NEAREST">LINEAR_MIPMAP_NEAREST</option>
+                    <option value="NEAREST_MIPMAP_LINEAR" selected="selected">NEAREST_MIPMAP_LINEAR</option>
+                    <option value="LINEAR_MIPMAP_LINEAR">LINEAR_MIPMAP_LINEAR</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+
+    <h2>What is this about?</h2>
+
+    <ul>
+        <li>
+            Minification happens not only when texture coordinates are so that the texture is minified
+            on the surface it is displayed.
+        </li>
+        <li>
+            It can also happen under perspective view when we view a surface at a grazing angle.
+        </li>
+        <li>
+            The mipmap is used to anti-alias the minified texture.  Each mode of using the mipmap
+            yields different rendering result.
+        </li>
+    </ul>
+
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="../js/jquery-3.1.1.min.js"></script>
+<script src="../js/jquery-ui.min.js"></script>
+<!-- Google Code Prettifier -->
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+<script src="../js/gl-matrix-min.js"></script>
+
+<script id="vertexShader" type="x-shader/x-vertex">
+    attribute vec3 vert_position;
+    attribute vec2 vert_texCoord;
+
+    uniform mat4 xform_projMat;
+    uniform mat4 xform_viewMat;
+    uniform mat4 xform_modelMat;
+
+    varying vec2 geom_texCoord;
+
+    void main() {
+        gl_Position = xform_projMat * (xform_viewMat * (xform_modelMat * vec4(vert_position, 1.0)));
+        geom_texCoord = vert_texCoord;
+    }
+</script>
+
+<script id="fragmentShader" type="x-shader/x-fragment">
+    precision highp float;
+
+    varying vec2 geom_texCoord;
+
+    uniform sampler2D texture;
+
+    void main() {
+        gl_FragColor = texture2D(texture, geom_texCoord);
+    }
+</script>
+
+<script>
+    function initializeWebGL(canvas) {
+        // Getting WebGL context the right way
+        var gl = null;
+        try {
+            gl = canvas[0].getContext("experimental-webgl");
+            if (!gl) {
+                gl = canvas[0].getContext("webgl");
+            }
+        } catch (error) {
+            // NO-OP
+        }
+        if (!gl) {
+            alert("Could not get WebGL context!");
+            throw new Error("Could not get WebGL context!");
+        }
+        return gl;
+    }
+
+    function createShader(gl, shaderScriptId) {
+        var shaderScript = $("#" + shaderScriptId);
+        var shaderSource = shaderScript[0].text;
+        var shaderType = null;
+        if (shaderScript[0].type == "x-shader/x-vertex") {
+            shaderType = gl.VERTEX_SHADER;
+        } else if (shaderScript[0].type == "x-shader/x-fragment") {
+            shaderType = gl.FRAGMENT_SHADER;
+        } else {
+            throw new Error("Invalid shader type: " + shaderScript[0].type)
+        }
+        var shader = gl.createShader(shaderType);
+        gl.shaderSource(shader, shaderSource);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            var infoLog = gl.getShaderInfoLog(shader);
+            gl.deleteShader(shader);
+            throw new Error("An error occurred compiling the shader: " + infoLog);
+        } else {
+            return shader;
+        }
+    }
+
+    function createGlslProgram(gl, vertexShaderId, fragmentShaderId) {
+        var program = gl.createProgram();
+        gl.attachShader(program, createShader(gl, vertexShaderId));
+        gl.attachShader(program, createShader(gl, fragmentShaderId));
+        gl.linkProgram(program);
+        gl.validateProgram(program);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            var infoLog = gl.getProgramInfoLog(program);
+            gl.deleteProgram(program);
+            throw new Error("An error occurred linking the program: " + infoLog);
+        } else {
+            return program;
+        }
+    }
+
+    function createShape(gl, vertexData, indexData) {
+        var shape = {};
+
+        var vertexArray = new Float32Array(vertexData);
+        var vertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, vertexArray, gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+        var indexArray = new Uint16Array(indexData);
+        var indexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexArray, gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+        shape.vertexBuffer = vertexBuffer;
+        shape.indexBuffer = indexBuffer;
+        shape.size = indexData.length;
+
+        return shape;
+    }
+
+    function drawShape(gl, program, shape) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, shape.vertexBuffer);
+        var positionLocation = gl.getAttribLocation(program, "vert_position");
+        gl.enableVertexAttribArray(positionLocation);
+        gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 4 * 5, 0);
+        var texCoordLocation = gl.getAttribLocation(program, "vert_texCoord");
+        gl.enableVertexAttribArray(texCoordLocation);
+        gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 4 * 5, 4 * 3);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.indexBuffer);
+        gl.drawElements(gl.TRIANGLES, shape.size, gl.UNSIGNED_SHORT, 0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+        gl.useProgram(null);
+    }
+
+    function startWebGL() {
+        var image = new Image();
+        image.onload = function() {
+            runWebGL(image);
+        };
+        image.src = "checker.jpg";
+    }
+
+    function runWebGL(image) {
+        var gl = initializeWebGL($("#webglCanvas"));
+
+        var program = createGlslProgram(gl, "vertexShader", "fragmentShader");
+        ["texture", "xform_projMat", "xform_viewMat", "xform_modelMat"].forEach(function(name) {
+            program[name] = gl.getUniformLocation(program, name);
+        });
+
+        // Create the Cornell texture.
+        var texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+
+        var projMat = mat4.create();
+        mat4.perspective(projMat, 45.0*Math.PI/180.0, 1.0, 0.1, 100.0);
+
+        var viewMat = mat4.create();
+        mat4.lookAt(viewMat,
+            vec3.fromValues(0.0, 0.0, 5.0),
+            vec3.fromValues(0.0, 0.0, 0.0),
+            vec3.fromValues(0.0, 1.0, 0.0));
+
+        var modelMat = mat4.create();
+        mat4.identity(modelMat);
+
+        var isPlaying = true;
+        $(document).keydown(function(event) {
+            if (event.key == " ") {
+                isPlaying = !isPlaying;
+            }
+        });
+
+
+        var vertexData = [
+            -1.0, -1.0, 0.0,
+            0.0, 0.0,
+            1.0, -1.0, 0.0,
+            5.0, 0.0,
+            1.0, 1.0, 0.0,
+            5.0, 5.0,
+            -1.0, 1.0, 0.0,
+            0.0, 5.0
+        ];
+        var indexData = [
+            0, 1, 2, 0, 2, 3
+        ];
+        var rectangle = createShape(gl, vertexData, indexData);
+
+        var lastTime = performance.now();
+        var rotateAngle = 0.0;
+        var rate = 0.001;
+
+        function updateWebGL() {
+            var time = performance.now();
+            var elasped = time - lastTime;
+            lastTime = time;
+
+            if (isPlaying) {
+                rotateAngle += rate * elasped;
+                mat4.fromXRotation(modelMat, -rotateAngle);
+            }
+
+            gl.clearColor(0.9, 0.5, 0.5, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            gl.useProgram(program);
+
+            if (program.texture != null) {
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl[$("#textureMagFilterSelect").val()]);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl[$("#textureMinFilterSelect").val()]);
+                gl.uniform1i(program.texture, 0);
+            }
+            if (program.xform_projMat != null) {
+                gl.uniformMatrix4fv(program.xform_projMat, false, projMat);
+            }
+            if (program.xform_viewMat != null) {
+                gl.uniformMatrix4fv(program.xform_viewMat, false, viewMat);
+            }
+            if (program.xform_modelMat != null) {
+                gl.uniformMatrix4fv(program.xform_modelMat, false, modelMat);
+            }
+
+            drawShape(gl, program, rectangle);
+
+            gl.useProgram(null);
+
+            // Reschedule the next frame.
+            window.requestAnimationFrame(updateWebGL);
+        }
+
+        window.requestAnimationFrame(updateWebGL);
+    }
+    startWebGL();
+</script>
+</body>
+</html>
