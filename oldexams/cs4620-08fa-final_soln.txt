@@ -1,0 +1,113 @@
+CS4620 Fall 2008 Final Exam Solution
+
+Problem 1.
+
+1.1:
+The surface is an elliptical cylinder, with its center axis along the z axis and its ends at z = 0 and z = 1.  The elliptical cross section has major diameter 2 and minor diameter 1.  It works by transforming the ray into the local coordinates of a circular cylinder using a scale by 2 along the x axis.  The values r1 and r2 are the ray parameters for the two intersections with the infinite cylinder; t1 and t2 are the intersections with the planes z = 0 and z = 1.  The variables tmin and tmax describe where the ray enters and exits the capped cylinder -- and if it exits before it enters, it misses.
+
+1.2:
+If quadraticRoots returns +infinity for both roots when there are no roots, then tmin will be +infinity and the function will return +infinity regardless of the values of t1 and t2.  Returning two numbers <= 0 also works, since that will cause the computed hit points to be before the start of the ray.
+
+1.3:
+when p = (-2, 0, 0.5) and d = (1, 0, 0), it will hit the surface.  In this case, t1 and t2 are both infinity but have different signs, i.e. one is +inf and the other is -inf. In this case tmin = min(r1, r2) and tmax = max(r1, r2), in which r1 = 1.5 and r2 = 2.5, thus the function will return 1.5.  So generally, if the ray is parallel to the x-y plane, and starts between z = 0 and z = 1, then t1 and t2 are two infinities with different signs, which causes the function to return a finite value if and only if the ray hits the infinite cylinder.
+
+
+Problem 2.
+
+1. g (combination)
+2. e (translation)
+3. b (mirror reflection; also a scale)
+4. a (rotation by 90 degrees)
+5. a (rotation by 180 degrees; also a scale)
+6. d (scale by 2 along x)
+7. f (shear)
+
+
+Problem 3.
+
+3.1a: linear interpolation interpolates, so the result is 0.
+3.1b: The values of the B-spline segments at the integers are 1/6 and 2/3.  Each of the four neighboring pixels contributes (2/3) * (1/6) or 1/9, so the total is 4/9.
+3.2a: by symmetry it is 1/2.
+3.2b: by symmetry it is 1/2.  Alternatively, we can evaluate the four polynomials at t = 1/2 (only need to do two, because of symmetry).
+Last column: 1/6 * 1/8 = 1/48.
+2nd column: 1/6 * (3/8 - 6/4 + 4) = 23/48.
+Then there are 8 pixels that contribute.  Two are (23/48)^2, four are (23/48)*(1/48), and two are (1/48)^2.  That's (2*529 + 4*23 + 2)/(48*48), which is 1/2.
+
+
+Problem 4.
+
+The brightest shading in each case occurs when the half vector is vertical at the point where shading is being computed.  For the fragment shaded case, this is at the center of the triangle, at the origin, and occurs when the light is colocated with the camera (x = 0).  For the vertex shaded case, this is at the vertices, and occurs for the vertex at (1, 0, 0) when the light source is at (2, 2, 0).  I'll set the light source intensity at 1.0 for computing ratios.
+
+4.1:
+With the light source at x = 0, fragment shading computes the value 1.0, because the normal and the half vector are both (0, 1, 0) at the center.  In the same case, the half vector at the vertex at (1, 0, 0) is in the direction (-1, 2, 0), and the angle between the normal and the half vector is arccos(2/sqrt(5)), resulting in a shading value of (2/sqrt(5))^30, about 1/28.  The same value is computed at all three vertices by symmetry, so the ratio is 28:1.
+
+4.2:
+With the light source at x = 2, vertex shading computes the value 1.0 at the vertex (1, 0, 0), because the normal and the half vector are both (0, 1, 0) at that point.  The other two vertices have half vectors more than arccos(2/sqrt(5)) away from the normal, so they together contribute less than 1/14 and can be neglected compared to the 1.  The shading value is approximately 1/3 at the center.
+
+For fragment shading, the normal and view direction at the center are both (0, 1, 0), and the light direction at (2, 2, 0) is 45 degrees away, so the half vector is 22.5 degrees from the normal and the shading result is cos(22.5)^30, about 1/11.  Thus the ratio is about 3:11.
+
+
+Problem 5.
+
+5.1:
+Let's put the endpoints of the segments on the coordinate axes.  To get the curve to be tangent at those points, the other control points will need to be aligned with them.  This means the spline in the first quadrant has control points (1,0), (1,c), (c,1), and (0,1).  (We choose to set the cs to be the same, to get a spline that is symmetric across the line y = x.)  By symmetry it is clear that the spline has to reach the point (sqrt(1/2), sqrt(1/2)) at t = 1/2.  Evaluating the spline's x coordinate for t = 1/2, we get: 
+(-1/8 + 3/4 - 3/2 + 1) * 1 + (first row)
+(3/8 - 6/4 + 3/2) * 1 + (second row)
+(-3/8 + 3/4) * c (third row)
+or x = 1/2 + (3/8) c
+With this we can solve for c: c = (sqrt(1/2) - 1/2) / (3/8)
+Since the spline a smooth curve that is symmetric across y = x, it is tangent to the circle when it intersects the circle at y = x = sqrt(1/2).
+
+5.2:
+This one is a little hard to argue precisely.  A good basic approach is to look at the function r^2(t) = x(t)^2 + y(t)^2, which is the squared distance from the origin.  Here is one possible argument that r(t) > 1 for all t:
+
+The function r^2(t) is a 6th order polynomial, so it has at most 5 critical points.  It has either minima or maxima at t = 0, 1/2, and 1, since the curve is tangent to the circle at those points.  This leaves only two critical points, which by symmetry are one on either side of t = 1/2.  So the radius can turn around only once between the tangencies, meaning it can't cross the circle between the tangent points.  Thus the function r^2(t) turns around 5 times: at t = 0, 1/2, and 1, and two places in between.  Since the radius goes to infinity as t goes to +/- infinity, the critical points at t = 0, 1/2, 1 are minima and the curve is outside the circle.
+
+Another way to argue that the spline is outside rather than inside: the polynomial or r^2(t) looks like 1 + k t^2 + o(t^3).  The coefficient k determines whether the radius is greater than or less than 1 for small values of t.  It's not hard to compute k, and it is positive.
+
+It's interesting to note that the approximation is actually very good.  The maximum distance of the spline from the circle is 2.7e-4 (about three ten-thousandths).
+
+
+Problem 6:
+
+6.1:
+The problem is that the two strips have inconsistent orientation.
+
+6.2:
+We can fix the problem by flipping the second triangle strip to [0 4 1 5 3 7 2 6].  Alternatively, with a different layout of vertices, it could be [4 5 0 7 1 6 3 2].
+
+6.3:
+The triangles are
+1 3 0 -- first strip
+0 3 2
+0 2 4
+4 2 6
+4 6 5
+5 6 7
+0 4 1 -- second strip
+1 4 5
+1 5 3
+3 5 7
+3 7 2
+2 7 6
+
+(alternative)
+...
+4 5 0 -- second strip
+0 5 7
+0 7 1
+1 7 6 
+1 6 3
+3 6 2
+
+We can assign the following coordinates to make the triangles face outward:
+0: 0 0 0
+1: 0 0 1
+2: 0 1 0
+3: 0 1 1
+4: 1 0 0
+5: 1 0 1
+6: 1 1 0
+7: 1 1 1 
+
+

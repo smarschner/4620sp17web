@@ -1,0 +1,137 @@
+Prelim 2 Solution
+-----------------
+
+1.1
+a attributes: texture coordinates
+              diffuse reflected color
+b vertex processor: transform position into screen space
+  	 	    transform normal into eye space
+                    pass texture coordinates through
+                    compute diffuse lighting, pass as atrribute
+c fragment processor: look up texture color
+  	   	      modulate diffuse color by texture
+		      pass result to framebuffer
+
+1.2
+a attributes: texture coordinates  (OK to pass two separate tex coords)
+  	      normal vector
+b vertex processor: transform position into screen space
+		    pass texture coordinates through
+  	 	    transform normal into eye space, pass as attribute
+c fragment processor: look up specular color from texture
+  	   	      look up specular exponent from texture
+		      normalize interpolated normal
+		      compute Phong lighting
+		      pass result to framebuffer
+
+1.3
+a attributes: normal vector
+  	      eye space position
+b vertex processor: transform position into eye space, pass as attribute
+  	 	    transform position into screen space
+		    transform normal into eye space, pass as attribute
+c fragment processor: normalize normal
+  	   	      for i = 1 to 3:
+		         subtract eye space position from light position i
+			 normalize light vector
+			 compute Phong shading, add to total
+		      pass total to framebuffer
+			 
+  	   	      
+2.1
+a 2-point
+b parallel
+c one-point
+d parallel
+e three-point
+
+2.2
+a on axis
+b on axis
+c off axis
+d off axis
+e on axis
+
+
+3.1
+1 (i) par proj and (b) nonunif scale
+2 (d) ccw rot about x
+3 (h) persp proj
+4 (e) transl
+5 (h) persp proj
+6 (b) nonunif scale and (g) reflection
+7 (c) cw rot about y
+8 (d) ccw rot about x and (b) nonunif scale
+
+3.2
+8 has an angle of 180 degrees and is the largest
+
+3.3
+3 has a larger FOV than 5
+
+
+4.1
+0 0 0   1 1 0   0 1 0
+0 0 0   1 0 0   1 1 0
+1 0 0   1 0 1   1 1 1
+1 0 0   1 1 1   1 1 0
+
+This takes 4 * 9 bytes per triangle, which is 36.
+36 bytes for 12 triangles is 384 bytes.
+
+4.2
+vertices:
+0  0 0 0 
+1  0 0 1
+2  0 1 0 
+3  0 1 1 
+4  1 0 0 
+5  1 0 1
+6  1 1 0
+7  1 1 1
+
+triangles:
+0 6 2
+0 4 6
+4 5 7
+4 7 6
+5 1 3
+5 3 7
+1 0 2
+1 2 3
+2 6 7
+2 7 3
+0 1 5
+0 5 4
+
+This takes up 4 * 3 bytes per vertex, which is 12
+12 bytes for 8 vertices is 96 bytes.
+It also takes up 4 * 3 bytes per triangle, which is 12
+12 bytes for 12 triangles is 144 bytes.
+Total is 240 bytes.
+
+4.3
+{A,A'} and {B,B'} have the same topology
+{A,B} have the same geometry.
+
+
+5.1
+At the distance of the close person, 90 pixels correspond to 30 cm.
+At the same distance, 450 pixels correspond to 150 cm, or 1.5 m.
+So the image is 1.5 m high at 2 m -- a ratio of 3:4.
+When the image is 24mm high it is at a distance of (4:3) * 24 = 32mm.  This
+is the image plane distance.
+The second person is 6 times the distance of the first person, so 12 meters.
+
+5.2
+Let the distance to the near person be d.  The far person is at distance 6d.
+The distance between the people is then 5d = 20 meters, so d = 4 meters.
+This distance is twice that in the part 1, so the image plane distance is
+also doubled, and it is 64mm.
+ 
+
+		    
+		    
+
+  	      
+  

@@ -1,0 +1,146 @@
+Cornell CS465 Spring 2003
+
+NOTE: This file will only be fully legible if you view it in a fixed-width
+font.
+
+Solutions for Prelim 2
+----------------------
+
+Problem 1
+
+1.1. g  [across x-z plane]
+1.2. d  [by 90 degrees about +x axis]
+1.3. b  [by 2 in the y direction]
+1.4. i
+1.5. f
+1.6. h
+1.7. c  [by 90 degrees about +y axis]
+1.8. e
+
+
+Problem 2
+
+2.1. Since the light source is 10 units away, the vector to the light source
+  (lightPosition - surfacePoint) will be 10 units long, resulting in the
+  diffuse shading term (n dot v_L) being a factor of 10 larger than (cos
+  theta).  Thus the image will be a factor of 10 too bright.
+
+2.2. When the ray starts exactly on the surface, floating point rounding
+  errors will determine whether it just barely intersects the surface or just
+  barely misses the surface.  The result will be a seemingly random pattern of
+  light and shadow in regions of the surface that should not be shadowed at
+  all.
+
+2.3. If any intersection with the shadow ray, not just those between the light
+  and the surface point, is allowed to block the ray, then objects that are
+  behind the source (from the point of view of the shading point) will cast
+  shadows, which they should not.
+
+2.4. If more than one object is intersected by the ray for a particular pixel,
+  the object that appears at that pixel will be the one that appears earlier
+  in the scene's list of objects, rather than the closest one to the camera.
+  Therefore occlusions will often be incorrect, with an object that should be
+  behind another actually appearing in front.
+
+2.5. Swapping the endpoints of the last edge of the triangle inverts the
+  inside/outside test for that edge.  So instead of a triangle, the rays will
+  intersect the subset of the triangle's plane that is inside edges 0-1 and
+  1-2 and *outside* edge 2-0.  The image will show this truncated wedge shape
+  instead of the triangle (a diagram was a good idea on this one).
+
+2.6. The average of the light and eye directions, (v_L + v_E) / 2, always has
+  length <= 1.  So whenever the eye and light are not in exactly the same
+  direction, the highlight will be too dim -- much too dim if the specular
+  exponent is large.
+
+
+Problem 3
+
+3.1. The camera's basis is:
+
+  u = [ 1  0  0 ]
+  v = [ 0  0 -1 ]
+  w = [ 0  1  0 ]
+
+3.2. The field of view gives the relationship:
+
+    (h/2) / f = tan(theta / 2) = tan(arctan(1/2)) = 1/2
+
+  We're always free to set one of the height, width, and distance, so let's
+  set the image height to 2, since x' and y' run from -1 to 1 (a span of 2
+  units).  So f = 2.  Therefore the ray direction is
+
+    x' u + y' v - 2 w = (x', -2, -y').
+
+  The ray origin is the eye point, so the ray is
+
+    ( (0, 5, 0), (x', -2, -y') ).
+
+  [Of course, any positive scalar multiple of the ray direction is equally
+  correct.]
+
+3.3. The viewing matrix is the canonical-to-basis matrix of the eye frame,
+  which is
+
+    [ u v w p ]^(-1)
+    [ 0 0 0 1 ]
+
+  or
+
+    [ 1  0  0  0 ]
+    [ 0  0 -1  0 ]
+    [ 0  1  0 -5 ]
+    [ 0  0  0  1 ]
+
+  You can also think of this as a matrix that rotates the camera into the
+  canonical position at the origin, then translates the world back away from
+  the camera by 5 units.
+
+  The projection matrix is just a perspective projection with image plane
+  distance 2:
+
+    [ 2  0  0  0 ]
+    [ 0  2  0  0 ]
+    [ 0  0 -1  0 ]
+
+  [Any scalar multiple of this matrix is equally correct.]
+
+3.4a. Plugging into the answer from 3.2,
+
+    ray = ( (0, 5, 0), (1/2, -2, -1/3) )
+
+  Another of many correct ways to write this is
+
+           [ 0 ]     [  1/2 ]
+    r(t) = [ 5 ] + t [  -2  ]
+           [ 0 ]     [ -1/3 ]
+
+3.4b. The y coordinate of the ray is (5 - 2 t), which is equal to -7 when t =
+  6.  So the point is
+
+           [ 0 ]       [  1/2 ]   [  3 ]
+    r(6) = [ 5 ] + (6) [  -2  ] = [ -7 ]
+           [ 0 ]       [ -1/3 ]   [ -2 ]
+
+3.4c. To get from world space to eye space, we need to apply the viewing
+  transformation, which is just a matrix multiplication:
+
+    [ 1  0  0  0 ] [  3 ]   [  3  ]
+    [ 0  0 -1  0 ] [ -7 ] = [  2  ]
+    [ 0  1  0 -5 ] [ -2 ]   [ -12 ]
+    [ 0  0  0  1 ] [  1 ]   [  1  ]
+
+  and the transformed point is (3, 2, -12).
+
+3.4d. To get from eye space to image space, we need to apply the projection
+  transformation, which is just a matrix multiplication and a homogeneous
+  division:
+ 
+    [ 2  0  0  0 ] [  3  ]   [  6 ]   [  6 / 12 ]   [ 1/2 ]
+    [ 0  2  0  0 ] [  2  ] = [  4 ] ~ [  4 / 12 ] = [ 1/3 ]
+    [ 0  0 -1  0 ] [ -12 ]   [ 12 ]   [ 12 / 12 ]   [  1  ]
+                   [  1  ]
+
+  which is the point (1/2, 1/3) -- back where we started.
+
+

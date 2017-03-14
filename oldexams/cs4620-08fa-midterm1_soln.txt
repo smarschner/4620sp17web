@@ -1,0 +1,135 @@
+CS4620 Midterm 1 Solution
+
+Problem 1
+---------
+
+1.
+
+[1 0 0 2] [0 -1 0 0]
+[0 1 0 3] [1  0 0 0]
+[0 0 1 4] [0  0 1 0]
+[0 0 0 1] [0  0 0 1]
+
+
+2.
+
+[0 -1 0 0] [1 0 0  3]
+[1  0 0 0] [0 1 0 -2]
+[0  0 1 0] [0 0 1  4]
+[0  0 0 1] [0 0 0  1]
+
+
+3.
+
+rotate 45 degrees
+scale by (1,3)
+rotate -45 degrees
+
+This is most easily found by inspection after drawing a picture: the transformation is a scale by a factor of 3 along the direction [1 1].
+
+
+4.
+
+[ 1  0] [2  0 ] [1 0.5]
+[0.5 1] [0 1.5] [0  1 ]
+
+This is most easily found by multiplying out the form
+
+[1 0] [sx 0] [1 b]
+[a 1] [0 sy] [0 1]
+
+and solving for the unknowns.
+
+
+Problem 2
+---------
+
+1.
+
+The indicated light is half as far away as the back wall.  So the distance from the camera to the far wall is twice the distance from the indicated light to the far wall.  The light distances are 80 and 40 feet, so the camera distances are 160 and 80 feet.
+
+
+2.
+
+The distance from the center of the image to the top of the far wall is 1/8 of the image.  This means half the v. fov. is 20 feet at the far wall distance, so the fovs are:
+
+2 atan(20/160)
+and
+2 atan (20/80).
+
+
+Problem 3
+---------
+
+1a. yes -- e.g. sending all rays backward.
+1b. yes -- ray intersection that always misses.
+1c. possibly -- all points found to be in shadow?
+
+2a. not likely
+2b. possibly -- some kind of FP precision problem?
+2c. yes -- starting shadow rays at the surface, so that rounding errors determine whether the intersection at t = 0 results in a spurious self-shadow.
+
+3a. not likely
+3b. yes -- not normalizing surface normals of spheres, so that the surface normal is proportional to the radius of the sphere.  This makes the shading on the large sphere come out much brighter than on the small spheres.
+3c. possibly -- big sphere has a different material with a bug?
+
+
+Problem 4
+---------
+
+1.
+
+The average intensity of the stripe pattern is the average of I(0) and I(N), which is
+   [I_flare + (I_flare + I_max)] / 2,
+or just
+   I_flare + I_max / 2.
+This is set equal to I(n_half).
+
+I_f + (1/2) I_max = I_f + (n_half / N)^gamma I_max
+              1/2 = (n_half / N)^gamma
+=> gamma = log(1/2) / log(n_half / N)
+or gamma = log 2 / [log(N) - log(n_half)]
+or gamma = 1 / log_2 (N/n_half)
+
+
+2.
+
+This is much the same except the stripe pattern is the average of I(0) and I(n_1).
+
+I_f + (1/2) (n_1 / N)^gamma I_max = I_f + (n'_half / N)^gamma I_max
+            (1/2) (n_1 / N)^gamma = (n'_half / N)^gamma
+                              1/2 = (n'_half / n_1)^gamma
+=> gamma = log(1/2) / (log(n'_half / N) - log(n_1 / N))
+or gamma = log(1/2) / log(n'_half / n_1)
+or gamma = log 2 / [log(n_1) - log(n'_half)]
+or gamma = 1 / log_2 (n_1/n'_half)
+
+
+3.
+
+We need three measurements to determine the three unknowns I_flare, I_max, and gamma.
+
+
+4.
+
+We can measure I(0), I(N), and I(n) (for some middle gray).  The first two give I_flare and I_max directly, and then we can solve for gamma:
+
+I_flare = I_0
+I_max = I_N - I_flare
+I_n = I_flare + (n/N)^gamma I_max
+(I_n - I_flare) / I_max = (n/N)^gamma
+=> gamma = log[(I_n - I_flare) / I_max] / log(n/N).
+or gamma = [log(I_n - I_flare) - log(I_max)] / [log(n) - log(N)]
+
+Actually, you don't have to measure I_max directly.  If you
+measure for I(0), I(n1), and I(n2) you can still solve for gamma in the same way, without explicitly recovering I_max:
+
+I_n1 = I_flare + (n1/N)^gamma I_max
+I_n2 = I_flare + (n2/N)^gamma I_max
+(I_n1 - I_f) / (I_n2 - I_f) = (n1/n2)^gamma
+=> gamma = log[(I_n1 - I_f) / (I_n2 - I_f)] / log(n1/n2)
+or gamma = [log(I_n1 - I_f) - log(I_n2 - I_f)] / [log(n1) - log(n2)]
+
+The form of this equation can be recognized as computing the slope of a line on a log-log plot.
+
+

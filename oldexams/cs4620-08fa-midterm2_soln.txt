@@ -1,0 +1,84 @@
+CS4620 Fall 2008 Midterm 2 Solution
+-----------------------------------
+
+Problem 1.
+
+1. This case has diffuse and specular lighting computed per vertex and interpolated, with the diffuse component (but not the specular component) modulated by a texture map.
+
+1a. Positions, normals, and texture coordinates.
+1b. The positions are transformed into screen space.
+    The normals are transformed to eye space.
+    Position and normal are used to compute diffuse and specular shading
+1c. Texture coordinates, diffuse color, and specular color.
+1d. The texture coordinates are used to look up texture color.
+    The diffuse color is multiplied by the texture color and added to the specular.
+
+This could also be done by passing scalar diffuse and specular values from the vertex stage.
+
+2. This case has no texture but has colored diffuse and white specular shading, with specular shading computed per fragment.
+
+2a. Positions, normals, and diffuse color.
+2b. The positions are transformed to screen space.
+    The positions are also transformed to eye space and put into attributes.
+    The normals are transformed to eye space.
+    Diffuse shading is computed per vertex.
+2c. Eye space positions, normals, and diffuse color.
+2d. Normals are normalized.
+    Eye and light vector are computed from eye-space position.
+    Diffuse and specular shading are computed.    
+
+Alternatively, the diffuse color could be passed through the rasterizer and diffuse shading could happen at the fragment stage.  Also, you could do without the per-vertex color, since the objects each have constant color.  This could also be done by interpolating the normal, eye dir, and light dir.
+
+
+Problem 2.
+
+1. (a) and (b) have the same topology.
+   (b) and (c) have the same geometry.
+
+2. Completed triangle-neighbor table
+
+0 | 0  5  1 | 1  5  4 |
+1 | 0  4  5 | 2  5  0 |
+2 | 0  3  4 | 3  6  1 |
+3 | 0  2  3 | 4  6  2 |
+4 | 0  1  2 | 0  7  3 |
+5 | 1  5  4 | 0  1  7 |
+6 | 2  4  3 | 7  2  3 |
+7 | 1  4  2 | 5  6  4 |
+
+There are many renamings of the vertices and the last three triangles that also produce correct answers.
+
+
+Problem 3.
+
+The point (5,4) maps to 
+x = (5 + 0.5) * 3/5 - 0.5 = 2.8
+y = (4 + 0.5) * 3/5 - 0.5 = 2.2
+
+The box filter covers one point, (3,2)
+
+The tent filter covers four points:
+(2,2) - 4  /25
+(3,2) - 16 /25
+(2,3) - 1  /25
+(3,3) - 4  /25
+
+The bicubic covers 16 points:
+(1,1) - f(1.8) * f(1.2)
+(2,1) - f(0.8) * f(1.2)
+(3,1) - f(0.2) * f(1.2)
+(4,1) - f(1.2) * f(1.2)
+(1,2) - f(1.8) * f(0.2)
+(2,2) - f(0.8) * f(0.2)
+(3,2) - f(0.2) * f(0.2)
+(4,2) - f(1.2) * f(0.2)
+(1,3) - f(1.8) * f(0.8)
+(2,3) - f(0.8) * f(0.8)
+(3,3) - f(0.2) * f(0.8)
+(4,3) - f(1.2) * f(0.8)
+(1,4) - f(1.8) * f(1.8)
+(2,4) - f(0.8) * f(1.8)
+(3,4) - f(0.2) * f(1.8)
+(4,4) - f(1.2) * f(1.8)
+
+

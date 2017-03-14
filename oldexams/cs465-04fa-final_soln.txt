@@ -1,0 +1,244 @@
+CS465 Fall 2004 -- Final Exam solution
+Steve Marschner
+------------------------------------------------------------------------------
+
+Problem 1: Filtering & Resampling (20 pts)
+------------------------------------------
+
+1.1 I will filter horizontally, then vertically.  In separable filtering we
+  filter the rows independently, so the rows of zeros remain zeros and the
+  rows with ones are both the same.  The sampling pattern looks like this:
+
+       0     0     1     1     0     0
+  ...  ^   ^   ^   ^   ^   ^   ^   ^   ^ ...
+       0   0  1/3  1   1  2/3  0   0   0
+
+  The new sample spacing is 2/3 the old sample spacing.  The answers are just
+  by interpolating linearly between the samples.  Putting it together the
+  result of this step is:
+
+   (1/3) *  0  0  0  0  0  0
+            0  1  3  3  2  0
+            0  1  3  3  2  0
+            0  0  0  0  0  0
+
+  Note that each column is a copy of the original problem, so the column
+  resampling is the same, but with a scale factor for each column.  The
+  result is:
+
+   (1/9) *  0  0  0  0  0  0
+            0  1  3  3  2  0
+            0  3  9  9  3  0
+            0  3  9  9  3  0
+            0  2  6  6  4  0
+            0  0  0  0  0  0
+
+1.2 This filter is separable, and it can be written as
+
+      ([1 2 1]/4) ** ([1 2 1]/4)^T,
+
+  where ** indicates convolution.  Let's call these two filters hf and vf (for
+  horizontal filter and vertical filter).  The image is also separable -- it
+  is [1 1] ** [1 1]^T.  Let's call these two hi and vi.  The result we need
+  to compute, then, is:
+
+      (hf ** vf) ** (hf ** vf) ** (hi ** vi).
+
+  The associativity of convolution lets us take away the parentheses and put
+  them back wherever we want, and commutativity lets us reorder the terms.
+  So rewrite this as
+
+      (hf ** hf ** hi) ** (vf ** vf ** vi)
+
+  These two grouped terms are the same, and they are 1D convolutions.  So we
+  just need to compute [1 2 1] ** [1 2 1] ** [1 1] twice and then form the
+  separable product.
+
+  [1 2 1] ** [1 2 1]:    [1 2 1]
+                     [1 2 1]      --> 1
+                       [1 2 1]    --> 4 (one add)
+                         [1 2 1]  --> 6 (one multiply, two adds)
+
+  and by symmetry the result is [1 4 6 4 1].
+
+  [1 4 6 4 1] ** [1 1]:     [1 4 6 4 1]
+                          [1 1]         --> 1
+                            [1 1]       --> 5 (one add)
+                              [1 1]     --> 10 (one add)
+
+  and by symmetry the result is [1 5 10 10 5 1].
+
+  Now we convolve that with the vertical version of itself.  Doing just one
+  corner:
+
+       [ 1  5  10 ... ]
+  [ 1]   1  5  10
+  [ 5]   5 25  50       (two multiplies)
+  [10]  10 50 100       (one new multiply)
+
+  and the answer by symmetry (with all the 1/4s we left behind) is:
+
+   (1/256) *  0   0   0   0   0   0   0   0
+              0   1   5  10  10   5   1   0
+              0   5  25  50  50  25   5   0
+              0  10  50  100 100 50  10   0
+              0  10  50  100 100 50  10   0
+              0   5  25  50  50  25   5   0
+              0   1   5  10  10   5   1   0
+              0   0   0   0   0   0   0   0
+
+  By my count this all took 8 nontrivial arithmetic operations, not counting
+  a couple more to compute (1/4)^4 = (1/256)
+
+
+
+Problem 2: Graphics Pipeline (25 pts)
+-------------------------------------
+
+2.1: The clip space coordinates are the eye space ones transformed by the
+  projection matrix.
+
+     [ 1 0   0    0  ] [ 2/5  7/4  3/5 ]   [ 2/5  7/4  3/5 ]
+     [ 0 1   0    0  ] [ 1/5  1/4  3/2 ] = [ 1/5  1/4  3/2 ]
+     [ 0 0 -3/2 -5/2 ] [ -2  -5/2  -3  ]   [ 1/2  5/4   2  ]
+     [ 0 0  -1    0  ] [  1    1    1  ]   [  2   5/2   3  ]  <--- w
+
+  so the columns of that rightmost matrix are the answer pre-perspective.  The
+  last row is the w coordinate for perspective correction.  The perspective
+  divide results in
+
+     [ 1/5  7/10 1/5 ]
+     [ 1/10 1/10 1/2 ]
+     [ 1/4  1/2  2/3 ]  <--- z'
+     [  1    1    1  ]
+
+  In particular, the z' coordinates are in the indicated row.  You can verify
+  that applying the viewport matrix results in the coordinates shown in the
+  figure. 
+
+
+2.2 The nine quantities interpolated are beta, gamma, z', n_x, n_y, n_z, u/w,
+  v/w, and 1/w.  The first two are the barycentric coordinates; next is the
+  screen-space depth for z-buffering; then the three coordinates of the
+  surface normal; then the two texture coordinates, divided by w for
+  perspective correction; then the inverse of w for perspective correction.
+
+
+2.3 The values at the vertices are
+
+           a     b     c
+   beta    0     1     0
+  gamma    0     0     1
+     z'   1/4   1/2   2/3
+    n_x  -0.5   0.5  -0.5
+    n_y  -0.3  -0.3   0.5
+    n_z    1     1     1
+    u/w    0     2    1/10
+    v/w    0     1    3/10
+    1/w   1/2   2/5   1/3
+
+
+2.4 At the circled fragment, the interpolated normal is [0 0 1].  We can tell
+  this because the axis aligned right triangle means that beta depends only on
+  x and gamma depens only on y.  Since the vertex normals happen to be
+  arranged so that n_x depends only on x and n_y depends only on y,
+  everything is very simple.  The circled point is 1/2 way from a's column to
+  b's column, so n_x is 1/2 way between -0.5 and +0.5, which is 0.  The
+  circled point is 3/8 of the way from a's row to c's row, so n_y is 3/8 of
+  the way from -0.3 to +0.5, which is also 0.
+
+  With the normal and the light vector equal, diffuse shading becomes trivial
+  and the result is the same as the diffuse coefficient: (0.5, 0.5, 1).
+
+
+2.5 In the Gouraud shading case, the three vertices would be shaded first.
+  Since the normals do not face the light exactly, they will have darker
+  colors than the one in the previous part.  When the color is interpolated
+  across the triangle it will not get any lighter than the lightest corner,
+  so it will be darker than the Phong shading at the circled pixel (and in
+  fact everywhere but at the corners).
+
+
+Problem 3: Transformations (15 pts)
+
+3.1 This is a rotation by -60 degrees around the axis through (1, 2, 3) in
+  the direction (0, 1, 0).
+
+3.2 This is a scale by 2 along the direction (1, 1, 0).  It's a little
+  confusing to get there because the matrices are a bit nonstandard.  The
+  outer matrices are 45 degree rotations in x and y combined with scales by
+  sqrt(2).  However, these scales can be combined and moved into the center
+  matrix, which then becomes a scale by 2 along the x axis.
+
+
+Problem 4: Splines (25 pts)
+
+4.1 (see separate plots)
+  The cusp happens when both derivatives are zero at the same time -- when
+  that happens the parametric continuity no longer guarantees geometric
+  continuity.
+
+4.2 At the cusp the curve is C^inf and G^0.
+
+4.3 Conveniently enough, beta doesn't affect y(t) and alpha doesn't affect
+  x(t).  First use the spline matrix to get the polynomial for x(t) as a
+  function of beta (hereinafter b), by plugging in the x coordinates of the
+  control points:
+
+     x(t) = [ t^3  t^2  t  1 ] [ -1  3 -3  1 ] [ 1 ]
+                               [  3 -6  3  0 ] [ 1 ]
+                               [ -3  3  0  0 ] [ b ]
+                               [  1  0  0  0 ] [ 0 ]
+
+          = (2 - 3b) t^3 + (-3 + 3b) t^2 + 0 + 0
+
+  The derivative of this is is
+
+     x'(t) = 3 (2 - 3b) t^2 + 2 (-3 + 3b) t
+  
+  Set equal to zero and solve:
+
+     0 = 3 (2 - 3b) t^2 + 2 (-3 + 3b) t
+       = (2 - 3b) t^2 + (-2 + 2b) t       (factor out 3)
+       = t ((2 - 3b) t + (-2 + 2b))
+     t = 0    or   (2 - 3b) t = 2 - 2b
+
+  The interesting solution is t_x = (2 - 2b) / (2 - 3b)
+
+4.4 The simple symmetry argument is by reversing the curve and concluding that
+  1 - t is the same function of alpha that t is of beta:
+
+     t_y = 1 - (2 - 2a) / (2 - 3a) = -a / (2 - 3a)
+
+  The possibility for a cusp exists when t_x and t_y coincide:
+
+       -a       2 - 2b
+     ------  =  ------
+     2 - 3a     2 - 3b
+       
+     -a (2 - 3b) = (2 - 2b) (2 - 3a)
+       -2a + 3ba = 4 - 4b - 6a + 6ab
+        4b - 3ba = 4 - 4a
+       b(4 - 3a) = 4 - 4a
+
+                   4 - 4a
+               b = ------
+                   4 - 3a
+
+   and that is the answer.  To check:
+
+      (a) a = 2    =>  b = (4 - 8) / (4 - 6) = 2   <check>
+      (b) solve for a => a = (4 - 4b) / (4 - 3b)   <check>
+      (c) a = 5/2  =>  b = (4 - 10) / (4 - 15/2) = 12/7, about 1.7   <check>
+
+
+Problem 5: Triangle meshes (15 pts)
+-----------------------------------
+
+5.1 It is a square pyramid with an internal triangle separating into two compartments.
+
+5.2 1: delete the internal triangle [0 2 4]; 2: reverse the orientation of
+  the triangle [0 2 3]
+
+5.3 one answer is [4 2 3 0 4 1 2 0] but it seems to work out just fine pretty
+  much no matter where you start building.
