@@ -12,17 +12,17 @@
 
 <h4>1. deCasteljau</h4>
 
-The deCastlejau algorithm splits a Bezier curve <b>B</b> into two curves: <b>L</b> 
-and <b>R</b>. Prove that together the <b>L</b> and <b>R</b> curves compute the same
-original curve. (Hint: figure out what the equation of a point is at a location <i>t</i> in <b>L</b>. Prove that
-this is the point you would want it to be on <b>B</b>. The proof for the right curve <b>R</b> is similar and will not be needed.). Below is a proof outline you may choose to follow:
+<p>The deCastlejau algorithm splits a B&eacute;zier curve <b>B</b> into two curves: <b>L</b> 
+and <b>R</b>. This means that it takes a sequence of four control points \((\mathbf{p}_0, \mathbf{p}_1, \mathbf{p}_2, \mathbf{p}_3)\), which define the curve <b>B</b>, and produces two sets of four points \((\mathbf{p}^L_0, \mathbf{p}^L_1, \mathbf{p}^L_2, \mathbf{p}^L_3)\) and \((\mathbf{p}^R_0, \mathbf{p}^R_1, \mathbf{p}^R_2, \mathbf{p}^R_3)\), which define the curves <b>L</b> and <b>R</b>.  The relationship between <b>L</b> and <b>B</b> is that <b>L</b>\((t)\) is the same as <b>B</b>\((2t)\).  In this problem we'll prove that this is the case.
 
-<ul>
-    <li>Pick some representation for the four control points (ie. P0, P1, P2, P3)</li>
-    <li>Work out the the four points for <b>L</b> algebraically</li>
-    <li>Figure out the equation for some point <i>t</i> in <b>L</b></li>
-    <li>Show that this is the point you would want it to be on <b>B</b></li>
-</ul>
+<p>a) Given the four points \(\mathbf{p}_0, \ldots, \mathbf{p}_3\), use de Casteljau's algorithm to work out algebraic expressions for the four points \(\mathbf{p}^L_0, \ldots, \mathbf{p}^L_3\).
+
+<p>b) Write an expression for <b>L</b>\((t)\) in terms of \(\mathbf{p}_0, \ldots, \mathbf{p}_3\).
+
+<p>c) Write an expression for <b>B</b>\((t/2)\) in terms of \(\mathbf{p}_0, \ldots, \mathbf{p}_3\).  Show that it is the same as the answer to (b), which means that <b>L</b> covers the left half of <b>B</b>.
+
+<p>You could do the same thing to show that <b>R</b>\((t)\) = <b>B</b>\(((t+1)/2)\), but it would be much the same.
+
 
 
 <h4>2. Extending Modified B&eacute;ziers with Quintic Polynomials</h4>
