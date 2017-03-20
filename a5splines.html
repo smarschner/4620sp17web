@@ -1,0 +1,299 @@
+<p class="duedate">Due:  Friday March 31st 2017 (11:59pm)</p>
+
+<h4>Introduction</h4>
+<p>On past assignments we have created straight lines and spheres. However, the question remains: how are we supposed to model chess pieces? Or vases? Curvy letters such as "s" in typography? The answer: splines! In the most general sense, splines are piecewise polynomial functions that specify potentially complex curves mathematically. In this assignment, you'll get a chance to play around with some splines, and ultimately create some really neat objects to add to your scenes.</p>
+
+<p>In this assignment, you will explore representing a Catmull-Rom Spline curve with several cubic Bézier by completing some warm-up exercises, implementing De Casteljau's algorithm, and rotating an arbitrary 2D spline in 3D space to create a surface of revolution. Again, we will provide framework code, so your focus is on implementing the more "interesting," graphics-related components. However, you also have some freedom to redesign our system as you see fit.</p>
+
+
+
+<h3>Written Part</h3>
+<p><strong>Do this written part alone.</strong>
+
+<h4>1. deCasteljau</h4>
+
+The deCastlejau algorithm splits a Bezier curve <b>B</b> into two curves: <b>L</b> 
+and <b>R</b>. Prove that together the <b>L</b> and <b>R</b> curves compute the same
+original curve. (Hint: figure out what the equation of a point is at a location <i>t</i> in <b>L</b>. Prove that
+this is the point you would want it to be on <b>B</b>. The proof for the right curve <b>R</b> is similar and will not be needed.). Below is a proof outline you may choose to follow:
+
+<ul>
+    <li>Pick some representation for the four control points (ie. P0, P1, P2, P3)</li>
+    <li>Work out the the four points for <b>L</b> algebraically</li>
+    <li>Figure out the equation for some point <i>t</i> in <b>L</b></li>
+    <li>Show that this is the point you would want it to be on <b>B</b></li>
+</ul>
+
+
+<h4>2. Extending Modified B&eacute;ziers with Quintic Polynomials</h4>
+
+<h5>a) B&eacute;ziers</h5>
+
+Control points can be used to describe curved geometry. One particular curve type is
+the cubic B&eacute;zier. This type of curve is commonly used in graphics because it is intuitive 
+to control and cubics are generally sufficient for the human visual system – humans can
+hardly distinguish between <i>C<sup>2</sup></i> continuity and higher levels of continuity.
+
+<ol>
+    <li>If we are representing a curve segment as a polynomial of degree n, how many
+control points do we need to specify?</li>
+    
+    <li>We have a quintic B&eacute;zier (degree 5). How many control points do we need?</li>
+
+    <li>What is the minimum number of control points needed to model a parabola-shaped
+spline?</li>
+</ol>
+
+
+<h5>b) B&eacute;zier Modifications</h5>
+<p>
+In this question we want to add additional control by upgrading our Bezier with the
+addition of certain properties. Specifically, we would like to modify our spline so that, in
+addition to having control over \(f(0), f(1), f'(0),\) and \(f'(1)\), we'd now add control over
+\(f''(0)\) and \(f''(1)\). 
+</p>
+
+<p>
+To do this, assume we specify two additional control points \(p_4\) and \(p_5\). Define \(p4\) such
+that \(f''(0)\) is proportional to \((p_4 − p_0)\) similar to how \(f'(0)\) is proportional to 
+\((p_1 − p_0)\) in our original derivation. In the original derivation of B&eacute;ziers, we assumed a 
+proportionality constant of 3 for convenience. Similarly, let the proportionality constant associated
+with \((p_4 − p_0)\) be 4 – that is, \(f''(0) = 4(p_4 - p_0)\). Similarly, we want \(f''(1) = 4(p_5 - p_3)\).
+</p>
+
+<ol>
+    <li>Give a matrix \(A\) such that this new type of curve can be expressed as \(f(u) = uAP\) where
+    \(u\) is a vector of \([1, u, u^2, u^3, u^4, u^5]\) and \(P\) is a 6 by 2 matrix where rows correspond
+    to control points.</li>
+</ol>
+
+
+<h5>c) Basis functions</h5>
+Plot the blending (basis) functions of this curve from \(u = 0\) to \(u = 1\) and include your
+plot in your response.
+
+
+
+
+<h4>3. Catmull-Rom Splines</h4>
+
+The The Catmull-Rom spline is a member of the Cardinal spline family, with <i>C<sup>1</sup></i>
+continuity and control points that <b>lie directly on the spline</b>. Given a vector of control points, 
+\(P_{CR}\), the Catmull-Rom spline satisfies the matrix equation:
+
+\[
+f_{CR}(u) = [u^3, u^2, u, 1]M_{CR}P_{CR}
+\]
+
+\[
+\text{where }
+M_{CR} = \begin{pmatrix}
+\tau & 2-\tau & \tau - 2 & \tau \\
+2\tau & \tau - 3 & 3 - 2\tau & -\tau \\
+-\tau & 0 & \tau & 0 \\
+0 & 1 & 0 & 0 \\
+\end{pmatrix}
+=
+\tau
+\begin{pmatrix}
+-1 & 2/\tau - 1 & 1 - 2/\tau & 1 \\
+2 & 1 - 3/\tau & 3/\tau - 1 & -1 \\
+-1 & 0 & 1 & 0 \\
+0 & 1/\tau & 0 & 0 \\
+\end{pmatrix}
+\]
+
+\(\tau\) is a tension parameter chosen from the interval \((0,1)\). When \(\tau = 1/2\), we have
+
+\[
+M_{CR} = \begin{pmatrix}
+-1/2 & 3/2 & -3/2 & 1/2 \\
+1 & -5/2 & 2 & -1/2 \\
+-1/2 & 0 & 1/2 & 0 \\
+0 & 1 & 0 & 0 \\
+\end{pmatrix}
+=
+\frac{1}{2}
+\begin{pmatrix}
+-1 & 3 & -3 & 1 \\
+2 & -5 & 4 & -1 \\
+-1 & 0 & 1 & 0 \\
+0 & 2 & 0 & 0 \\
+\end{pmatrix}
+\]
+
+
+Draw a parabola (example: something that looks like \(y = x^2\)), and pretend that this is a
+2-dimensional Catmull-Rom spline that has \(\tau ≈ 0.5\).
+
+<ol>
+    <li>What does the spline look like when \(\tau\) is very small (i.e. \(\tau \approx 0.2\))? 
+    Provide a sketch or describe your result.</li>
+    <li>What does the spline look like when \(\tau\) is very large (i.e. \(\tau \approx 0.8\))? 
+    Provide a sketch or describe your result.
+        <div class="thumbnails" style="text-align: center">
+            <img src="images/a5/tau_0.5.png" alt="" />
+        </div>
+    </li>
+    <li>
+        Catmull-Rom to B&eacute;zier
+
+        A B&eacute;zier spline segment has the following form:
+
+        \[
+            f_{Bez}(u) = [u^3, u^2, u, 1] M_{Bez}P_{Bez}
+        \]
+        \[
+            \text{where }
+            M_{Bez} = \begin{pmatrix}
+            -1 & 3 & -3 & 1 \\
+            3 & -6 & 3 & 0 \\
+            -3 & 3 & 0 & 0 \\
+            1 & 0 & 0 & 0 \\
+            \end{pmatrix}
+        \]
+
+        Converting a set of Catmull-Rom control points to a set of B&eacute;zier control points (which 
+        you can use to approximate the curve) is the same thing as solving for the matrix \(M\) such
+        that
+
+        \[
+            \text{if }
+            P_{Bez} = MP_{CR}
+        \]
+        \[
+            \text{then }
+            f_{Bez}(u) = f_{CR}(u) \text{ for all } u
+        \]
+
+    Compute \(M\) with \(\tau = 0.5\).
+
+    </li>
+    <li>
+        Convert the 4 Catmull-Rom control points (\(\tau = 0.5\)) below into B&eacute;zier control points.
+
+        \[
+            p_0 = (-5, 3) \\
+            p_1 = (0, 0) \\
+            p_2 = (1, 2) \\
+            p_3 = (3, 8) \\
+        \]
+    </li>
+</ol>
+
+
+<h3>Programming Part</h3>
+<p><strong>Do this programming part alone or in groups of two, as you prefer.</strong>
+
+<h4>Getting Started</h4>
+A new directory has been pushed to the Github repository. This directory contains all the framework changes
+and additions necessary for this project INCLUDING solution code from A3. Please remember that this is 
+university material and under NO CIRCUMSTANCES should you release this code to anyone else.
+
+<h4>Specification and Implementation</h4>
+
+We have marked all the functions or parts of the functions you need to complete with TODO A5 in the source code. To see all these TODOs in Eclipse, select Search menu, then File Search and type TODO A5. There aren't too many of these because we've made all the programming you need to do happen in just three files. The files are
+
+<ul>
+    <li>SplineCurve.java</li>
+    <li>CatmullRom.java</li>
+    <li>CubicBezier.java</li>
+</ul>
+
+The overall goal is to create code that lets you rotate a Catmull-Rom Spline around the Z-axis in 3-space. To see exactly what we mean by this, here are some screenshots of the user interface (in RevolutionApp.java) using our solution code.
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a5/A56.png" />
+    <img src="images/a5/A53.png" />
+    <img src="images/a5/A52.png" />
+    <img src="images/a5/A57.png" />
+</div>
+
+See the faces in the last image?
+
+<p>
+This assignment is best broken down into the following parts. We highly recommend completing the parts in order:
+</p>
+
+<ul>
+    <li>Tessellation of Bézier cubic functions</li>
+    <li>Composition of Bézier cubic segements to form a Catmull-Rom Spline</li>
+    <li>The code to generate a surface of rotation (similar to the mesh assignment)</li>
+</ul>
+
+<p> We've provided you with some basic functionality. The short version: we provide the UI to edit the control points of your spline and to draw the surface of revolution. </p>
+
+<p>The long version: In the interface, there are two visual panels and a control window. The left visual panel edits the spline before revolution. This panel also displays normal vectors (blue) and tangent vectors (green). The right panel displays your resulting surface of revolution. Triangles that face you (i.e. you see the points specified in a CCW order) are red, whereas triangles that don't face you (i.e. you see the points specified in a CW order) are gray. The controls are very similar to the scene assignment's controls. In the control window, you are given additional functionality, including saving/loading and some display options. (Surfaces of revolution are saved as OBJ files that are annotated with the spline data; this means you can only load OBJ files that were saved with this application.) </p>
+
+<p> Dealing with splines is a bit tricky in terms of inside-outness. For instance, if I specify a circular spline, who's to say whether or not the normals are facing inward or outward? For this assignment, we will adopt the common convention -- a closed spline that makes a single CCW loop has the enclosed region of the plane on the inside, and the rest on the outside. Its normals point away from the center of the loop. On the other hand, a CW loop has the enclosed region on the "outside". In both cases, as you walk along the curve, the normals point to your right. Similarly, for open splines, the tangents should align with the direction of parametric increase, with the normals pointing to the right.</p>
+
+
+<h4 id="part1">Tesselation and De Casteljau</h4>
+Your first job is to fill in your Bézier curve, given your newly properly converted control points. The motivation for converting the segments to Bézier form is the availability of a simple method for splitting Bézier segments in two. Using de Casteljau's algorithm, one can compute the set of points
+shown here, given starting points. This image uses u=.5, but the method supports u in the normal range, [0,1].
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a5/A51.png" />
+</div>
+
+<p> The pattern here is a simple recurrence in which points at each level are linear combinations of points at the previous level:
+
+p<sub>{k,i}</sub> = (1 - u)p<sub>{k-1,i}</sub> + u p<sub>{k-1,i+1}</sub>
+p<sub>{0,i}</sub> = p<sub>i</sub>, where the p<sub>i</sub> with a single index
+are the control points.</p>
+
+<p>This construction not only gives you a point on the spline for a given u; it
+also gives you the Bézier control points of the two halves, which can
+also be thought of as cubic Béziers: they are p<sub>0</sub>, p<sub>{1,0}</sub>,
+p<sub>{2,0}</sub>, and p<sub>{3,0}</sub> for the left half and
+p<sub>{3,0}</sub>, p<sub>{2,1}</sub>, p<sub>{1,2}</sub>, and p<sub>3</sub> for
+the right half.</p>
+
+<p>The simplest way to get the spline on the screen is to use this recurrence
+to compute f(u) (which is the point p<sub>{3,0}</sub> for a sequence of
+regularly spaced u values. We encourage you to implement this first, to make
+sure you have the algorithm right.</p>
+
+<p>A better way, which you should implement for your final handin, is to recursively split the segment, terminating when the control polygon is straight enough. The idea is as follows: consider an additional parameter epsilon that specifies curve smoothness. Specifically, to approximate a Bézier segment with lines, you can use a single segment if the angles between the edges of your control polygon are both less than half the angle tolerance (given by epsilon) because the tangent to the curve cannot swing more than that much over the segment. If the angles are too big, subdivide and apply the idea recursively. </p>
+
+<p> Put another way, you should subdivide the curve below if either θ<sub>{0,1,2}</sub> or θ<sub>{1,2,3}</sub> is larger than half of the input epsilon parameter.</p>
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a5/A54.png" />
+</div>
+
+
+<p> The angles in the two halves will be smaller (less sharp) after subdivision so ultimately the recursion will terminate for well-behaved curves. You should also enforce a maximum on the number of levels of recursion (10 is a good choice) to prevent stack overflow in degenerate cases. Also, your recursive algorithm should only emit points that are exactly on the spline (so don't add other points you may have computed that aren't on the curve).</p>
+
+<p> The function you need to implement, tesselate(), has three jobs -- it needs to set this.curvePoints, this.curveNormals, and this.curveTangents correctly. As such, you should come up with a way to calculate the tangents to the spline for each point computed by your recursive algorithm. There are a few easy ways to do this, just pick one that is correct and makes sense to you, and explain it briefly in a code comment. From these tangents, compute 2D normal vectors that are perpendicular to the curve.</p>
+
+<p> Your cubic Bézier code should work independently of all other code -- we highly recommend adding a main() into this class for testing and debugging purposes.</p>
+
+<h4 id="part2">From Catmull-Rom to Béziers: Setting Up Your Béziers</h4>
+
+<p>To draw our Catmull-Rom splines, we'll first convert them to cubic Bézier curves. Your job is to implement this conversion in the toBezier() method in CatmullRom.java, and the setBeziers() method in SplineCurve.java.</p>
+
+<p> The toBezier() method in CatmullRom.java simply uses the control points of a single Catmull-Rom segment to create an equivalent Bézier curve. This should be as simple as constructing the relevant matrices and multiplying the control points.</p>
+
+<p>The setBeziers() method in SplineCurve.java constructs an ArrayList of Béziers, bezierCurves, that make up the SplineCurve (the parent class of CatmullRom). The spline editor hands you a list of control points, numbered from 0 to N-1, which are provided in the ArrayList controlPoints. These control points define a chain of curves that we'll want to draw. Finding which four control points influence a segment of the Catmull-Rom Spline is mostly simple: segment i of the curve is influenced by control points i-1, i, i+1, and i+2. Using this definition we can generate N-3 Bézier segments from the N control points without falling off the ends of the sequence, which is exactly what we'd like to do in the case of an open curve. However, you may have noticed a boolean called isClosed in your SplineCurve. To handle closed splines, you'll need to tack on a few additional Bézier curves. We'll let you figure out exactly how to handle this, but know that you'll need to "wrap around" to the start of your control point list.</p>
+
+<h4 id="part3">The Grand Finale, Surfaces of Revolution</h4>
+
+<p> Here, you will revolve your cross sectional SplineCurve around the z-axis to make a triangle mesh surface of revolution. The procedure is very similar to the Mesh assignment: we'll we want to generate the positions of vertices, indices, and normals for our surface and fill data buffers with the result. This code will go in the build3DRevolution() method of SpineCurve.java.</p>
+
+<p> Each tessellation vertex along our input spline (which can be retrieved by using SplineCurve.getPoints()) will define a circular cross section of our surface parallel to the XY-plane. Similar to the tessellate() method, we will use a tolerance value to determine how coarse each cross section circle will be. The sliceTolerance argument specifies the maximum angle between consecutive vertices within these circles.
+</p>
+
+<p> You will need to rotate the input 2D vertices (which lie in the XY-plane) such that the surface revolves around the Z-axis. Simultaneously, you will need to use the scale argument to scale the surface of revolution. </p>
+
+<p> As a convention, your mesh should be oriented so that when the cross sectional spline has outward-pointing normals and is within the positive X half space, the triangles should be oriented in counter-clockwise order (i.e., the surface should appear as red with Blinn-Phong highlights). </p>
+
+<h4 id="part4">Extra Credit: B-Splines</h4>
+<p> Catmull-Rom splines are only one type of cubic spline curve; there's no reason that another type of cubic spline can't be used in this framework. B-Splines are similar to Catmull-Rom splines, though they do not necessarily pass through their control points. For extra credit, you can implement the toBezier() method of BSpline.java; its purpose is the same as the method in CatmullRom. Once you've implemented this, you should be able to check the 'use BSpline' button on the left panel.</p>
+
+<h4>What to Turn In</h4>
+<ol>
+    <li> Your written solutions</li>
+    <li> Your(zipped) src folder</li>
+    <li> An image of an interesting surface of revolution that you create!</li>
+</ol>
