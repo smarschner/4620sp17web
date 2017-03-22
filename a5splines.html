@@ -123,18 +123,7 @@ M_{CR} = \begin{pmatrix}
 \]
 
 
-Draw a parabola (example: something that looks like \(y = x^2\)), and pretend that this is a
-2-dimensional Catmull-Rom spline that has \(\tau ≈ 0.5\).
-
 <ol>
-    <li>What does the spline look like when \(\tau\) is very small (i.e. \(\tau \approx 0.2\))? 
-    Provide a sketch or describe your result.</li>
-    <li>What does the spline look like when \(\tau\) is very large (i.e. \(\tau \approx 0.8\))? 
-    Provide a sketch or describe your result.
-        <div class="thumbnails" style="text-align: center">
-            <img src="images/a5/tau_0.5.png" alt="" />
-        </div>
-    </li>
     <li>
         <b>Catmull-Rom to B&eacute;zier</b> <br/>
 
@@ -190,6 +179,10 @@ A new directory has been pushed to the Github repository. This directory contain
 and additions necessary for this project INCLUDING solution code from A3. Please remember that this is 
 university material and under NO CIRCUMSTANCES should you release this code to anyone else.
 
+<p>
+Once you pull in the changes (in a folder called a5), you will need to reconfigure your Build Path the same way you did so for A3. See the writeup for A3 on how to do this.
+</p>
+
 <h4>Specification and Implementation</h4>
 
 We have marked all the functions or parts of the functions you need to complete with TODO A5 in the source code. To see all these TODOs in Eclipse, select Search menu, then File Search and type TODO A5. There aren't too many of these because we've made all the programming you need to do happen in just three files. The files are
@@ -221,7 +214,7 @@ This assignment is best broken down into the following parts. We highly recommen
     <li>The code to generate a surface of rotation (similar to the mesh assignment)</li>
 </ul>
 
-<p> We've provided you with some basic functionality. The short version: we provide the UI to edit the control points of your spline and to draw the surface of revolution. </p>
+<p> We've provided you with some basic functionality. The short version: we provide the UI to edit the control points of your spline and to draw the surface of revolution. You can click and drag the control points around. Right clicking a control point will remove it, and right clicking near the polygon will add a control point between the two nearest existing control points. Camera controls are identical to those of A3.</p>
 
 <p>The long version: In the interface, there are two visual panels and a control window. The left visual panel edits the spline before revolution. This panel also displays normal vectors (blue) and tangent vectors (green). The right panel displays your resulting surface of revolution. Triangles that face you (i.e. you see the points specified in a CCW order) are red, whereas triangles that don't face you (i.e. you see the points specified in a CW order) are gray. The controls are very similar to the scene assignment's controls. In the control window, you are given additional functionality, including saving/loading and some display options. (Surfaces of revolution are saved as OBJ files that are annotated with the spline data; this means you can only load OBJ files that were saved with this application.) </p>
 
