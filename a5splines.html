@@ -262,9 +262,9 @@ sure you have the algorithm right.</p>
 
 <h4 id="part2">From Catmull-Rom to Béziers: Setting Up Your Béziers</h4>
 
-<p>To draw our Catmull-Rom splines, we'll first convert them to cubic Bézier curves. Your job is to implement this conversion in the toBezier() method in CatmullRom.java, and the setBeziers() method in SplineCurve.java.</p>
+<p>To draw our Catmull-Rom splines, we'll first convert them to cubic Bézier curves. This is done by the toBezier() method in CatmullRom.java, and the setBeziers() method in SplineCurve.java.</p>
 
-<p> The toBezier() method in CatmullRom.java simply uses the control points of a single Catmull-Rom segment to create an equivalent Bézier curve. This should be as simple as constructing the relevant matrices and multiplying the control points. We have done this for you as an example.</p>
+<p> The toBezier() method in CatmullRom.java simply uses the control points of a single Catmull-Rom segment to create an equivalent Bézier curve. This amounts to constructing the relevant matrices and multiplying the control points. We have done this for you as an example for the B-spline part below.</p>
 
 <p>The setBeziers() method in SplineCurve.java constructs an ArrayList of Béziers, bezierCurves, that make up the SplineCurve (the parent class of CatmullRom). The spline editor hands you a list of control points, numbered from 0 to N-1, which are provided in the ArrayList controlPoints. These control points define a chain of curves that we'll want to draw. Finding which four control points influence a segment of the Catmull-Rom Spline is mostly simple: segment i of the curve is influenced by control points i-1, i, i+1, and i+2. Using this definition we can generate N-3 Bézier segments from the N control points without falling off the ends of the sequence, which is exactly what we'd like to do in the case of an open curve. However, you may have noticed a boolean called isClosed in your SplineCurve. To handle closed splines, you'll need to tack on a few additional Bézier curves. We'll let you figure out exactly how to handle this, but know that you'll need to "wrap around" to the start of your control point list.</p>
 
@@ -280,6 +280,7 @@ sure you have the algorithm right.</p>
 <p> As a convention, your mesh should be oriented so that when the cross sectional spline has outward-pointing normals and is within the positive X half space, the triangles should be oriented in counter-clockwise order (i.e., the surface should appear as red with Blinn-Phong highlights). </p>
 
 <h4 id="part4">B-Splines</h4>
+
 <p> Catmull-Rom splines are only one type of cubic spline curve; there's no reason that another type of cubic spline can't be used in this framework. B-Splines are similar to Catmull-Rom splines, though they do not necessarily pass through their control points. In the final part of the assignment, you will implement the toBezier() method of BSpline.java; its purpose is the same as the method in CatmullRom. Once you've implemented this, you should be able to check the 'use BSpline' button on the left panel.</p>
 
 
