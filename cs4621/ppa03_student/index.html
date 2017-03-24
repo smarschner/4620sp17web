@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>CS 4621: PPA2 -- Data Visualization</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/cs4620.css" rel="stylesheet">
+    <link href="css/jquery-ui.min.css" rel="stylesheet">
+    <link href="css/jquery-ui.theme.min.css" rel="stylesheet">
+    <link href="css/jquery-ui.structure.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+<div class="container">
+    <h1>CS 4621 PPA3 <span class="subtitle">Maze Crawler</span></h1>
+
+    <div align="center">
+        <canvas tabindex="1" id="webglCanvas" style="border: none; background-color: black;" width="800" height="600"></canvas>
+    </div>
+
+    <table class="table table-bordered">
+        <tr>
+            <td align="right"><b>Field of view:</b></td>
+            <td>
+                <input type="text" id="fovSpinner" value="45.0">
+            </td>
+        </tr>
+        <tr>
+            <td align="right"><b>Eye height:</b></td>
+            <td>
+                <input type="text" id="eyeHeightSpinner" value="0.5">
+            </td>
+        </tr>
+        <tr>
+            <td align="right"><b>Maze:</b></td>
+            <td>
+                <textarea style="font-family: monospace" id="mazeTextArea" cols="25" rows="10">#####
+#...#
+#.#.#
+#N..#
+#####
+</textarea>
+                <br>
+                <button id="updateMazeButton">Update Maze</button>
+            </td>
+        </tr>
+    </table>
+
+    <h2>Additional Feature Implemented</h2>
+
+    <p>Please indicate here the additional feature that you implemented.</p>
+
+    <h2>Team Members</h2>
+
+    <ul>
+        <li>Please list your team members with NetID in this unordered list.</li>
+        <li>Example: Steve Marschner (srm2)</li>
+    </ul>
+</div>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="js/jquery-3.1.1.min.js"></script>
+<script src="js/jquery-ui.min.js"></script>
+<script src="js/gl-matrix-min.js"></script>
+<script src="js/preloadjs-0.6.2.min.js"></script>
+
+
+<script>
+    $("#fovSpinner").spinner({
+        min: 10.0,
+        max: 80.0,
+        step: 0.1
+    });
+    $("#eyeHeightSpinner").spinner({
+        min: 0.1,
+        max: 1.0,
+        step:0.01
+    });
+
+    function getFov() {
+        return $("#fovSpinner").spinner("value") * Math.PI / 180.0;
+    }
+
+    function getEyeHeight() {
+        return $("#eyeHeightSpinner").spinner("value");
+    }
+
+    function getMazeStrings() {
+        return $("#mazeTextArea").val().trim().split(/\s/);
+    }
+
+    function createMazeFromStrings(strings) {
+        var sizeY = strings.length;
+        var sizeX = strings[0].length;
+
+        var x, y;
+        for(y=0;y<sizeY;y++) {
+            if (strings[y].length != sizeX) {
+                throw new Error("Mesh is not a rectangle!");
+            }
+        }
+
+        var data = [];
+        for (x = 0; x < sizeX; x++) {
+            var a = [];
+            for (y = 0; y < sizeY; y++) {
+                a.push(null);
+            }
+            data.push(a);
+        }
+
+        var startPosition = null;
+        var startHeading = null;
+        for (x = 0; x < sizeX; x++) {
+            for (y = 0; y < sizeY; y++) {
+                var c = strings[sizeY - y - 1][x];
+                if (c == "#") {
+                    data[x][y] = 1;
+                } else {
+                    data[x][y] = 0;
+                }
+
+                if (c == "N" || c == "E" || c == "W" || c == "S") {
+                    if (startPosition == null) {
+                        if (c == "N") {
+                            startHeading = Math.PI / 2;
+                        } else if (c == "E") {
+                            startHeading = 0.0;
+                        } else if (c == "W") {
+                            startHeading = Math.PI;
+                        } else if (c == "S") {
+                            startHeading = 3 * Math.PI / 2;
+                        }
+                        startPosition = [x, y];
+                    } else {
+                        throw new Error("There are more than one starting point!");
+                    }
+                }
+            }
+        }
+
+        if (startPosition == null) {
+            throw new Error("There is no starting point!");
+        }
+
+        for(x=0;x<sizeX;x++) {
+            if (data[x][0] != 1) {
+                throw new Error("Boundary is not complete!");
+            }
+            if (data[x][sizeY-1] != 1) {
+                throw new Error("Boundary is not complete!");
+            }
+        }
+        for(y=0;y<sizeY;y++) {
+            if (data[0][y] != 1) {
+                throw new Error("Boundary is not complete!");
+            }
+            if (data[sizeX-1][y] != 1) {
+                throw new Error("Boundary is not complete!");
+            }
+        }
+
+        return {
+            sizeX: sizeX,
+            sizeY: sizeY,
+            data: data,
+            startHeading: startHeading,
+            startPosition: startPosition
+        };
+    }
+
+    var maze = null;
+    function updateMaze() {
+        maze = createMazeFromStrings(getMazeStrings());
+    }
+    updateMaze();
+    $("#updateMazeButton").click(updateMaze);
+
+    $("#webglCanvas").keydown(function (event) {
+        // TODO: Edit this so that the crawler responds to the arrow keys.
+    });
+
+    // TODO: Your code here.
+</script>
+
+</body>
+</html>
