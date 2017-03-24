@@ -181,12 +181,13 @@ university material and under NO CIRCUMSTANCES should you release this code to a
 
 <h4>Specification and Implementation</h4>
 
-We have marked all the functions or parts of the functions you need to complete with TODO A5 in the source code. To see all these TODOs in Eclipse, select Search menu, then File Search and type TODO A5. There aren't too many of these because we've made all the programming you need to do happen in just three files. The files are
+We have marked all the functions or parts of the functions you need to complete with TODO A5 in the source code. To see all these TODOs in Eclipse, select Search menu, then File Search and type TODO A5. There aren't too many of these because we've made all the programming you need to do happen in just a few files. The files are
 
 <ul>
     <li>SplineCurve.java</li>
     <li>CatmullRom.java</li>
     <li>CubicBezier.java</li>
+    <li>BSpline.java</li>
 </ul>
 
 The overall goal is to create code that lets you rotate a Catmull-Rom Spline around the Z-axis in 3-space. To see exactly what we mean by this, here are some screenshots of the user interface (in RevolutionApp.java) using our solution code.
@@ -208,6 +209,7 @@ This assignment is best broken down into the following parts. We highly recommen
     <li>Tessellation of Bézier cubic functions</li>
     <li>Composition of Bézier cubic segements to form a Catmull-Rom Spline</li>
     <li>The code to generate a surface of rotation (similar to the mesh assignment)</li>
+    <li>Conversion of BSpline control points to Bézier cubic segements</li>
 </ul>
 
 <p> We've provided you with some basic functionality. The short version: we provide the UI to edit the control points of your spline and to draw the surface of revolution. You can click and drag the control points around. Right clicking a control point will remove it, and right clicking near the polygon will add a control point between the two nearest existing control points. Camera controls are identical to those of A3.</p>
@@ -262,11 +264,11 @@ sure you have the algorithm right.</p>
 
 <p>To draw our Catmull-Rom splines, we'll first convert them to cubic Bézier curves. Your job is to implement this conversion in the toBezier() method in CatmullRom.java, and the setBeziers() method in SplineCurve.java.</p>
 
-<p> The toBezier() method in CatmullRom.java simply uses the control points of a single Catmull-Rom segment to create an equivalent Bézier curve. This should be as simple as constructing the relevant matrices and multiplying the control points.</p>
+<p> The toBezier() method in CatmullRom.java simply uses the control points of a single Catmull-Rom segment to create an equivalent Bézier curve. This should be as simple as constructing the relevant matrices and multiplying the control points. We have done this for you as an example.</p>
 
 <p>The setBeziers() method in SplineCurve.java constructs an ArrayList of Béziers, bezierCurves, that make up the SplineCurve (the parent class of CatmullRom). The spline editor hands you a list of control points, numbered from 0 to N-1, which are provided in the ArrayList controlPoints. These control points define a chain of curves that we'll want to draw. Finding which four control points influence a segment of the Catmull-Rom Spline is mostly simple: segment i of the curve is influenced by control points i-1, i, i+1, and i+2. Using this definition we can generate N-3 Bézier segments from the N control points without falling off the ends of the sequence, which is exactly what we'd like to do in the case of an open curve. However, you may have noticed a boolean called isClosed in your SplineCurve. To handle closed splines, you'll need to tack on a few additional Bézier curves. We'll let you figure out exactly how to handle this, but know that you'll need to "wrap around" to the start of your control point list.</p>
 
-<h4 id="part3">The Grand Finale, Surfaces of Revolution</h4>
+<h4 id="part3">Surfaces of Revolution</h4>
 
 <p> Here, you will revolve your cross sectional SplineCurve around the z-axis to make a triangle mesh surface of revolution. The procedure is very similar to the Mesh assignment: we'll we want to generate the positions of vertices, indices, and normals for our surface and fill data buffers with the result. This code will go in the build3DRevolution() method of SpineCurve.java.</p>
 
@@ -277,8 +279,9 @@ sure you have the algorithm right.</p>
 
 <p> As a convention, your mesh should be oriented so that when the cross sectional spline has outward-pointing normals and is within the positive X half space, the triangles should be oriented in counter-clockwise order (i.e., the surface should appear as red with Blinn-Phong highlights). </p>
 
-<h4 id="part4">Extra Credit: B-Splines</h4>
-<p> Catmull-Rom splines are only one type of cubic spline curve; there's no reason that another type of cubic spline can't be used in this framework. B-Splines are similar to Catmull-Rom splines, though they do not necessarily pass through their control points. For extra credit, you can implement the toBezier() method of BSpline.java; its purpose is the same as the method in CatmullRom. Once you've implemented this, you should be able to check the 'use BSpline' button on the left panel.</p>
+<h4 id="part4">B-Splines</h4>
+<p> Catmull-Rom splines are only one type of cubic spline curve; there's no reason that another type of cubic spline can't be used in this framework. B-Splines are similar to Catmull-Rom splines, though they do not necessarily pass through their control points. In the final part of the assignment, you will implement the toBezier() method of BSpline.java; its purpose is the same as the method in CatmullRom. Once you've implemented this, you should be able to check the 'use BSpline' button on the left panel.</p>
+
 
 <h4>What to Turn In</h4>
 <ol>
