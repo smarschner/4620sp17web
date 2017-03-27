@@ -13,7 +13,7 @@
 <h4>1. deCasteljau</h4>
 
 <p>The deCastlejau algorithm splits a B&eacute;zier curve <b>B</b> into two curves: <b>L</b> 
-and <b>R</b>. This means that it takes a sequence of four control points \((\mathbf{p}_0, \mathbf{p}_1, \mathbf{p}_2, \mathbf{p}_3)\), which define the curve <b>B</b>, and produces two sets of four points \((\mathbf{p}^L_0, \mathbf{p}^L_1, \mathbf{p}^L_2, \mathbf{p}^L_3)\) and \((\mathbf{p}^R_0, \mathbf{p}^R_1, \mathbf{p}^R_2, \mathbf{p}^R_3)\), which define the curves <b>L</b> and <b>R</b>.  The relationship between <b>L</b> and <b>B</b> is that <b>L</b>\((t)\) is the same as <b>B</b>\((2t)\).  In this problem we'll prove that this is the case.
+and <b>R</b>. This means that it takes a sequence of four control points \((\mathbf{p}_0, \mathbf{p}_1, \mathbf{p}_2, \mathbf{p}_3)\), which define the curve <b>B</b>, and produces two sets of four points \((\mathbf{p}^L_0, \mathbf{p}^L_1, \mathbf{p}^L_2, \mathbf{p}^L_3)\) and \((\mathbf{p}^R_0, \mathbf{p}^R_1, \mathbf{p}^R_2, \mathbf{p}^R_3)\), which define the curves <b>L</b> and <b>R</b>.  The relationship between <b>L</b> and <b>B</b> is that <b>L</b>\((t)\) is the same as <b>B</b>\((t/2)\).  In this problem we'll prove that this is the case.
 
 <p>a) Given the four points \(\mathbf{p}_0, \ldots, \mathbf{p}_3\), use de Casteljau's algorithm to work out algebraic expressions for the four points \(\mathbf{p}^L_0, \ldots, \mathbf{p}^L_3\).
 
@@ -88,7 +88,7 @@ f_{CR}(u) = [u^3, u^2, u, 1]M_{CR}P_{CR}
 \[
 \text{where }
 M_{CR} = \begin{pmatrix}
-\tau & 2-\tau & \tau - 2 & \tau \\
+-\tau & 2-\tau & \tau - 2 & \tau \\
 2\tau & \tau - 3 & 3 - 2\tau & -\tau \\
 -\tau & 0 & \tau & 0 \\
 0 & 1 & 0 & 0 \\
@@ -282,6 +282,12 @@ sure you have the algorithm right.</p>
 <h4 id="part4">B-Splines</h4>
 
 <p> Catmull-Rom splines are only one type of cubic spline curve; there's no reason that another type of cubic spline can't be used in this framework. B-Splines are similar to Catmull-Rom splines, though they do not necessarily pass through their control points. In the final part of the assignment, you will implement the toBezier() method of BSpline.java; its purpose is the same as the method in CatmullRom. Once you've implemented this, you should be able to check the 'use BSpline' button on the left panel.</p>
+
+
+<h4>Video Demo</h4>
+<p>Below we have a short video demoing our staff solution.</p>
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/y86OcpKw75c" frameborder="0" allowfullscreen></iframe>
 
 
 <h4>What to Turn In</h4>

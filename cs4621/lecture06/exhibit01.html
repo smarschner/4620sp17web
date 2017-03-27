@@ -214,8 +214,8 @@
         triInd: [
             0,1,2, 0,2,3, 0,3,4, 8,6,7, 8,5,6, 8,4,5, 4,8,0,
         ],
-        lineColor: [0.7, 0.7, 0.7, 0.0],
-        fillColor: [1.0, 0.9, 0.7, 1.0]
+        lineColor: [0.7, 0.7, 0.7, 1.0],
+        fillColor: [1.0, 0.9, 0.7, 0.5]
     };
 
     function initGUI() {
@@ -349,6 +349,8 @@
     }
 
     function drawShape(gl, shape, program, xf) {
+        // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        // gl.enable(gl.BLEND);
         gl.useProgram(program);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, shape.vertexBuffer);
@@ -370,6 +372,7 @@
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
         gl.useProgram(null);
+        // gl.disable(gl.BLEND)
     }
 
     function glEnv(canvas) {
@@ -385,15 +388,11 @@
         }
 
         function drawFrame() {
-            gl.clearColor(0.0, 0.0, 0.0, 0.0);
+            gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
 
-            gl.blendFunc(gl.ONE, gl.ZERO);
-            gl.enable(gl.BLEND);
             drawShape(gl, cat, program, eye);
-            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
             drawShape(gl, cat, program, xf);
-            gl.disable(gl.BLEND)
         }
 
         return {
