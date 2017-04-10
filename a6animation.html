@@ -2,7 +2,7 @@
 
 <h4>Introduction</h4>
 <p>
-In this assignment, we will explore a common topic in animation: key frame animation. You will solve some written problems (by yourself) to get a better understanding of the underlying theory of animations and then write code to animate scenes using key frames. Key frame animation is a technique wherein we define the layout of a scene at certain times (key frames), and we create frames between them by cleverly interpolating between our defined key frames. This rapid rendering of scenes gives us the illusion of animation. The award winning animation short film Hunger (1974) was one of the first applications of key frame animation. http://bit.ly/1EDvU6R
+In this assignment, we will explore a common topic in animation: key frame animation. You will solve some written problems (by yourself) to get a better understanding of the underlying theory of animations and then write code to animate scenes using key frames. Key frame animation is a technique wherein we define the layout of a scene at certain times (key frames), and we create frames between them by cleverly interpolating between our defined key frames. This rapid rendering of scenes gives us the illusion of animation. The award winning animation short film Hunger (1974) was one of the first applications of computerized key frame animation. http://bit.ly/1EDvU6R
 </p>
 
 
@@ -50,7 +50,7 @@ We have added a framework in the package anim that stores keyframes and provides
 
 <h4>The Interface</h4>
 
-At first glance, your window may not like the one in the picture. Hover over the bottom of the window to reveal the timeline, complete with highlighted keyframes. We have implemented a keyboard based animation interface:
+At first glance, your window may not look like the one in the picture. Hover over the bottom of the window to reveal the timeline, complete with highlighted keyframes. We have implemented a keyboard based animation interface:
 <ul>
   <li> Moving between frames: <tt> [  ] </tt>
   We use the <tt> [ </tt> and <tt> ] </tt> keys to move to the left and right keyframes.</li>
@@ -63,22 +63,22 @@ At first glance, your window may not like the one in the picture. Hover over the
 
 <h4>Keyframes</h4>
 
-For this problem, we have extended the scene graph system to store information about multiple keyframes. The AnimTimeline class stores a:
+For this problem, we have extended the scene graph system to store information about the transformations of each object at multiple keyframes. This information is managed by the <tt>AnimationEngine</tt>, which keeps an <tt>AnimationTimeline</tt> for each animated object in the scene.  The animation data is stored in the <tt>AnimationTimeline</tt>s, each of which contains:
 <ul>
-  <li> TreeSet of <tt>AnimKeyFrame</tt>. Each key frame contains a frame index number and a 4 x 4 matrix transformation.</li>
-  <li> A <tt>SceneObject</tt> that it operates on.</li>
+  <li> A <tt>TreeSet</tt> of <tt>AnimKeyFrame</tt>. Each key frame contains a frame index number and a 4 x 4 matrix transformation.</li>
+  <li> A <tt>SceneObject</tt> that this timeline operates on.</li>
 </ul>
-Every time the <tt>update</tt> loop is called in the Game loop, <tt>updateTransformations</tt> is called in <tt>AnimationEngine</tt> which sends transformation events to the corresponding SceneObjects.
-We have already implemented the functionality of adding and deleting keyframes from the scene.
+Every time the <tt>update</tt> loop is called in the Game loop, <tt>AnimationEngine.updateTransformations</tt> is called.  For each timeline, this method computes the transformation for the current time and send a transformation-update event to the corresponding <tt>SceneObject</tt>.
+We have already implemented the functionality of adding and deleting keyframes, so these data structures are already set up.
 
 
 <h4>What You Will Do</h4>
 
 <ul>
   <li> Implement <tt>void updateTransformations()</tt> - 
-A method that iterates through all the animation timelines, and calls <tt>sendEvent</tt> on the <tt>scene</tt> with the correct interpolated transformation on the object. For example, if the object on the <tt>AnimTimeline</tt> is called <tt>object</tt>, then <tt>scene.sendEvent(new SceneTransformationEvent(object));</tt> would begin the propagation of the event.</li>
+A method that iterates through all the animation timelines, and calls <tt>sendEvent</tt> on the <tt>scene</tt> with the correct interpolated transformation on the object. For example, if the object on the <tt>AnimTimeline</tt> is called <tt>object</tt>, then <tt>scene.sendEvent(new SceneTransformationEvent(object));</tt> has the effect of notifying the framework that <tt>object</tt> now has a new transformation.</li>
 <li> Create Interesting Animation - 
-After completing this short coding assignment use one of the included scenes to create an interesting animation. This should showcase all of your working transformations (rotation, scaling, and translation). Screen capture your animation and include this video in your submission.</li>
+After completing this short coding assignment, use one of the included scenes to create an interesting animation. This should showcase all of your working transformations (rotation, scaling, and translation). Screen capture your animation and include this video in your submission.</li>
 <li> Create Buggy Animation -
 After you have implemented the three methods of rotation use one of the included scenes to demonstrate a "bug" with using Euler angles to interpolate rotations, and then show how using a spherical linear interpolation between quaternions resolves the issue. Screen capture your animation and include this video in your submission.</li>
 </ul>
