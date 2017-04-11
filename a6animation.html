@@ -148,7 +148,7 @@ We have implementated this in the <tt>egl.math.Quat.slerp</tt> function for you 
 
 
 <h4>Interpolation Modes</h4>
-Our framework supports three different interpolation modes: Euler angles, Linear interpolation of quaternions, and spherical linear interpolation of quaternions. You will need to support all three of these in the function <tt>updateTransformations()</tt>. The mode currently selected is indicated by the field <tt>rotationMode</tt>, and can be changed by the user.
+Our framework supports three different interpolation modes: Euler angles, Linear interpolation of quaternions, and spherical linear interpolation of quaternions. You will need to support all three of these in the function <tt>updateTransformations()</tt>. The mode currently selected is indicated by the field <tt>rotationMode</tt>, and can be changed by the user. We have described the latter two modes in detail above. In order to implement Euler angles, you will need to decompose the rotation matrices into Euler angles (using a function we have provided), linearly interpolate, and then recompose into a rotation matrix (you will find useful Matrix3 functions for this).
 
 
 <h3>Demo Video</h3>
