@@ -1,0 +1,332 @@
+<p class="duedate">Due:  Friday May 5th 2017 (11:59pm)</p>
+
+<h3>Introduction</h3>
+<p> Ray 1 introduced you to the basic principles behind this relatively simple, and at the same time
+very powerful, algorithm for rendering images. In this assignment, we will enhance the previous
+algorithm to trace multiple light bounces, which will allow us to render essential physical effects
+that were impossible to produce before (e.g., reflection and refraction of light).</p>
+<p>You will quickly realize that tracing multiple ray bounces fits quite nicely in the provided framework
+and does not require much of an effort to implement, but it also reveals the major problem behind this
+approach: its performance. Therefore, one of your goals in this assignment will be to implement
+a hierarchical data structure that will accelerate the bottleneck step in ray tracing, the ray-object
+intersection.</p>
+
+<h4>Requirement Overview</h4>
+In Ray 1, you implemented the basic ray tracing; we will provide a package that contains what you
+implemented from that assignment, plus some updates to the framework. You will extend this ray
+tracer as specified below. This new ray tracer should support all the features of the one in Ray 1 and
+the following features below:
+<ul>
+    <li>Anti-aliasing. Implement anti-aliasing using regular supersampling (Shirley 8.3, 9.4, 13.4).
+    <li>An acceleration structure. Your program should be capable of rendering large models (up
+to several hundred thousand triangles) with basic settings in a few minutes. Achieving this
+requires a spatial data structure that makes the time to trace a ray sublinear in the number
+of objects. In this assignment, we provide a framework for axis-aligned bounding volume
+hierarchy (BVH) which is a simple and effective way of speeding up ray traversal. (Shirley
+12.3). Before you have implemented BVH, you can add &ltAccelStruct type=
+"NaiveAccelStruct"/&gt in the scene file in order to test other parts of your implementation.
+    <li>Advanced shader: Cook-Torrance. You should implement a Cook-Torrance shader which you
+are familiar with from the Shaders assignment. The only difference is that now you should
+compute the fresnel term from the refractive index.
+    <li>Advanced shader: glass. A Glass material that simulates an interface between air and
+adielectric material. The glass shader obtains its color from light intensity along two new
+raysthe reflected and refracted raysand adds their corresponding contributions (Shirley 13.1).
+    <li>Environment mapping. Our framework can load a pfm (a HDR image format) file as environment
+mapping. You are asked to implement a method that looks up the color of the cubemap
+in a given direction.
+    <li>We have provided a list of extensions that can be implemented for extra credit.
+</ul>
+
+<h3> Written part</h3>
+<p>1. Short-answer Questions:</p>
+<ul>
+    <li> Jimmy just purchased his new winter outfit from hat to shoes. Now he wants to take a look at his new look in the mirror. Jimmy is 6-foot tall. What is the minimum dimension (assuming square mirror) of the mirror that he has to buy for him to see his entire body, if he is standing 10 feet away from the mirror? How about if he is standing 30 feet away from the mirror?
+    <li> (2-D) A laser beam is shone at a flat glass block of infinite area at an incident angle of 45 degrees (measured between the incident ray and the normal of the surface). The laser is positioned at (0, 0), and the surfaces of the glass block are positioned between x = 1 and x = 1+T. What is the length of the area that can be swept by the laser beam if T is varied from 0 to 5. (See Figure written 1.)
+</ul>
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a7/written1.png" height="485px">
+    <div>Figure written 1</div>
+</div>
+<p>2. Suppose we are rendering an image for the IKEA catalog, showing a cylindrical coffee mug available in stainless-steel material. The mug will be illuminated by an ambient light, as well as a window. The camera is positioned at (0, 0, 20), viewing in direction (0, 0, -1) with up direction (0, 1, 0). The mug is centered at the origin of the coordinate system, with height 10 and radius 5. The mug's axis is aligned with the y-axis. And the whole mug can be captured in the image.</p>
+<p>For a nice product photo we'd like to see the window reflected on the side of the mug. Where can the window be placed (assume for now that the window is a point) in the environment map where it will be reflected on the side of the cylindrical mug? What if the camera is positioned at (0, 0, 100)? Your answer should be a sketch in \((\phi, \theta)\) space showing the region that is reflected in the mug. Compute the \((\phi, \theta)\) coordinates of the corners of the region and of the highest and lowest \(\phi\) and \(\theta\). As a simpler example of such problem, consider a camera positioned at (0, 0, 1), and looking at a mirror-like square in the x-y plane. The vertices of the square are at (1, 1, 0), (-1, 1, 0), (-1, -1, 0) and (1, -1, 0). </p>
+<p>In right figure of figure written 2 the red arrows are the critical rays you need to consider to find the critical points on the border of the reflected region. The reflected region for this simple case is shown in Figure written 3.</p>
+
+<div class="thumbnails",style="text-align: center">
+        <img src="images/a7/written2a.png" height="485px" style="margin-right: 10px">
+        <img src="images/a7/written2b.png" height="485px" style="margin-left: 10px">
+        <div class="caption">
+            Figure written 2: left figure-Spherical Coordinate system; right figure-Simple Reflection Example
+        </div>
+</div>
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a7/written3.png" />
+    <div class="caption">
+        Figure written 3: range of \(\phi\) and \(\theta\)
+    </div>
+</div>
+
+<p>3. Consider the same setup as in question 2, except this time replace the mug with a disco ball made of stainless steel. Treat the disco ball as a perfect, smooth, reflective sphere. The radius of the disco ball is 1. The blinking disco light is positioned at (2, 0, 0), and shone towards the center of the disco ball. Again, sketch the region that will be illuminated by the disco light in \((\phi, \theta)\) space. What if the disco light is positioned at \((+\infty, 0, 0)\) (assume no attenuation)?</p>
+
+<h3>Programming part</h3>
+
+<h4> Implementation </h4>
+<p>A new commit has been pushed to the class Github page in the master branch. We recommend
+switching to your master branch, pulling this commit, and creating a new branch (e.g. A7 solution)
+and committing your work there. This new commit contains all the framework changes and
+additions necessary for this project.</p>
+<p>We have marked all the functions or parts of the functions you need to complete with TODO#A7 in
+the source code. To see all these TODOs in Eclipse, select Search menu, then File Search and type
+TODO#A7.</p>
+
+<h5> Antialiasing </h5>
+To support anti-aliasing, modify the renderBlock method of RayTracer to make the ray tracer
+shoot multiple rays per image pixel. renderBlock method contains the samples variable which
+is the number of samples to take per one dimension of the image plane. (That is, the tracer should
+shoot samples2 rays per pixel.) Note that we have abused the variable samples: in the xml file
+we use samples to refer to N2, while here it refers to N.
+
+<h5> Acceleration Structure </h5>
+You will implement an acceleration structure called axis-aligned bounding volume hierarchy(BVH).
+It is a tree whose leaves are surfaces in the scene. Each of its internal nodes contains an axis-aligned
+bounding box(AABB) that contains all the surfaces in the subtree rooted at that node. An axisaligned
+bounding box is defined by two 3D points \((x_{min}; y_{min}; z_{min})\) and (x_{max}; y_{max}; z_{max}).
+The box itself is the Caresian product of three intervals in each dimension,
+\[
+[x_{min}; x_{max}]\times[y_{min}; y_{max}]\times[z_{min}; z_{max}].
+\]
+
+<p>Before constructing the acceleration structure, you need to complete the computeBoundingBox
+method of all the subclasses of Surface except Mesh. This method should modify three fields:
+minBound, maxBound, and averagePosition. After calling this method, the AABB defined
+by minBound and maxBound in world space should contain the represented surface entirely
+in world space, and averagePosition should be a 3D position in world space inside the
+AABB that can be regarded as the center of the surface in world space. We stress that minBound,
+maxBound, and averagePosition are defined in world space; you need to take into account the transform stored in tMat when implementing the method because all other fields are defined in
+object space.</p>
+
+<p>After implementing all the computeBoundingBox methods, you are ready to complete the Bvh
+class. Each node in the BVH is represented by an instance of the BvhNode class. The root node is
+stored in the root field of the Bvh class. The surfaces the BVH manages are not stored in the nodes,
+but they are stored all in one place in the surfaces array in the Bvh class. Each BvhNode contains
+the surfaceIndexStart and surfaceIndexEnd subjected to the following invariant:</p>
+
+<p>Surfaces stored in surfaces with indices from surfaceIndexStart to surfaceIndexEnd-1
+are contained in the subtree rooted at the node.</p>
+
+<p>BvhNode also contains the minBound and maxBound fields that define the AABB correponding
+to the node. Moreover, it has child array which contains the references to its left child and
+right child. You need to implement the createTree(int start, int end) method of
+the Bvh class. This method should create and return a BvhNode that contains surfaces from
+surfaces[start] to surfaces[end-1] in its subtree. To do so, you need to divide the
+surfaces into two groups by sorting their averagePosition and modifying the surfaces array so
+that the first group is in the left half and the second group is in the right half of the array. Then, you
+call createTree recursively on the left and the right half to get two BvhNodes that will become
+the two children of the BvhNode that you construct for the original call to createTree. More
+details can be found in the comments in the code base. </p>
+
+<p>Then, you will implement the intersects method of the BvhNode class. This method only checks
+whether the given ray intersects the AABB of the BvhNode or not. There is no need to compute
+the intersection point or other associated information.</p>
+
+<p>Lastly, you need to implement the intersectHelper method of the Bvh class. This method
+checks whether the given ray intersects any surface contained in the subtree rooted at the given
+BvhNode. First, you should check whether the ray hits the node or not by calling the intersects
+method of the BvhNode class. If not, the method can return immediately. (This check
+is the key why ray intersection becomes much faster with a BVH.) Otherwise, if the BvhNode
+is a leaf, you intersect the ray with the surfaces with indices from surfaceIndexStart to
+surfaceIndexEnd-1 one by one. On the other hand, if the BvhNode is an internal node, you
+call intersectHelper recursively on its two children.</p>
+
+<h5> Cook-Torrance Shader </h5>
+For detailed description, see the Shaders assignment pdf. There we used the Schlick's approximation
+to compute the Fresnel term. Now after you implemented the fresnel function in
+Shader.java, you should use that to compute the Fresnel term instead.
+
+<h5> Glass Shader </h5>
+The Glass shader simulates an interface between air and a dielectric material. For its shade
+method, it should compute the directions of the reflected and refracted rays using Snell's law.
+shadeRay should then be called recursively on each of these rays. The factor for the reflected
+ray should be R, and the factor for the refracted ray should be 1 - R. You need to check for total
+internal reflection in which case you only generate the reflected ray and set its factor to 1. One 
+caveat is that the method must work for rays coming from both sides of the surface; you can tell
+which side is outside by the fact that the normal always points outside. Figure 1 summarizes the
+behavior of the Glass shader.
+
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a7/1.png" />
+    <div class="caption">
+        Figure 1: Additional rays to be generated for the Glass shader. In (a) and (b), one reflected ray
+with scaling factor R and one refracted ray with scaling factor 1 - R are generated. Note that
+the outgoing direction can either be inside or outside the surface. The angles \(\theta_1\) and \(\theta_2\) should be
+related by Snell's law: \(n_1sin\theta_1 = n_2sin\theta_2\). In (c) and (d), total internal reflection occurs. Only
+one reflected ray should be generated with scaling factor 1. Note that total internal reflection can
+happen on the outside of the material despite its name because the ratio between \(n_1\) and \(n_2\) can be
+arbitrary. Your code has to work correctly in all these cases.
+    </div>
+</div>
+
+<h5> Environment Mapping </h5>
+<p>The framework supports environment mapping as a background for the scene. For a scene with
+a cubemap, rays that do not hit any objects should look up the corresponding pixel value in the
+cubemap. The framework can load a pfm (an HDR image format) file as the environment map. An
+example of such a file is shown in figure 2. It is just an unfolding of the six faces of the axis-aligned
+cube into a cross. The corresponding directions for each of the faces are shown in figure 2.</p>
+
+<p>You are asked to implement the evaluate method of the Cubemap class, which looks up the
+color of the cubemap in a given direction. In the Cubemap class, fields width and height store
+the width and height of the entire pfm image. The blockSz field stores the size of the square,
+which is \(width/3\). The pixel values of the pfm image are stored in the float array \(imageData\).
+The R, G, B values of a pixel are stored sequentially. And the pixels in the image are ordered
+row by row, from bottom-left to top-right. For example, if we want the color of environment light in
+direction (0, 0, 1), we need to look up the pixel value of at the red point in figure 2. Its coordinates in
+the image plane is \(( x = 1.5 * blockSz, y = 0.5 * blockSz)\). And the R, G and B
+values would be \(imageData[3 * (x + width * y)], imageData[3 * (x + width
+* y) + 1]\) and \(imageData[3 * (x + width * y) + 2]\).</p>
+<div class="thumbnails" style="text-align: center">
+    <img src="images/a7/2.png" />
+    <div>Figure 2: Example of Cubemap </div>
+</div>
+
+<h4>Extensions</h4>
+Once you have all of the required features working, you can continue having fun and collecting
+bonus points at the same time, by implementing some of the extensions proposed below. If you
+implement any of these, please leave a description of what you did in your README file, and
+create an xml file or two to clearly demonstrate these features.
+<ul>
+    <li>Soft shadows. Shadow rays need not go to a single point, but can be distributed over an area
+of the light source. Implementing soft shadows requires shooting more rays and distributing
+them evenly over the area light. You will need to extend the model of lights to have some area
+(a square area is convenient) for this problem.
+    <li>Camera depth of field. A real camera exhibits depth of field effects, such that objects far away
+from the focal distance are blurry. This can be simulated in a ray tracer using distributed rays.
+Refer to section 13.4.3 in the book (Shirley et al., Third Edition) for more details.
+    <li>Spotlights. Extend your point light source to be a circular spotlight. A spotlight has a direction,
+a beam angle \(\theta_b\), and a falloff angle \(\theta_f\), in addition to the usual position and intensity.
+For directions that make an angle less than \(\theta_b\) with the spotlight's direction, it produces the
+same intensity as a regular point light. For directions that are more than an angle of \(\theta_b+\theta_f\)
+from the spot direction, it produces no illumination. In the falloff zone it drops off smoothly
+according to a \(C^1\) function of angle.
+    <li>Bilinearly filtered texture mapping. Implement bilinearly filtered texture mapping for triangle
+meshes. Use bilinear interpolation when you sample the texture.
+    <li>Metal shader. Implement a shader called metal that takes a complex refractive index, with
+separate values for R, G, B, and uses them to compute Fresnel reflectance for a conductor.
+    <li>Glaze shader. A Glazed material that acts like a thin layer of dielectric over another material,
+and reflects somewhat like a mirrored surface. The glazed shader also calls another
+shader which computes the contribution from the substrate below the glaze (Shirley 13.1).
+    <li>Propose your own. You can propose your own extension based on something you heard in
+lecture, read in the book, or learned about somewhere else. Doing this requires a little extra
+work to document the extension and come up with a good test case. If you want to do your
+own extension, email your proposal to the course staff list.
+</ul>
+
+<h4> Handing in </h4>
+Submit a zip file containing your solution organized the same way as the code in the repository,
+together with your solutions for the written assignment. We strongly recommend you write your
+solutions for the written part neatly in a PDF file. Include a readme in your zip that contains:
+<ul>
+    <li>You and your partner's names and NetIDs.
+    <li> Any problems with your solution.
+    <li> Anything else you want us to know.
+</ul>
+
+<h4> Appendix A: HDR output </h4>
+<p>The ray2 framework supports HDR output. In order to use HDR output, set the writeHDR variable
+in RayTracer.java to be true. We use the openEXR library to produce HDR output. You may
+need to configure your native library location. To do this in Eclipse, go to Project \(\rightarrow\) Properties
+\(\rightarrow\) Java Build Path \(\rightarrow\) Select Libraries \(\rightarrow\) Select the openexrjni-3.0.0.jar. Drop Down Menu \(\rightarrow\)
+Modify Native Library Location. Modify this setting so that it matches your OS. Also in Project
+\(\rightarrow\) Properties \(\rightarrow\) Java Build Path \(\rightarrow\) Select Source \(\rightarrow\) Select the CS4620/src. Drop Down Menu \(\rightarrow\)
+Modify Native Library Location. Modify this setting so that it matches your OS.</p>
+
+<p>The HDR output file will be named as *.exr. You can download a tool from the following address
+to view the *.exr files as well as the *.pfm files. https://bitbucket.org/edgarv/hdritools/downloads</p>
+
+<h4> Appendix B: Notes on File Format </h4>
+<p>The code base still use the same framework that was released with Ray 1. In this section, we note
+some additional features that you can specify in the input XML file.</p>
+
+<p>Transformations. We already give you the solution of group transformations, but you should also
+know the input file format. The transformation is specified as a sequence of rotations, scales, and
+translations, which are combined in the order given to define the transformation that is applied to
+all members of the group. Translations and scales have components for x, y, and z; a rotation is a
+sequence of three rotations about the three coordinate axes, with the x rotation applied first and the
+z rotation applied last.</p>
+
+<p>The file format can be defined by example. For instance, if a transformation is given as T: 1 2 3; R:
+40 50 60; S: 0.7 0.8 0.9, this can be specified in the ray tracer as follows:</p>
+
+<pre class="prettyprint">
+    &ltsurface type="Group"&gt
+    &lttranslate&gt 1.0 2.0 3.0 &lt/translate&gt
+    &ltrotate&gt 40 50 60 &lt/rotate&gt
+    &ltscale&gt 0.7 0.8 0.9 &lt/scale&gt
+    &ltrotate&gt 40 50 60 &lt/rotate&gt
+    &ltsurface type="Sphere"&gt
+    &lt!-- ... --&gt
+    &lt/surface&gt
+    &lt!-- more surfaces, all transformed as defined above --&gt
+    &lt/surface&gt 
+</pre>
+
+<p><Cook-Torrance shader. You can specify the diffuse color, specular color, toughness and refractive
+index for Cook-Torrance shader in the scene file./p>
+
+<pre class="prettyprint">
+    &ltsurface type="CookTorrance"&gt
+        &ltdiffuseColor&gt0.3 0.3 0.3&lt/diffuseColor&gt
+        &ltspecularColor&gt0.2 0.2 0.2&lt/specularColor&gt
+        &ltroughness&gt0.8&lt/roughness&gt
+        &ltrefractiveIndex&gt1.5&lt/refractiveIndex&gt
+    &lt/shader&gt
+</pre>
+
+<p>Glass shader. In the input file the glass material should be specified just by its index of refraction,
+through a parameter named refractiveIndex:</p>
+<pre class="prettyprint">
+    &ltshader type="Glass"&gt
+        &ltrefractiveIndex&gt1.5&lt/refractiveIndex&gt
+    &lt/shader&gt
+</pre>
+
+<p>Antialiasing. This part is in extension, but we will offer the information for those who want to
+implement antialiasing. The number of samples is specified by the samples property of the Scene
+class. For example, the following input specifies a 640 by 480 pixel image rendered with a 3x3 grid
+of subpixel samples for each pixel.</p>
+
+<pre class="prettyprint">
+    &ltscene&gt
+        &ltcamera&gt
+            &lt!-- ... --&gt
+        &lt/camera&gt
+        &ltimage>640 480&lt/image&gt
+        &ltsamples>9&lt/samples&gt
+    &lt/scene&gt
+</pre>
+
+<p>You are free to round the number of samples to a convenient number (for example, to the nearest
+perfect square). Use any rounding technique that youd like, as long as specifying a perfect square
+results in exactly that many samples. Note that the samples element here is approximately the
+square of the samples variable in the renderImage method.</p>
+
+<p>AccelStruct. The type of AccelStruct used can be specified by a single line as a child of scene.
+This may be useful for testing your AccelStruct implementations, especially for scenes with large
+meshes.</p>
+
+<pre class="prettyprint">
+    &ltscene&gt
+        &ltaccelStruct type="Bvh" /&gt
+        &lt!-- ... --&gt
+    &lt/scene&gt
+</pre>
+
+<p>Cubemap. You can use specify the directory of the cubemap in the xml file, just as follows.</p>
+
+<pre class="prettyprint">
+    &ltscene&gt
+        &ltcubemap&gt
+            &ltfilename&ltdata/textures/cubemaps/uffizicross:pfm &lt =filename &gt
+        &lt/cubemap&gt
+        &lt!-- ... --&gt
+    &lt/scene&gt
+</pre>
