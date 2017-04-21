@@ -17,22 +17,29 @@ implemented from that assignment, plus some updates to the framework. You will e
 tracer as specified below. This new ray tracer should support all the features of the one in Ray 1 and
 the following features below:
 <ul>
+    <li>Monte Carlo illumination.  In Ray 1, there were only point lights, and the shaders directly computed
+surface colors using formulas that only work for point lights.  In this assignment, the framework uses a 
+different approach: there are many types of light sources, represented by subclasses of <tt>Light</tt>, 
+each providing an interface
+for selecting a direction towards the source, with a provision for random sampling of non-point lights.  Also,
+the shaders for non-mirrorlike materials (Lambertian, Phong, Cook-Torrance) share a single shading method,
+implemented in the abstract class <tt>BRDFShader</tt>.  You will implement this shading method, and also
+implement the <tt>RectangleLight</tt> light source class, which will enable you to render
+soft shadows from area light sources.
     <li>Anti-aliasing. Implement anti-aliasing using regular supersampling (Shirley 8.3, 9.4, 13.4).
     <li>An acceleration structure. Your program should be capable of rendering large models (up
 to several hundred thousand triangles) with basic settings in a few minutes. Achieving this
 requires a spatial data structure that makes the time to trace a ray sublinear in the number
 of objects. In this assignment, we provide a framework for axis-aligned bounding volume
 hierarchy (BVH) which is a simple and effective way of speeding up ray traversal. (Shirley
-12.3). Before you have implemented BVH, you can add &ltAccelStruct type=
-"NaiveAccelStruct"/&gt in the scene file in order to test other parts of your implementation.
-    <li>Advanced shader: Cook-Torrance. You should implement a Cook-Torrance shader which you
-are familiar with from the Shaders assignment. The only difference is that now you should
-compute the fresnel term from the refractive index.
+12.3). Before you have implemented BVH, you can add 
+<tt>&lt;AccelStruct type="NaiveAccelStruct"/&gt;</tt> 
+in the scene file in order to test other parts of your implementation.
     <li>Advanced shader: glass. A Glass material that simulates an interface between air and
 adielectric material. The glass shader obtains its color from light intensity along two new
 raysthe reflected and refracted raysand adds their corresponding contributions (Shirley 13.1).
-    <li>Environment mapping. Our framework can load a pfm (a HDR image format) file as environment
-mapping. You are asked to implement a method that looks up the color of the cubemap
+    <li>Environment mapping. Our framework can load a pfm (a HDR image format) file as an environment
+map. You are asked to implement a method that looks up the color of the cubemap
 in a given direction.
     <li>We have provided a list of extensions that can be implemented for extra credit.
 </ul>
@@ -40,7 +47,7 @@ in a given direction.
 <h3> 2.Written part</h3>
 <p>1. Short-answer Questions:</p>
 <ul>
-    <li> Jimmy just purchased his new winter outfit from hat to shoes. Now he wants to take a look at his new look in the mirror. Jimmy is 6-foot tall. What is the minimum dimension (assuming square mirror) of the mirror that he has to buy for him to see his entire body, if he is standing 10 feet away from the mirror? How about if he is standing 30 feet away from the mirror?
+    <li> Jimmy just purchased his new spring outfit, from baseball cap to sandals. Now he wants to take a peek at his new look in the mirror. Jimmy is 6 feet tall. What is the minimum dimension (assuming square mirror) of the mirror that Jimmy has to buy for him to see his entire body, if he is standing 10 feet away from the mirror? How about if he is standing 30 feet away from the mirror?
     <li> (2-D) A laser beam is shone at a flat glass block of infinite area at an incident angle of 45 degrees (measured between the incident ray and the normal of the surface). The laser is positioned at (0, 0), and the surfaces of the glass block are positioned between x = 1 and x = 1+T. What is the length of the area that can be swept by the laser beam if T is varied from 0 to 5. (See Figure 1.)
 </ul>
 <div class="thumbnails" style="text-align: center">
@@ -66,6 +73,12 @@ in a given direction.
     </div>
 </div>
 
+<p>3. Consider a scene where a square light source is standing vertically on a planar Lambertian surface.  The light is in the \(z=0\) plane, covering the area \(0 \le y \le 1\) and \(-\frac{1}{2} \le x \le \frac{1}{2}\), and the surface is in the \(y=0\) plane.  In lecture, we talked about two ways to formulate the problem of computing the light reflected from ths surface.  One is an integral over points on the the light; let's see how this approach performs using Monte Carlo integration for shading points on the \(z\) axis at 0.1, 1, and 10 units away from the light.
+<p>(a.) Write out the integrand that needs to be integrated over the light's area, as a function of \(x\) and \(y\).  Use your favorite plotting software to visualize this function, for instance as a height-field plot or a color-mapped square image, for each of the three shading points.</p>
+<p>(b.) Compute the correct answer to this 2D integration problem for each of the three shading points using Wolfram Alpha or a similar tool.</p>
+<p>(c.) Write down a Monte Carlo estimator for this integral using uniform sampling over the light source area (it is quite simple to do so in this case) and compute the mean and standard deviation of 1000 samples of this estimator.  In which case does it give the lowest and highest relative error (measured as standard deviation divided by the true answer), and, briefly, why?
+
+
 <h3>3.Programming part</h3>
 
 <h4>3.1 Implementation </h4>
@@ -77,14 +90,45 @@ additions necessary for this project.</p>
 the source code. To see all these TODOs in Eclipse, select Search menu, then File Search and type
 TODO#A7.</p>
 
-<h5>3.1.1 Antialiasing </h5>
-To support anti-aliasing, modify the renderBlock method of RayTracer to make the ray tracer
-shoot multiple rays per image pixel. renderBlock method contains the samples variable which
-is the number of samples to take per one dimension of the image plane. (That is, the tracer should
-shoot samples2 rays per pixel.) Note that we have abused the variable samples: in the xml file
-we use samples to refer to N2, while here it refers to N.
 
-<h5>3.1.2 Acceleration Structure </h5>
+<h5>3.1.1 Illumination </h5>
+The framework for this assignment uses a more sophisticated and flexible approach to surface illumination than
+we used in Ray 1.  The first difference has to do with shaders.  In Ray 1, the shaders were completely 
+independent, which was simple but led to duplicated code for looping over lights in the Lambertian and Phong 
+shaders.  In Ray 2, the shaders that compute illumination from light sources all inherit from the class 
+<tt>BRDFShader</tt>, which contains the <tt>shade</tt> method, and the differences between them are captured 
+by overriding <tt>evalBRDF</tt>.  (The glass and glazed shaders do not compute illumination from light sources,
+so they do not inherit from <tt>BRDFShader</tt> and they have their own <tt>shade</tt> methods.)</p>
+
+<p>The second difference has to do with light sources.  Ray 1 supported only point lights, but Ray 2 supports
+directional and area lights as well.  This means the shading code can no longer assume lights have a single position
+in the scene, and there needs to be a provision for integrating over area lights.  This is solved by introducing
+the <tt>Light</tt> class, which provides an abstract interface to lights in terms of selecting directions.  The
+function <tt>Light.sample</tt> has to be supported by all light sources; given a shading point, it selects a 
+direction towards the light source.  This can be deterministic (as in point or directional lights) or random 
+(in area lights).  Sampling results in four things:
+<ul>
+    <li>The direction towards the light from the shading point.  This is needed to set up a shadow ray.</li>
+    <li>The distance to the light source (infinite for a directional light).  This is needed to determine where to end the shadow ray.</li>
+    <li>The attenuation due to geometric considerations (inverse square falloff, for point lights).</li>
+    <li>The probability with which the point was selected.
+</ul>
+<p>The word &ldquo;probability&rdquo; is slightly vague here.  For a light that selects between a finite number of directions it is the probability of choosing the direction; when only one direction can be chosen (as in point or directional lights), the probability is 1.  For a light that chooses points on a surface (as in area lights), it is a probability density measured as probability per area.  For a light that chooses directions (you will only have these if you do extra credit), it is a probability density measured as probability per unit solid angle.</p>
+<p>For instance, you can see that the <tt>PointLight</tt> class sets the direction and distance by subtracting the light position from the shading point, sets the attenuation to inverse distance squared, and sets the probability to 1 (since it always will choose the same direction, given the same shading point).  When used by the <tt>shade</tt> method this will result in the same output color as would be computed by Ray 1.</p>
+
+<p>To implement illumination in <tt>BRDFShader</tt>, you will write code similar to the code for the shaders in Ray 1, in that it loops over the lights and adds a contribution for each.  The differences are that it uses <tt>Light.sample</tt> to interact with the lights; it calls <tt>evalBRDF</tt> to get the BRDF value, rather than directly computing the value for a particular model; and it has to remember to divide by the light source sampling probability.  Once you have done this, shading from point and directional lights should work correctly.</p>
+
+<p>To implement <tt>RectangleLight</tt>, you will have to implement the <tt>sample</tt> method.  It chooses a point randomly on the area of the light source, then fills in the direction and distance in the same way as a point light.  The attenuation is slightly different because it needs to include the cosine factor at the light end of the shadow ray; and you need to compute the probability density per unit area with which the point was chosen (this is pretty simple since you'll choose points with a uniform density).  Once you have implemented this method, you should see soft shadows from rectangle lights (you will need several samples per pixel to get not-too-noisy results).
+
+<h5>3.1.2 Antialiasing </h5>
+To support anti-aliasing, modify the renderBlock method of RayTracer to make the ray tracer
+shoot multiple rays per image pixel. renderBlock method contains the <tt>samples</tt> variable which
+is the number of samples to take per one dimension of the image plane. (That is, the tracer should
+shoot <tt>samples</tt>\(^2\) rays per pixel.) Note that we have abused the variable samples: in the xml file
+we use samples to refer to \(N^2\), while here it refers to \(N\).
+
+
+<h5>3.1.3 Acceleration Structure </h5>
 You will implement an acceleration structure called axis-aligned bounding volume hierarchy(BVH).
 It is a tree whose leaves are surfaces in the scene. Each of its internal nodes contains an axis-aligned
 bounding box(AABB) that contains all the surfaces in the subtree rooted at that node. An axisaligned
@@ -135,11 +179,6 @@ is the key why ray intersection becomes much faster with a BVH.) Otherwise, if t
 is a leaf, you intersect the ray with the surfaces with indices from <tt>surfaceIndexStart</tt> to
 <tt>surfaceIndexEnd-1</tt> one by one. On the other hand, if the <tt>BvhNode</tt> is an internal node, you
 call <tt>intersectHelper</tt> recursively on its two children.</p>
-
-<h5>3.1.3 Cook-Torrance Shader </h5>
-For detailed description, see the Shaders assignment pdf. There we used the Schlick's approximation
-to compute the Fresnel term. Now after you implemented the fresnel function in
-<tt>Shader.java</tt>, you should use that to compute the Fresnel term instead.
 
 <h5>3.1.4 Glass Shader </h5>
 The <tt>Glass</tt> shader simulates an interface between air and a dielectric material. For its <tt>shade</tt>
@@ -192,10 +231,6 @@ bonus points at the same time, by implementing some of the extensions proposed b
 implement any of these, please leave a description of what you did in your README file, and
 create an xml file or two to clearly demonstrate these features.
 <ul>
-    <li>Soft shadows. Shadow rays need not go to a single point, but can be distributed over an area
-of the light source. Implementing soft shadows requires shooting more rays and distributing
-them evenly over the area light. You will need to extend the model of lights to have some area
-(a square area is convenient) for this problem.
     <li>Camera depth of field. A real camera exhibits depth of field effects, such that objects far away
 from the focal distance are blurry. This can be simulated in a ray tracer using distributed rays.
 Refer to section 13.4.3 in the book (Shirley et al., Third Edition) for more details.
@@ -209,7 +244,7 @@ according to a \(C^1\) function of angle.
 meshes. Use bilinear interpolation when you sample the texture.
     <li>Metal shader. Implement a shader called <tt>metal</tt> that takes a complex refractive index, with
 separate values for R, G, B, and uses them to compute Fresnel reflectance for a conductor.
-    <li><tt>Glaze</tt> shader. A Glazed material that acts like a thin layer of dielectric over another material,
+    <li><tt>Glazed</tt> shader. A Glazed material that acts like a thin layer of dielectric over another material,
 and reflects somewhat like a mirrored surface. The glazed shader also calls another
 shader which computes the contribution from the substrate below the glaze (Shirley 13.1).
     <li>Propose your own. You can propose your own extension based on something you heard in
@@ -267,14 +302,14 @@ z rotation applied last.</p>
     &lt/surface&gt 
 </pre>
 
-<p><tt>Cook-Torrance</tt> shader. You can specify the diffuse color, specular color, toughness and refractive
+<p><tt>Cook-Torrance</tt> shader. You can specify the diffuse color, specular color, roughness and refractive
 index for <tt>Cook-Torrance</tt> shader in the scene file.</p>
 
 <pre class="prettyprint">
     &ltsurface type="CookTorrance"&gt
         &ltdiffuseColor&gt0.3 0.3 0.3&lt/diffuseColor&gt
         &ltspecularColor&gt0.2 0.2 0.2&lt/specularColor&gt
-        &ltroughness&gt0.8&lt/roughness&gt
+        &ltroughness&gt0.2&lt/roughness&gt
         &ltrefractiveIndex&gt1.5&lt/refractiveIndex&gt
     &lt/shader&gt
 </pre>
@@ -287,8 +322,7 @@ through a parameter named refractiveIndex:</p>
     &lt/shader&gt
 </pre>
 
-<p>Antialiasing. This part is in extension, but we will offer the information for those who want to
-implement antialiasing. The number of samples is specified by the samples property of the Scene
+<p>Antialiasing. The number of samples is specified by the samples property of the Scene
 class. For example, the following input specifies a 640 by 480 pixel image rendered with a 3x3 grid
 of subpixel samples for each pixel.</p>
 
@@ -301,11 +335,6 @@ of subpixel samples for each pixel.</p>
         &ltsamples>9&lt/samples&gt
     &lt/scene&gt
 </pre>
-
-<p>You are free to round the number of samples to a convenient number (for example, to the nearest
-perfect square). Use any rounding technique that youd like, as long as specifying a perfect square
-results in exactly that many samples. Note that the samples element here is approximately the
-square of the samples variable in the renderImage method.</p>
 
 <p>AccelStruct. The type of AccelStruct used can be specified by a single line as a child of scene.
 This may be useful for testing your AccelStruct implementations, especially for scenes with large
